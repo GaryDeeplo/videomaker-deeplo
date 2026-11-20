@@ -1,0 +1,19 @@
+{
+ "name": "produit-detoure",
+ "type": "scene",
+ "title": "Produit détouré qui flotte",
+ "description": "PNG transparent sur halo doux, entrée par le bas puis flottement, ombre au sol, atouts en pastilles quand ils sont dits, prix facultatif.",
+ "when_to_use": "Mettre en avant un produit phare ; demande un PNG détouré (le détourage HyperFrames est fait pour les personnes).",
+ "tags": [
+  "produit",
+  "detoure",
+  "packshot",
+  "atouts"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"product\", \"image\": \"produit.png\", \"kicker\": \"Nouveau\", \"name\": \"…\", \"features\": [\"…\", \"…\"], \"price\": \"…\", \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

@@ -1,0 +1,54 @@
+{
+ "modele": "produit-phare",
+ "_quand": "Lancer ou relancer un produit (20-35 s). Demande un PNG détouré du produit.",
+ "_musique": "energetic ou upbeat",
+ "scenes": [
+  {
+   "kind": "block",
+   "block": "intro-marque",
+   "hold": 1.6
+  },
+  {
+   "kind": "product",
+   "image": "<produit détouré .png>",
+   "kicker": "<Nouveau>",
+   "name": "<nom du produit>",
+   "features": [
+    "<atout 1>",
+    "<atout 2>",
+    "<atout 3>"
+   ],
+   "price": "<prix réel ou vide>",
+   "voice": "<nom : atout 1, atout 2 et atout 3>"
+  },
+  {
+   "kind": "photo",
+   "image": "<produit en situation>",
+   "kicker": "<usage>",
+   "text": "<le bénéfice>",
+   "voice": "<pourquoi c'est utile>"
+  },
+  {
+   "kind": "stat",
+   "kicker": "<preuve>",
+   "value": "<chiffre réel>",
+   "from": 0,
+   "label": "<explication>",
+   "voice": "<phrase avec le chiffre>"
+  },
+  {
+   "kind": "cta",
+   "text": "<Disponible chez …>",
+   "sub": "<où l'acheter>",
+   "voice": "<appel à l'action>",
+   "hold": 1.2
+  },
+  {
+   "kind": "block",
+   "block": "outro-marque",
+   "text": "<accroche officielle de la charte (sinon vide)>",
+   "sub": "<site ou téléphone>",
+   "hold": 3.4
+  }
+ ]
+}

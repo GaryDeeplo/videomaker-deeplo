@@ -1,0 +1,19 @@
+{
+ "name": "hook-photo-titre",
+ "type": "scene",
+ "title": "Accroche sur photo",
+ "description": "Photo plein cadre en Ken Burns, sur-titre espacé, titre qui monte mot à mot, filet d'accent.",
+ "when_to_use": "Ouverture de toute vidéo sans rush : façade, produit phare, lieu.",
+ "tags": [
+  "accroche",
+  "photo",
+  "elegant",
+  "titre"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"hook\", \"image\": \"facade.jpg\", \"kicker\": \"Lyon · depuis 1985\", \"text\": \"Le pain, comme avant.\", \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

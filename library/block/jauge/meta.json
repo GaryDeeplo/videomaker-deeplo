@@ -1,0 +1,21 @@
+{
+ "name": "jauge",
+ "type": "block",
+ "title": "Jauge en anneau",
+ "description": "Anneau qui se remplit jusqu'au pourcentage, chiffre au centre qui compte, légende.",
+ "when_to_use": "Pourcentage réel : satisfaction, taux de réussite, part de clients.",
+ "tags": [
+  "jauge",
+  "pourcentage",
+  "anneau",
+  "stat"
+ ],
+ "files": [
+  "jauge.html"
+ ],
+ "usage": "{\"block\": \"jauge\", \"vars\": {\"value\": 92, \"label\": \"…\"}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

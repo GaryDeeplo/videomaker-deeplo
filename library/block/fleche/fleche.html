@@ -1,0 +1,54 @@
+<!-- deeplo-library-block: fleche · flèche dessinée à la main qui se trace vers un point de l'image, avec une étiquette manuscrite -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="fleche" data-composition-id="fleche" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "label", "type": "string", "label": "Étiquette", "default": "fait main !"}, {"id": "x", "type": "number", "label": "Cible horizontale (%)", "default": 62, "min": 0, "max": 100}, {"id": "y", "type": "number", "label": "Cible verticale (%)", "default": 48, "min": 0, "max": 100}]'>
+      <div class="mf-fill"></div>
+      <div class="fl-wrap"><span class="fl-lbl" data-var-text="label">fait main !</span>
+        <svg class="fl-svg" viewBox="0 0 220 220"><path class="fl-path" d="M20 30 C 90 20, 160 60, 182 160"/>
+        <path class="fl-head" d="M160 146 L 184 170 L 200 140"/><ellipse class="fl-circ" cx="190" cy="186" rx="26" ry="20"/></svg></div>
+      <style>
+        #fleche { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #fleche .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #fleche .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #fleche .fl-wrap { position: absolute; left: calc(var(--x, 62) * 1% - 38vmin); top: calc(var(--y, 48) * 1% - 40vmin); width: 40vmin; height: 40vmin; }
+        #fleche .fl-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+        #fleche .fl-path, #fleche .fl-head, #fleche .fl-circ { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round;
+                                                                filter: drop-shadow(0 0.4vmin 0.8vmin rgba(0,0,0,.35)); }
+        #fleche .fl-lbl { position: absolute; left: -4vmin; top: -9vmin; font-family: var(--font, "Inter"), sans-serif; font-style: italic; font-size: 8vmin; font-weight: 800;
+                          color: var(--text); transform: rotate(-6deg); opacity: 0; text-shadow: 0 0.4vmin 1.6vmin rgba(0,0,0,.55); white-space: nowrap; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("fleche");
+        const r = '[data-composition-id="fleche"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const K = Math.min(1, D / 3.0);  // tout se resserre si le bloc est monté plus court que prévu
+        const path = document.querySelector(r + ".fl-path"), head = document.querySelector(r + ".fl-head"), circ = document.querySelector(r + ".fl-circ");
+        [path, head, circ].forEach(function (p) { const L = p.getTotalLength ? p.getTotalLength() : 300; p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p.dataset.l = L; });
+        tl.fromTo(r + ".fl-lbl", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35 }, 0);
+        tl.fromTo(path, { strokeDashoffset: Number(path.dataset.l) }, { strokeDashoffset: 0, duration: 0.6, ease: "power1.inOut" }, 0.2 * K);
+        tl.fromTo(head, { strokeDashoffset: Number(head.dataset.l) }, { strokeDashoffset: 0, duration: 0.2, ease: "power1.out" }, 0.8 * K);
+        tl.fromTo(circ, { strokeDashoffset: Number(circ.dataset.l) }, { strokeDashoffset: 0, duration: 0.45, ease: "power1.inOut" }, 1.0 * K);
+        tl.to(r + ".fl-wrap", { opacity: 0, duration: 0.3 }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["fleche"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

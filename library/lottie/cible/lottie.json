@@ -1,0 +1,16 @@
+{
+ "name": "cible",
+ "file": "cible.json",
+ "url": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f3af/lottie.json",
+ "license": "CC BY 4.0",
+ "author": "Google (Noto Animated Emoji)",
+ "source": "https://googlefonts.github.io/noto-emoji-animation/",
+ "credit": "Animation « cible » : Google (Noto Animated Emoji), CC BY 4.0 (https://googlefonts.github.io/noto-emoji-animation/)",
+ "fps": 60.0,
+ "duration": 2.333,
+ "w": 1024,
+ "h": 1024,
+ "webm": "cible.webm",
+ "rendered_size": 600,
+ "rendered_duration": 2.333
+}

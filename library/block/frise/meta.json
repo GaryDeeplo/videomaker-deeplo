@@ -1,0 +1,21 @@
+{
+ "name": "frise",
+ "type": "block",
+ "title": "Frise chronologique verticale",
+ "description": "Ligne qui se trace, pastilles et dates d'accent qui apparaissent une à une avec leur libellé (porté depuis Onda, MIT).",
+ "when_to_use": "Histoire de l'entreprise, étapes d'un projet, évolution sur plusieurs années (dates réelles).",
+ "tags": [
+  "frise",
+  "histoire",
+  "dates",
+  "timeline"
+ ],
+ "files": [
+  "frise.html"
+ ],
+ "usage": "{\"block\": \"frise\", \"vars\": {\"title\": \"Notre histoire\", \"items\": \"1895:Création|1960:Deuxième génération|2026:Aujourd’hui\"}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

@@ -1,0 +1,22 @@
+{
+ "name": "bandeau-nom",
+ "type": "lower-third",
+ "title": "Bandeau nom et fonction",
+ "description": "Bloc HyperFrames : carte sombre translucide, barre d'accent, nom en gras et fonction ; entre à la première prise de parole, 4 s.",
+ "when_to_use": "Présenter la personne qui parle dans un face caméra, une interview ou un témoignage (avec son accord).",
+ "tags": [
+  "bandeau",
+  "nom",
+  "lower-third",
+  "interview",
+  "bloc"
+ ],
+ "files": [
+  "bandeau-nom.html"
+ ],
+ "usage": "\"branding\": {\"lowerThird\": {\"name\": \"Prénom Nom\", \"role\": \"Fonction\"}} dans jobs/<job>/config.json",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

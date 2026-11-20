@@ -1,0 +1,58 @@
+{
+ "modele": "promo-offre",
+ "_quand": "Offre limitée, soldes, nouveauté à prix spécial (20-30 s).",
+ "_musique": "upbeat ou energetic",
+ "scenes": [
+  {
+   "kind": "block",
+   "block": "intro-marque",
+   "hold": 1.6
+  },
+  {
+   "kind": "hook",
+   "image": "<photo produit ou boutique>",
+   "kicker": "<Offre limitée>",
+   "text": "<bénéfice en 4 à 8 mots>",
+   "voice": "<accroche dite en 1 phrase>"
+  },
+  {
+   "kind": "photo",
+   "image": "<photo du produit / service>",
+   "kicker": "<catégorie>",
+   "text": "<ce que c'est>",
+   "voice": "<ce que le client y gagne>"
+  },
+  {
+   "kind": "offer",
+   "title": "<nom de l'offre>",
+   "old": "<ancien prix réel>",
+   "new": "<nouveau prix réel>",
+   "badge": "<jusqu'au JJ/MM>",
+   "voice": "<… au lieu de …, seulement … (dire le nouveau prix)>"
+  },
+  {
+   "kind": "points",
+   "title": "<Inclus>",
+   "items": [
+    "<atout 1>",
+    "<atout 2>",
+    "<atout 3>"
+   ],
+   "voice": "<atout 1, atout 2 et atout 3 (mêmes mots)>"
+  },
+  {
+   "kind": "cta",
+   "text": "<Réservez / Commandez>",
+   "sub": "<où, comment, jusqu'à quand>",
+   "voice": "<appel à l'action>",
+   "hold": 1.2
+  },
+  {
+   "kind": "block",
+   "block": "outro-marque",
+   "text": "<accroche officielle de la charte (sinon vide)>",
+   "sub": "<site ou téléphone>",
+   "hold": 3.4
+  }
+ ]
+}

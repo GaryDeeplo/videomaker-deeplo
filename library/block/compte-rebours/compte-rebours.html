@@ -1,0 +1,64 @@
+<!-- deeplo-library-block: compte-rebours · compte à rebours en chiffres qui basculent (ex. J-3, 3 2 1), légende -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="compte-rebours" data-composition-id="compte-rebours" data-start="0" data-duration="3.4" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "from", "type": "number", "label": "Départ", "default": 5}, {"id": "to", "type": "number", "label": "Arrivée", "default": 3}, {"id": "prefix", "type": "string", "label": "Préfixe", "default": "J-"}, {"id": "label", "type": "string", "label": "Légende", "default": "avant la fin de l&#39;offre"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="cr-card">
+        <div class="cr-row"><span class="cr-pre" data-var-text="prefix">J-</span><span class="cr-digit"><span class="cr-cur">5</span><span class="cr-next">4</span></span></div>
+        <div class="cr-lbl" data-var-text="label">avant la fin de l'offre</div></div></div>
+      <style>
+        #compte-rebours { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #compte-rebours .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #compte-rebours .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #compte-rebours .cr-card { padding: 3vmin 6vmin; border-radius: 3vmin; background: var(--card); text-align: center; opacity: 0;
+                                    box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25); }
+        #compte-rebours .cr-row { display: flex; align-items: center; justify-content: center; font-size: 20vmin; font-weight: 800; line-height: 1; color: var(--accent); }
+        #compte-rebours .cr-digit { position: relative; display: inline-block; height: 1em; overflow: hidden; min-width: 0.65em; }
+        #compte-rebours .cr-cur, #compte-rebours .cr-next { display: block; height: 1em; }
+        #compte-rebours .cr-next { position: absolute; left: 0; right: 0; top: 100%; }
+        #compte-rebours .cr-lbl { font-size: 4.4vmin; font-weight: 600; margin-top: 1.4vmin; opacity: 0; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("compte-rebours");
+        const r = '[data-composition-id="compte-rebours"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.4;
+        const K = Math.min(1, D / 3.4);  // tout se resserre si le bloc est monté plus court que prévu
+        const a = Math.round(Number(v.from) || 0), b = Math.round(Number(v.to) || 0), steps = Math.max(1, Math.abs(a - b)), dir = a > b ? -1 : 1;
+        const cur = document.querySelector(r + ".cr-cur"), nxt = document.querySelector(r + ".cr-next");
+        cur.textContent = a; nxt.textContent = a + dir;
+        tl.fromTo(r + ".cr-card", { y: 40, scale: 0.9 }, { y: 0, scale: 1, duration: 0.5, ease: "back.out(1.8)" }, 0);
+        tl.fromTo(r + ".cr-card", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0);  // opaque tout de suite : contraste
+        tl.fromTo(r + ".cr-lbl", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 }, 0.4);
+        const span = Math.max(0.35, (D - 1.4) / steps);
+        for (let k = 0; k < steps; k++) {
+          const t = 0.7 + k * span, n0 = a + dir * k, n1 = a + dir * (k + 1);
+          tl.set(cur, { textContent: n0, yPercent: 0 }, t - 0.001);
+          tl.set(nxt, { textContent: n1, yPercent: 0 }, t - 0.001);
+          tl.to([cur, nxt], { yPercent: -100, duration: 0.3, ease: "power2.inOut" }, t);
+          tl.set(cur, { textContent: n1, yPercent: 0 }, t + 0.31);
+          tl.set(nxt, { yPercent: 0 }, t + 0.31);
+        }
+        tl.to(r + ".cr-card", { opacity: 0, y: -24, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["compte-rebours"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+.env
+jobs/
+node_modules/
+studio/renders/
+studio/.hyperframes/
+__pycache__/
+*.pyc
+dist/
+*.part
+.hyperframes/
+.impeccable/hook.cache.json
+profil.json

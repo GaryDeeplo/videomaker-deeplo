@@ -1,0 +1,19 @@
+{
+ "name": "avant-apres-volet",
+ "type": "scene",
+ "title": "Avant / après en volet",
+ "description": "Deux photos superposées, un volet balaie de droite à gauche avec séparateur blanc ; étiquettes Avant / Après.",
+ "when_to_use": "Rénovation, nettoyage, relooking, résultat d'un service. Uniquement de vraies photos avant/après du client.",
+ "tags": [
+  "avant-apres",
+  "transformation",
+  "resultat",
+  "photos"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"beforeafter\", \"before\": \"avant.jpg\", \"after\": \"apres.jpg\", \"labels\": [\"Avant\", \"Après\"], \"text\": \"…\", \"voice\": \"… avant, et après.\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

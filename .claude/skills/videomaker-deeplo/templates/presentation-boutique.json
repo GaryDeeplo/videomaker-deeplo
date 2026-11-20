@@ -1,0 +1,64 @@
+{
+ "modele": "presentation-boutique",
+ "_quand": "Présenter un commerce, un atelier, un cabinet (30-45 s).",
+ "_musique": "inspiring ou acoustic",
+ "scenes": [
+  {
+   "kind": "block",
+   "block": "intro-marque",
+   "hold": 1.6
+  },
+  {
+   "kind": "hook",
+   "image": "<photo façade ou intérieur>",
+   "kicker": "<Ville · depuis AAAA>",
+   "text": "<promesse de la maison>",
+   "voice": "<qui vous êtes en 1 phrase>"
+  },
+  {
+   "kind": "gallery",
+   "images": [
+    "<photo 1>",
+    "<photo 2>",
+    "<photo 3>"
+   ],
+   "text": "<ce qu'on trouve chez vous>",
+   "voice": "<l'offre en 1 phrase>"
+  },
+  {
+   "kind": "steps",
+   "title": "<Comment ça se passe>",
+   "steps": [
+    "<étape 1>",
+    "<étape 2>",
+    "<étape 3>"
+   ],
+   "voice": "<étape 1, étape 2, puis étape 3>"
+  },
+  {
+   "kind": "stat",
+   "kicker": "<preuve>",
+   "value": "<chiffre réel>",
+   "from": 0,
+   "label": "<ce que le chiffre veut dire>",
+   "voice": "<phrase contenant le chiffre>"
+  },
+  {
+   "kind": "address",
+   "image": "<photo façade>",
+   "title": "<Venez nous voir>",
+   "address": "<adresse exacte>",
+   "hours": [
+    "<horaires réels>"
+   ],
+   "voice": "<où et quand>"
+  },
+  {
+   "kind": "block",
+   "block": "outro-marque",
+   "text": "<accroche officielle de la charte (sinon vide)>",
+   "sub": "<site ou téléphone>",
+   "hold": 3.4
+  }
+ ]
+}

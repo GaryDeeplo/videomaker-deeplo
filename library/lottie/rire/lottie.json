@@ -1,0 +1,16 @@
+{
+ "name": "rire",
+ "file": "rire.json",
+ "url": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f602/lottie.json",
+ "license": "CC BY 4.0",
+ "author": "Google (Noto Animated Emoji)",
+ "source": "https://googlefonts.github.io/noto-emoji-animation/",
+ "credit": "Animation « rire » : Google (Noto Animated Emoji), CC BY 4.0 (https://googlefonts.github.io/noto-emoji-animation/)",
+ "fps": 60.0,
+ "duration": 1.967,
+ "w": 1024,
+ "h": 1024,
+ "webm": "rire.webm",
+ "rendered_size": 600,
+ "rendered_duration": 1.967
+}

@@ -1,0 +1,20 @@
+{
+ "name": "plan-de-coupe-carte",
+ "type": "component",
+ "title": "Plan de coupe en carte",
+ "description": "Photo encadrée, légèrement inclinée ; sur fond flouté elle se place dans la bande du haut et laisse l'image du rush visible.",
+ "when_to_use": "Source paysage affichée sur fond flouté (webinaire, interview) ; photo produit, preuve, capture.",
+ "tags": [
+  "b-roll",
+  "plan de coupe",
+  "carte",
+  "photo",
+  "fond flouté"
+ ],
+ "files": [],
+ "usage": "{\"word\": \"<mot dit>\", \"until\": \"<mot de fin>\", \"image\": \"inbox/photo.jpg\", \"mode\": \"carte\"} dans work/<slug>_broll.json",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

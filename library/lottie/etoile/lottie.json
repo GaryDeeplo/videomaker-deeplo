@@ -1,0 +1,16 @@
+{
+ "name": "etoile",
+ "file": "etoile.json",
+ "url": "https://fonts.gstatic.com/s/e/notoemoji/latest/1f31f/lottie.json",
+ "license": "CC BY 4.0",
+ "author": "Google (Noto Animated Emoji)",
+ "source": "https://googlefonts.github.io/noto-emoji-animation/",
+ "credit": "Animation « etoile » : Google (Noto Animated Emoji), CC BY 4.0 (https://googlefonts.github.io/noto-emoji-animation/)",
+ "fps": 60.0,
+ "duration": 1.783,
+ "w": 1024,
+ "h": 1024,
+ "webm": "etoile.webm",
+ "rendered_size": 600,
+ "rendered_duration": 1.783
+}

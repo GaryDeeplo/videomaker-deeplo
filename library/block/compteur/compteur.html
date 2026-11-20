@@ -1,0 +1,55 @@
+<!-- deeplo-library-block: compteur · nombre qui compte jusqu'à sa valeur (préfixe, suffixe, décimales), légende ; ex. +250 clients -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="compteur" data-composition-id="compteur" data-start="0" data-duration="3.2" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "from", "type": "number", "label": "Départ", "default": 0}, {"id": "to", "type": "number", "label": "Valeur", "default": 250}, {"id": "decimals", "type": "number", "label": "Décimales", "default": 0, "min": 0, "max": 2}, {"id": "prefix", "type": "string", "label": "Préfixe", "default": "+"}, {"id": "suffix", "type": "string", "label": "Suffixe", "default": ""}, {"id": "label", "type": "string", "label": "Légende", "default": "clients satisfaits"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="ct-card">
+        <div class="ct-num"><span class="ct-pre" data-var-text="prefix">+</span><span class="ct-val">0</span><span class="ct-suf" data-var-text="suffix"></span></div>
+        <div class="ct-lbl" data-var-text="label">clients satisfaits</div></div></div>
+      <style>
+        #compteur { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #compteur .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #compteur .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #compteur .ct-card { padding: 3vmin 6vmin 3.4vmin; border-radius: 3vmin; background: var(--card); text-align: center; opacity: 0;
+                              box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25); }
+        #compteur .ct-num { font-size: 19vmin; font-weight: 800; line-height: 1; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+        #compteur .ct-lbl { font-size: 4.4vmin; font-weight: 600; margin-top: 1.2vmin; opacity: 0; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("compteur");
+        const r = '[data-composition-id="compteur"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.2;
+        const K = Math.min(1, D / 3.2);  // tout se resserre si le bloc est monté plus court que prévu
+        const el = document.querySelector(r + ".ct-val"), o = { n: Number(v.from) || 0 };
+        const dec = Math.max(0, Math.min(2, Number(v.decimals) || 0)), to = Number(v.to) || 0;
+        const fmt = function (n) { return n.toLocaleString("fr-BE", { minimumFractionDigits: dec, maximumFractionDigits: dec }); };
+        el.textContent = fmt(o.n);
+        tl.fromTo(r + ".ct-card", { y: 40, scale: 0.9 }, { y: 0, scale: 1, duration: 0.5, ease: "back.out(1.8)" }, 0);
+        tl.fromTo(r + ".ct-card", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0);  // opaque tout de suite : contraste
+        tl.to(o, { n: to, duration: Math.min(1.6, D * 0.45), ease: "power2.out", onUpdate: function () { el.textContent = fmt(o.n); } }, 0.25 * K);
+        tl.fromTo(r + ".ct-num", { scale: 1 }, { scale: 1.08, duration: 0.14, yoyo: true, repeat: 1, ease: "power1.inOut" }, 0.25 + Math.min(1.6, D * 0.45));
+        tl.fromTo(r + ".ct-lbl", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4 }, 0.6 * K);
+        tl.to(r + ".ct-card", { opacity: 0, y: -24, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["compteur"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

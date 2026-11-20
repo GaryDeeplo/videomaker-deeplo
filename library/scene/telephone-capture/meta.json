@@ -1,0 +1,20 @@
+{
+ "name": "telephone-capture",
+ "type": "scene",
+ "title": "Téléphone avec capture qui défile",
+ "description": "Téléphone (cadre inspiré d'Onda) qui arrive par le bas et fait défiler une capture d'écran longue, ou joue une vidéo d'écran.",
+ "when_to_use": "Montrer le site, l'app, la boutique en ligne ou le compte Instagram du client (vraies captures).",
+ "tags": [
+  "telephone",
+  "site",
+  "app",
+  "mockup",
+  "ecran"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"device\", \"image\": \"capture-mobile.png\", \"kicker\": \"En ligne\", \"title\": \"…\", \"screens\": 1.5, \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

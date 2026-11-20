@@ -1,0 +1,22 @@
+{
+ "name": "intro-marque",
+ "type": "intro",
+ "title": "Intro de marque (1,6 s)",
+ "description": "Bloc HyperFrames : logo révélé depuis le centre, filet d'accent, sortie en volet qui découvre la vidéo. Logo, fond et accent en variables depuis la charte.",
+ "when_to_use": "Ouverture de toutes les vidéos d'un client (série reconnaissable). Activé par branding.intro dans la charte.",
+ "tags": [
+  "intro",
+  "logo",
+  "marque",
+  "ouverture",
+  "bloc"
+ ],
+ "files": [
+  "intro-marque.html"
+ ],
+ "usage": "\"branding\": {\"intro\": \"intro-marque\"} dans brand.json (clé video) ou jobs/<job>/config.json ; sans rush : scène {\"kind\": \"block\", \"block\": \"intro-marque\", \"hold\": 1.6}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

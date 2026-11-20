@@ -1,0 +1,16 @@
+{
+ "name": "eclat",
+ "file": "eclat.json",
+ "url": "https://fonts.gstatic.com/s/e/notoemoji/latest/2728/lottie.json",
+ "license": "CC BY 4.0",
+ "author": "Google (Noto Animated Emoji)",
+ "source": "https://googlefonts.github.io/noto-emoji-animation/",
+ "credit": "Animation « eclat » : Google (Noto Animated Emoji), CC BY 4.0 (https://googlefonts.github.io/noto-emoji-animation/)",
+ "fps": 60.0,
+ "duration": 2.033,
+ "w": 1024,
+ "h": 1024,
+ "webm": "eclat.webm",
+ "rendered_size": 600,
+ "rendered_duration": 2.033
+}

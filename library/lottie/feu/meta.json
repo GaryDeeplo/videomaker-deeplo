@@ -1,0 +1,20 @@
+{
+ "name": "feu",
+ "type": "lottie",
+ "title": "Lottie : feu",
+ "description": "Animation Lottie rendue en vidéo transparente (1.083 s). Animation « feu » : Google (Noto Animated Emoji), CC BY 4.0 (https://googlefonts.github.io/noto-emoji-animation/)",
+ "when_to_use": "Réaction, emoji, illustration animée par-dessus une scène ou un rush.",
+ "tags": [
+  "lottie",
+  "animation",
+  "CC BY 4.0"
+ ],
+ "files": [
+  "feu.webm"
+ ],
+ "usage": "{\"block\": \"lottie\", \"name\": \"feu\", \"word\": \"<mot dit>\", \"dur\": 1.083, \"vars\": {\"x\": 50, \"y\": 30, \"size\": 34}}",
+ "source_job": null,
+ "preview": "preview.mp4",
+ "created": "",
+ "uses": 0
+}

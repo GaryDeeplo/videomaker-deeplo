@@ -1,0 +1,55 @@
+<!-- deeplo-library-block: mot-tournant · porté depuis Onda (MIT, Rodrigo Botelho) · phrase dont un mot change en place (Pour les restaurants / commerces / artisans) -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="mot-tournant" data-composition-id="mot-tournant" data-start="0" data-duration="4.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "before", "type": "string", "label": "Texte avant", "default": "Pour les"}, {"id": "words", "type": "string", "label": "Mots qui tournent, séparés par |", "default": "restaurants|commerces|artisans"}, {"id": "after", "type": "string", "label": "Texte après", "default": ""}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="wr-line"><span class="wr-a" data-var-text="before">Pour les</span>
+        <span class="wr-slot"></span><span class="wr-b" data-var-text="after"></span></div></div>
+      <style>
+        #mot-tournant { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #mot-tournant .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #mot-tournant .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #mot-tournant .wr-line { color: var(--ink, var(--text)); width: 88%; text-align: center; font-size: 9vmin; font-weight: 800; line-height: 1.2; opacity: 0;
+                                  text-shadow: 0 0.6vmin 2vmin rgba(0,0,0,.4); }
+        #mot-tournant .wr-slot { display: inline-grid; vertical-align: bottom; }
+        #mot-tournant .wr-w { grid-area: 1 / 1; color: var(--accent); opacity: 0; white-space: nowrap; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("mot-tournant");
+        const r = '[data-composition-id="mot-tournant"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 4.0;
+        const K = Math.min(1, D / 4.0);  // tout se resserre si le bloc est monté plus court que prévu
+        const ws = String(v.words || "").split("|").map(function (x) { return x.trim(); }).filter(Boolean);
+        const slot = document.querySelector(r + ".wr-slot");
+        ws.forEach(function (w) { const e = document.createElement("span"); e.className = "wr-w"; e.textContent = w; slot.appendChild(e); });
+        const els = slot.querySelectorAll(".wr-w"), per = Math.max(0.6, (D - 0.6) / Math.max(1, ws.length)), tr = Math.min(0.35, per * 0.3);
+        tl.fromTo(r + ".wr-line", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0);
+        els.forEach(function (e, i) {
+          const t = 0.15 + i * per;
+          tl.fromTo(e, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: tr, ease: "power3.out" }, t);
+          if (i < els.length - 1) tl.to(e, { opacity: 0, y: -30, duration: tr, ease: "power2.in" }, t + per - tr);
+        });
+        tl.to(r + ".wr-line", { opacity: 0, duration: 0.3 }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["mot-tournant"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

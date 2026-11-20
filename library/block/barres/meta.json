@@ -1,0 +1,21 @@
+{
+ "name": "barres",
+ "type": "block",
+ "title": "Graphique en barres",
+ "description": "Barres horizontales qui poussent et valeurs qui comptent ; une barre mise en avant à la couleur d'accent (porté depuis Onda, MIT).",
+ "when_to_use": "Comparer des chiffres RÉELS et sourcés : délais, prix, résultats avant/après.",
+ "tags": [
+  "graphique",
+  "barres",
+  "comparaison",
+  "chiffres"
+ ],
+ "files": [
+  "barres.html"
+ ],
+ "usage": "{\"block\": \"barres\", \"vars\": {\"title\": \"…\", \"items\": \"A:21|B:14|Nous:7\", \"suffix\": \" j\", \"highlight\": 0}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

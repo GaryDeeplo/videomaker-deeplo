@@ -1,0 +1,19 @@
+{
+ "name": "equipe-portraits",
+ "type": "scene",
+ "title": "Équipe en portraits ronds",
+ "description": "1 à 4 photos rondes cerclées d'accent, nom et fonction ; chaque personne apparaît quand son nom est dit.",
+ "when_to_use": "Présenter l'équipe, le fondateur, les conseillers (avec l'accord des personnes).",
+ "tags": [
+  "equipe",
+  "portraits",
+  "humain",
+  "confiance"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"team\", \"title\": \"L'équipe\", \"members\": [{\"photo\": \"a.jpg\", \"name\": \"…\", \"role\": \"…\"}], \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

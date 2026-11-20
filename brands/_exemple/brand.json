@@ -1,0 +1,37 @@
+{
+  "name": "Nom de l'entreprise",
+  "tagline": "Accroche courte de la marque",
+  "contact": {
+    "address": "Rue, ville",
+    "site": "exemple.be",
+    "phone": ""
+  },
+  "tone": "3 adjectifs : ex. chaleureux, direct, artisanal",
+  "source": "d'où viennent ces infos (site, charte PDF, échange avec le client)",
+  "video": {
+    "visual": {
+      "fontFamily": "Inter",
+      "fonts": [],
+      "bgColor": "#f6f4f0",
+      "inkColor": "#1a1a1a",
+      "textColor": "#ffffff",
+      "accentColor": "#c2410c",
+      "logo": "brands/_exemple/logo.png",
+      "logoBlend": "normal"
+    },
+    "text": {
+      "captionStyle": "pop"
+    },
+    "music": {
+      "mood": "upbeat"
+    },
+    "voice": {
+      "fishVoice": ""
+    },
+    "branding": {
+      "intro": "intro-marque",
+      "outro": "outro-marque"
+    }
+  },
+  "_aide": "Police maison : déposer les .woff2 dans brands/<client>/fonts/ et les lister dans fonts [{file, weight}]. Logo sur fond blanc : logoBlend = multiply. Polices intégrées sans fichier : Inter, Montserrat, Outfit, Poppins, Playfair Display, Lato, Roboto, Open Sans. Habillage : branding.intro / branding.outro (blocs de library/), branding.lowerThird {name, role} par job."
+}

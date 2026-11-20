@@ -1,0 +1,19 @@
+{
+ "name": "etapes-numerotees",
+ "type": "scene",
+ "title": "Étapes numérotées",
+ "description": "Pastilles numérotées en couleur d'accent reliées par une ligne qui se trace ; chaque étape apparaît quand la voix la dit.",
+ "when_to_use": "Process, parcours client, mode d'emploi en 2 à 5 étapes.",
+ "tags": [
+  "etapes",
+  "process",
+  "parcours",
+  "numeros"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"steps\", \"title\": \"Comment ça se passe\", \"steps\": [\"Rendez-vous\", \"Démonstration\", \"Livraison\"], \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

@@ -1,0 +1,20 @@
+{
+ "name": "duo-mot-fort",
+ "type": "caption",
+ "title": "Sous-titres duo (mot fort en couleur)",
+ "description": "Mots qui surgissent ; les nombres ou le mot fort du groupe en couleur d'accent et un peu plus grands.",
+ "when_to_use": "Vidéos avec chiffres, prix, bénéfices ; plus sobre que boîte et impact.",
+ "tags": [
+  "sous-titres",
+  "duo",
+  "chiffres",
+  "accent",
+  "pop"
+ ],
+ "files": [],
+ "usage": "build_composition.py <job> <slug> --style duo [--emoji]",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

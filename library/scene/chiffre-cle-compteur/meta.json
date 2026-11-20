@@ -1,0 +1,19 @@
+{
+ "name": "chiffre-cle-compteur",
+ "type": "scene",
+ "title": "Chiffre clé qui défile",
+ "description": "Grand nombre en couleur d'accent qui compte jusqu'à sa valeur quand elle est dite, filet, légende.",
+ "when_to_use": "Année de création, nombre de clients, note, pourcentage. Jamais un chiffre inventé.",
+ "tags": [
+  "chiffre",
+  "stat",
+  "annee",
+  "preuve"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"stat\", \"kicker\": \"Une maison familiale\", \"value\": \"1895\", \"from\": 1800, \"label\": \"…\", \"voice\": \"… depuis 1895.\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

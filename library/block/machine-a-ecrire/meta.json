@@ -1,0 +1,21 @@
+{
+ "name": "machine-a-ecrire",
+ "type": "block",
+ "title": "Machine à écrire / barre de recherche",
+ "description": "Texte tapé lettre par lettre avec curseur clignotant ; mode barre de recherche (loupe, pilule blanche) (porté depuis Onda, MIT).",
+ "when_to_use": "Accroche « vous cherchez… » ou mot-clé tapé comme dans un moteur de recherche.",
+ "tags": [
+  "texte",
+  "recherche",
+  "typewriter",
+  "accroche"
+ ],
+ "files": [
+  "machine-a-ecrire.html"
+ ],
+ "usage": "{\"block\": \"machine-a-ecrire\", \"vars\": {\"text\": \"boulanger à Lyon\", \"search\": true}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

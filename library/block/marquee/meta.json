@@ -1,0 +1,22 @@
+{
+ "name": "marquee",
+ "type": "block",
+ "title": "Bandeau défilant",
+ "description": "Bande qui défile en continu, éléments séparés par une puce d'accent, titre facultatif (porté depuis Onda, MIT).",
+ "when_to_use": "Partenaires, « ils nous font confiance », liste de services ou de produits.",
+ "tags": [
+  "marquee",
+  "bandeau",
+  "defilement",
+  "partenaires",
+  "services"
+ ],
+ "files": [
+  "marquee.html"
+ ],
+ "usage": "{\"block\": \"marquee\", \"vars\": {\"title\": \"…\", \"items\": \"A|B|C\", \"speed\": 160}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

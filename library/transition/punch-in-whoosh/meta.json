@@ -1,0 +1,19 @@
+{
+ "name": "punch-in-whoosh",
+ "type": "transition",
+ "title": "Punch-in caméra + whoosh",
+ "description": "Saut d'échelle +7,5 % puis retombée en 3 s, whoosh calé sur son pic ; max 2 par minute.",
+ "when_to_use": "Souligner l'affirmation clé, le chiffre fort ou le nom du produit dans un face caméra.",
+ "tags": [
+  "camera",
+  "zoom",
+  "punch",
+  "accent"
+ ],
+ "files": [],
+ "usage": "text.json : \"punch\": true sur l'overlay voulu, puis build_composition.py",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

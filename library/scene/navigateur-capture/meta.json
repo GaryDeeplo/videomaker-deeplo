@@ -1,0 +1,19 @@
+{
+ "name": "navigateur-capture",
+ "type": "scene",
+ "title": "Navigateur avec le site qui défile",
+ "description": "Fenêtre de navigateur (barre d'adresse) qui arrive et fait défiler une capture du site (inspiré d'Onda, MIT).",
+ "when_to_use": "Montrer le site du client en version ordinateur (vraie capture, vraie adresse).",
+ "tags": [
+  "navigateur",
+  "site",
+  "web",
+  "mockup"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"browser\", \"image\": \"capture-desktop.png\", \"url\": \"site.be\", \"title\": \"…\", \"screens\": 2, \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

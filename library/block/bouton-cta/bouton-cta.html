@@ -1,0 +1,60 @@
+<!-- deeplo-library-block: bouton-cta · bouton d'action qui apparaît, pulse, puis un doigt le touche (onde) ; ex. Réserver -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="bouton-cta" data-composition-id="bouton-cta" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "label", "type": "string", "label": "Texte du bouton", "default": "Réserver maintenant"}, {"id": "sub", "type": "string", "label": "Sous-texte", "default": "lien en bio"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="bt-wrap">
+        <div class="bt-btn"><span data-var-text="label">Réserver maintenant</span><i class="bt-ripple"></i></div>
+        <div class="bt-sub" data-var-text="sub">lien en bio</div>
+        <svg class="bt-hand" viewBox="0 0 64 64"><path d="M26 6c-3 0-5 2-5 5v22l-4-4c-2-2-5-2-7 0s-2 5 0 7l14 15c3 3 6 5 11 5h6c8 0 14-6 14-14V30c0-3-2-5-5-5s-5 2-5 5v-2c0-3-2-5-5-5s-5 2-5 5v-1c0-3-2-5-5-5-1 0-2 0-3 1V11c0-3-2-5-5-5z" fill="#fff" stroke="#111" stroke-width="2.5"/></svg>
+      </div></div>
+      <style>
+        #bouton-cta { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #bouton-cta .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #bouton-cta .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #bouton-cta .bt-wrap { position: relative; text-align: center; }
+        #bouton-cta .bt-btn { position: relative; overflow: hidden; display: inline-block; padding: 3.4vmin 8vmin; border-radius: 99px; background: var(--accent);
+                               color: #fff; font-size: 6vmin; font-weight: 800; opacity: 0; box-shadow: 0 2vmin 5vmin rgba(0,0,0,.3); }
+        #bouton-cta .bt-ripple { position: absolute; left: 50%; top: 50%; width: 10vmin; height: 10vmin; margin: -5vmin 0 0 -5vmin; border-radius: 50%;
+                                  background: rgba(255,255,255,.55); transform: scale(0); opacity: 0; }
+        #bouton-cta .bt-sub { display: inline-block; font-size: 4vmin; margin-top: 2.4vmin; opacity: 0; padding: .3em .9em; border-radius: 99px;
+                               background: var(--card); color: var(--text); }
+        #bouton-cta .bt-hand { position: absolute; width: 14vmin; height: 14vmin; left: 55%; top: 55%; opacity: 0; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("bouton-cta");
+        const r = '[data-composition-id="bouton-cta"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const K = Math.min(1, D / 3.0);  // tout se resserre si le bloc est monté plus court que prévu
+        tl.fromTo(r + ".bt-btn", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)" }, 0);
+        tl.fromTo(r + ".bt-sub", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35 }, 0.35 * K);
+        tl.to(r + ".bt-btn", { scale: 1.06, duration: 0.25, yoyo: true, repeat: 1, ease: "sine.inOut" }, 0.7 * K);
+        tl.fromTo(r + ".bt-hand", { opacity: 0, x: 120, y: 160 }, { opacity: 1, x: 0, y: 0, duration: 0.55, ease: "power3.out" }, 1.05 * K);
+        tl.to(r + ".bt-hand", { scale: 0.85, duration: 0.12, yoyo: true, repeat: 1 }, 1.62 * K);
+        tl.to(r + ".bt-btn", { scale: 0.94, duration: 0.12, yoyo: true, repeat: 1 }, 1.62 * K);
+        tl.fromTo(r + ".bt-ripple", { scale: 0, opacity: 0.9 }, { scale: 9, opacity: 0, duration: 0.7, ease: "power2.out" }, 1.66 * K);
+        tl.to(r + ".bt-hand", { opacity: 0, y: 40, duration: 0.3 }, 2.3 * K);
+        tl.to(r + ".bt-wrap", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["bouton-cta"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

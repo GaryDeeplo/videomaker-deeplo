@@ -1,0 +1,66 @@
+<!-- deeplo-library-block: frise · porté depuis Onda (MIT, Rodrigo Botelho) · frise chronologique verticale : la ligne se trace, les étapes apparaissent une à une -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="frise" data-composition-id="frise" data-start="0" data-duration="3.8" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "title", "type": "string", "label": "Titre", "default": "Notre histoire"}, {"id": "items", "type": "string", "label": "Étapes « date:libellé » séparées par |", "default": "1895:Création de la maison|1960:Deuxième génération|2026:Cinquième génération"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="fr-box"><div class="fr-title" data-var-text="title"></div><div class="fr-list"><i class="fr-line"></i></div></div></div>
+      <style>
+        #frise { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #frise .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #frise .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #frise .fr-box { width: 80%; color: var(--ink, var(--text)); }
+        #frise .fr-title { font-size: 7vmin; font-weight: 800; margin-bottom: 4vmin; opacity: 0; }
+        #frise .fr-title:empty { display: none; }
+        #frise .fr-list { position: relative; padding-left: 9vmin; }
+        #frise .fr-line { position: absolute; left: 2.2vmin; top: 1vmin; bottom: 1vmin; width: 0.6vmin; background: var(--accent); opacity: .35;
+                          transform-origin: 50% 0; transform: scaleY(0); }
+        #frise .fr-it { position: relative; margin-bottom: 4.4vmin; opacity: 0; }
+        #frise .fr-dot { position: absolute; left: -9vmin; top: 0.6vmin; width: 5vmin; height: 5vmin; border-radius: 50%; background: var(--accent);
+                         box-shadow: 0 0 0 1.2vmin color-mix(in srgb, var(--accent) 25%, transparent); transform: scale(0); }
+        #frise .fr-date { font-size: 6vmin; font-weight: 800; color: var(--accent); line-height: 1; }
+        #frise .fr-lbl { font-size: 4.4vmin; margin-top: 0.8vmin; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("frise");
+        const r = '[data-composition-id="frise"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.8;
+        const K = Math.min(1, D / 3.8);  // tout se resserre si le bloc est monté plus court que prévu
+        const items = String(v.items || "").split("|").map(function (x) { const k = x.indexOf(":"); return { d: x.slice(0, k).trim(), l: x.slice(k + 1).trim() }; })
+          .filter(function (x) { return x.d || x.l; });
+        const list = document.querySelector(r + ".fr-list");
+        items.forEach(function (x) {
+          list.insertAdjacentHTML("beforeend", '<div class="fr-it"><i class="fr-dot"></i><div class="fr-date"></div><div class="fr-lbl"></div></div>');
+          list.lastChild.querySelector(".fr-date").textContent = x.d; list.lastChild.querySelector(".fr-lbl").textContent = x.l;
+        });
+        tl.fromTo(r + ".fr-title", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 0);
+        const span = Math.max(0.8, D - 1.2), per = span / Math.max(1, items.length);
+        tl.fromTo(r + ".fr-line", { scaleY: 0 }, { scaleY: 1, duration: span, ease: "none" }, 0.3 * K);
+        document.querySelectorAll(r + ".fr-it").forEach(function (it, i) {
+          const t = 0.3 * K + i * per;
+          tl.fromTo(it, { opacity: 0, x: 24 }, { opacity: 1, x: 0, duration: 0.35, ease: "power3.out" }, t);
+          tl.fromTo(it.querySelector(".fr-dot"), { scale: 0 }, { scale: 1, duration: 0.35, ease: "back.out(2.4)" }, t);
+        });
+        tl.to(r + ".fr-box", { opacity: 0, duration: 0.3 }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["frise"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

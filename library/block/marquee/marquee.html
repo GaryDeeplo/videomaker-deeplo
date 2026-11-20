@@ -1,0 +1,57 @@
+<!-- deeplo-library-block: marquee · porté depuis Onda (MIT, Rodrigo Botelho) · bandeau qui défile en continu : logos, partenaires, services, « ils nous font confiance » -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="marquee" data-composition-id="marquee" data-start="0" data-duration="4.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "title", "type": "string", "label": "Titre au-dessus (facultatif)", "default": ""}, {"id": "items", "type": "string", "label": "Éléments séparés par |", "default": "Rideaux|Voilages|Stores|Tapisserie|Coussins"}, {"id": "speed", "type": "number", "label": "Vitesse (px/s)", "default": 160, "min": 20, "max": 800}, {"id": "direction", "type": "enum", "label": "Sens", "default": "left", "options": [{"value": "left", "label": "vers la gauche"}, {"value": "right", "label": "vers la droite"}]}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="mq-wrap"><div class="mq-title" data-var-text="title"></div>
+        <div class="mq-band"><div class="mq-track"></div></div></div></div>
+      <style>
+        #marquee { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #marquee .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #marquee .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #marquee .mq-wrap { width: 100%; opacity: 0; }
+        #marquee .mq-title { color: var(--ink, var(--text)); text-align: center; font-size: 4vmin; letter-spacing: .2em; text-transform: uppercase; margin-bottom: 2vmin;
+                             text-shadow: 0 2px 8px rgba(0,0,0,.5); }
+        #marquee .mq-title:empty { display: none; }
+        #marquee .mq-band { width: 100%; overflow: hidden; background: var(--card); padding: 3vmin 0; }
+        #marquee .mq-track { display: flex; gap: 7vmin; white-space: nowrap; will-change: transform; }
+        #marquee .mq-item { font-size: 6.4vmin; font-weight: 700; letter-spacing: .02em; display: inline-flex; align-items: center; gap: 7vmin; }
+        #marquee .mq-item::after { content: ""; width: 1.6vmin; height: 1.6vmin; border-radius: 50%; background: var(--accent); }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("marquee");
+        const r = '[data-composition-id="marquee"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 4.0;
+        const K = Math.min(1, D / 4.0);  // tout se resserre si le bloc est monté plus court que prévu
+        const items = String(v.items || "").split("|").map(function (x) { return x.trim(); }).filter(Boolean);
+        const track = document.querySelector(r + ".mq-track");
+        for (let k = 0; k < 4; k++) items.forEach(function (it) { const e = document.createElement("span"); e.className = "mq-item"; e.textContent = it; track.appendChild(e); });
+        const setW = track.scrollWidth / 4 || 1000, sp = Number(v.speed) || 160, dir = v.direction === "right" ? 1 : -1, clock = { t: 0 };
+        function place(t) { const off = ((t * sp) % setW + setW) % setW; track.style.transform = "translateX(" + (dir < 0 ? -off : off - setW) + "px)"; }
+        place(0);
+        tl.fromTo(r + ".mq-wrap", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0);
+        tl.fromTo(clock, { t: 0 }, { t: D, duration: D, ease: "none", onUpdate: function () { place(clock.t); } }, 0);
+        tl.to(r + ".mq-wrap", { opacity: 0, duration: 0.3 }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["marquee"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

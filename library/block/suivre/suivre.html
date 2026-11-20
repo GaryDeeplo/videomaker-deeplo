@@ -1,0 +1,61 @@
+<!-- deeplo-library-block: suivre · carte réseau social : photo, nom, @compte, bouton Suivre touché qui devient Abonné ✓ -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="suivre" data-composition-id="suivre" data-start="0" data-duration="3.2" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "avatar", "type": "string", "label": "Avatar / logo (chemin assets/…)", "default": "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}, {"id": "name", "type": "string", "label": "Nom", "default": "Votre boutique"}, {"id": "handle", "type": "string", "label": "@compte", "default": "@votreboutique"}, {"id": "cta", "type": "string", "label": "Bouton", "default": "Suivre"}, {"id": "done", "type": "string", "label": "Bouton après le tap", "default": "Abonné ✓"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="sv-card">
+        <img class="sv-av" data-var-src="avatar" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" />
+        <div class="sv-id"><div class="sv-name" data-var-text="name">Votre boutique</div><div class="sv-handle" data-var-text="handle">@votreboutique</div></div>
+        <div class="sv-btn" data-layout-allow-overlap><span class="sv-a" data-var-text="cta">Suivre</span><span class="sv-b" data-var-text="done">Abonné ✓</span></div>
+        <i class="sv-tap"></i></div></div>
+      <style>
+        #suivre { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #suivre .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #suivre .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #suivre .sv-card { position: relative; width: 86%; display: flex; align-items: center; gap: 3vmin; padding: 3vmin 3.4vmin; border-radius: 4vmin;
+                            background: #fff; color: #111; box-shadow: 0 2vmin 6vmin rgba(0,0,0,.3); opacity: 0; }
+        #suivre .sv-av { width: 15vmin; height: 15vmin; border-radius: 50%; object-fit: contain; background: #f2f2f2; flex: none; border: 0.6vmin solid var(--accent); }
+        #suivre .sv-id { flex: 1; min-width: 0; }
+        #suivre .sv-name { font-size: 5vmin; font-weight: 800; }
+        #suivre .sv-handle { font-size: 3.8vmin; color: #666; }
+        #suivre .sv-btn { position: relative; flex: none; padding: 2.2vmin 4.4vmin; border-radius: 2vmin; background: var(--accent); color: #fff;
+                           font-size: 4.2vmin; font-weight: 800; overflow: hidden; }
+        #suivre .sv-b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #e9e9ec; color: #111; opacity: 0; }
+        #suivre .sv-tap { position: absolute; right: 9vmin; top: 50%; width: 8vmin; height: 8vmin; margin-top: -4vmin; border-radius: 50%;
+                           background: rgba(0,0,0,.18); transform: scale(0); opacity: 0; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("suivre");
+        const r = '[data-composition-id="suivre"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.2;
+        const K = Math.min(1, D / 3.2);  // tout se resserre si le bloc est monté plus court que prévu
+        tl.fromTo(r + ".sv-card", { y: 60, scale: 0.94 }, { y: 0, scale: 1, duration: 0.55, ease: "back.out(1.7)" }, 0);
+        tl.fromTo(r + ".sv-card", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0);  // opaque tout de suite : contraste
+        tl.fromTo(r + ".sv-tap", { scale: 0, opacity: 0.9 }, { scale: 2.6, opacity: 0, duration: 0.5, ease: "power2.out" }, 1.2 * K);
+        tl.to(r + ".sv-btn", { scale: 0.92, duration: 0.1, yoyo: true, repeat: 1 }, 1.2 * K);
+        tl.fromTo(r + ".sv-b", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 1.35 * K);
+        tl.to(r + ".sv-a", { opacity: 0, duration: 0.15 }, 1.35 * K);
+        tl.to(r + ".sv-card", { opacity: 0, y: -30, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["suivre"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,56 @@
+<!-- deeplo-library-block: jauge · anneau qui se remplit jusqu'à un pourcentage, chiffre au centre, légende -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="jauge" data-composition-id="jauge" data-start="0" data-duration="3.2" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "value", "type": "number", "label": "Pourcentage", "default": 92, "min": 0, "max": 100}, {"id": "label", "type": "string", "label": "Légende", "default": "de clients satisfaits"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="jg-card">
+        <div class="jg-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="jg-bg"/><circle cx="60" cy="60" r="52" class="jg-fg"/></svg>
+        <div class="jg-val">0 %</div></div><div class="jg-lbl" data-var-text="label">de clients satisfaits</div></div></div>
+      <style>
+        #jauge { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #jauge .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #jauge .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #jauge .jg-card { padding: 3vmin 5vmin 3.4vmin; border-radius: 3vmin; background: var(--card); text-align: center; opacity: 0;
+                           box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25); }
+        #jauge .jg-ring { position: relative; width: 40vmin; height: 40vmin; margin: 0 auto; }
+        #jauge svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        #jauge .jg-bg { fill: none; stroke: rgba(255,255,255,.16); stroke-width: 11; }
+        #jauge .jg-fg { fill: none; stroke: var(--accent); stroke-width: 11; stroke-linecap: round; stroke-dasharray: 326.7; stroke-dashoffset: 326.7; }
+        #jauge .jg-val { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11vmin; font-weight: 800; }
+        #jauge .jg-lbl { font-size: 4.4vmin; font-weight: 600; margin-top: 2vmin; opacity: 0; max-width: 60vmin; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("jauge");
+        const r = '[data-composition-id="jauge"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.2;
+        const K = Math.min(1, D / 3.2);  // tout se resserre si le bloc est monté plus court que prévu
+        const val = Math.max(0, Math.min(100, Number(v.value) || 0)), el = document.querySelector(r + ".jg-val"), o = { n: 0 };
+        tl.fromTo(r + ".jg-card", { y: 40, scale: 0.9 }, { y: 0, scale: 1, duration: 0.5, ease: "back.out(1.8)" }, 0);
+        tl.fromTo(r + ".jg-card", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0);  // opaque tout de suite : contraste
+        tl.fromTo(r + ".jg-fg", { strokeDashoffset: 326.7 }, { strokeDashoffset: 326.7 * (1 - val / 100), duration: 1.4 * K, ease: "power2.out" }, 0.3 * K);
+        tl.to(o, { n: val, duration: 1.4 * K, ease: "power2.out", onUpdate: function () { el.textContent = Math.round(o.n) + " %"; } }, 0.3 * K);
+        tl.fromTo(r + ".jg-lbl", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4 }, 0.9);
+        tl.to(r + ".jg-card", { opacity: 0, y: -24, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["jauge"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

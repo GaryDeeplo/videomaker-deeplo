@@ -1,0 +1,22 @@
+{
+ "name": "note-etoiles",
+ "type": "block",
+ "title": "Note en étoiles",
+ "description": "Étoiles qui se remplissent une à une jusqu'à la note réelle (4,9…), nombre et source des avis.",
+ "when_to_use": "Preuve sociale : note Google / Facebook RÉELLE du client, par-dessus une photo ou un face caméra.",
+ "tags": [
+  "avis",
+  "note",
+  "etoiles",
+  "preuve",
+  "google"
+ ],
+ "files": [
+  "note-etoiles.html"
+ ],
+ "usage": "\"motions\": [{\"block\": \"note-etoiles\", \"word\": \"<mot dit>\", \"dur\": 3, \"vars\": {\"rating\": 4.9, \"count\": \"127 avis Google\"}}]",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

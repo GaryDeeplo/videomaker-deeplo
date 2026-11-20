@@ -1,0 +1,65 @@
+<!-- deeplo-library-block: tarif · porté depuis Onda (MIT, Rodrigo Botelho) · carte tarifaire : offre, prix, période, atouts cochés un par un, bouton, badge recommandé -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="tarif" data-composition-id="tarif" data-start="0" data-duration="3.8" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "tier", "type": "string", "label": "Nom de l&#39;offre", "default": "Formule Confort"}, {"id": "price", "type": "string", "label": "Prix (réel)", "default": "490 €"}, {"id": "period", "type": "string", "label": "Période / mention", "default": "pose comprise"}, {"id": "features", "type": "string", "label": "Atouts séparés par |", "default": "Prise de mesures|Confection sur mesure|Pose par nos soins"}, {"id": "cta", "type": "string", "label": "Bouton", "default": "Demander un devis"}, {"id": "badge", "type": "string", "label": "Badge (vide = aucun)", "default": "Le plus choisi"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="tf-card"><div class="tf-badge" data-var-text="badge"></div>
+        <div class="tf-tier" data-var-text="tier">Formule</div><div class="tf-price"><span data-var-text="price">490 €</span><small data-var-text="period"></small></div>
+        <ul class="tf-feats"></ul><div class="tf-cta" data-var-text="cta">Demander un devis</div></div></div>
+      <style>
+        #tarif { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #tarif .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #tarif .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #tarif .tf-card { position: relative; width: 74%; padding: 5vmin 5.4vmin; border-radius: 3.4vmin; background: var(--card); opacity: 0;
+                          box-shadow: 0 2vmin 6vmin rgba(0,0,0,.28), 0 0 0 0.5vmin var(--accent); }
+        #tarif .tf-badge { position: absolute; top: -2.8vmin; left: 50%; transform: translateX(-50%); padding: .5em 1.2em; border-radius: 99px;
+                           background: var(--accent); color: #fff; font-size: 3.2vmin; font-weight: 800; white-space: nowrap; }
+        #tarif .tf-badge:empty { display: none; }
+        #tarif .tf-tier { font-size: 4.6vmin; font-weight: 700; opacity: .85; }
+        #tarif .tf-price { margin: 1.4vmin 0 3vmin; font-size: 13vmin; font-weight: 800; line-height: 1; color: var(--accent); }
+        #tarif .tf-price small { display: block; font-size: 3.6vmin; font-weight: 500; color: var(--text); opacity: .8; margin-top: 1vmin; }
+        #tarif .tf-feats { list-style: none; margin: 0 0 3.4vmin; padding: 0; }
+        #tarif .tf-feats li { display: flex; align-items: center; gap: 2vmin; font-size: 4.2vmin; margin-bottom: 1.6vmin; opacity: 0; }
+        #tarif .tf-feats li i { flex: none; width: 4.4vmin; height: 4.4vmin; border-radius: 50%; background: var(--accent); position: relative; }
+        #tarif .tf-feats li i::after { content: ""; position: absolute; left: 1.5vmin; top: 0.8vmin; width: 1vmin; height: 2vmin; border: solid #fff;
+                                       border-width: 0 0.55vmin 0.55vmin 0; transform: rotate(45deg); }
+        #tarif .tf-cta { text-align: center; padding: 2.6vmin; border-radius: 99px; background: var(--accent); color: #fff; font-size: 4.4vmin; font-weight: 800; opacity: 0; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("tarif");
+        const r = '[data-composition-id="tarif"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.8;
+        const K = Math.min(1, D / 3.8);  // tout se resserre si le bloc est monté plus court que prévu
+        const fs = String(v.features || "").split("|").map(function (x) { return x.trim(); }).filter(Boolean), ul = document.querySelector(r + ".tf-feats");
+        fs.forEach(function (f) { const li = document.createElement("li"); li.innerHTML = "<i></i><span></span>"; li.querySelector("span").textContent = f; ul.appendChild(li); });
+        tl.fromTo(r + ".tf-card", { y: 50, scale: 0.94 }, { y: 0, scale: 1, duration: 0.55, ease: "back.out(1.6)" }, 0);
+        tl.fromTo(r + ".tf-card", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0);
+        const per = Math.min(0.3, (D * 0.4) / Math.max(1, fs.length));
+        document.querySelectorAll(r + ".tf-feats li").forEach(function (li, i) {
+          tl.fromTo(li, { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, 0.55 * K + i * per);
+        });
+        tl.fromTo(r + ".tf-cta", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, 0.6 * K + fs.length * per);
+        tl.to(r + ".tf-card", { opacity: 0, y: -24, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["tarif"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,19 @@
+{
+ "name": "pop-majuscules",
+ "type": "caption",
+ "title": "Sous-titres pop en majuscules",
+ "description": "Mots qui surgissent un à un (back.out), blanc gras avec ombre 3 couches, 4 mots par groupe.",
+ "when_to_use": "Face caméra, reels énergiques, débit rapide.",
+ "tags": [
+  "sous-titres",
+  "pop",
+  "energique",
+  "face-camera"
+ ],
+ "files": [],
+ "usage": "build_composition.py --style pop (défaut du parcours rush)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

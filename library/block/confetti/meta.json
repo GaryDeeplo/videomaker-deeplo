@@ -1,0 +1,21 @@
+{
+ "name": "confetti",
+ "type": "block",
+ "title": "Explosion de confettis",
+ "description": "Confettis qui partent d'un point, s'ouvrent en éventail et retombent ; tirage fixe, couleurs de la charte (porté depuis Onda, MIT).",
+ "when_to_use": "Lancement, anniversaire, cap atteint, résultat à fêter ; posé sur le mot qui l'annonce.",
+ "tags": [
+  "confetti",
+  "fete",
+  "celebration",
+  "lancement"
+ ],
+ "files": [
+  "confetti.html"
+ ],
+ "usage": "\"motions\": [{\"block\": \"confetti\", \"word\": \"<mot>\", \"dur\": 2.6, \"vars\": {\"oy\": 70, \"count\": 110}}]",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

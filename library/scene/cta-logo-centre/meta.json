@@ -1,0 +1,19 @@
+{
+ "name": "cta-logo-centre",
+ "type": "scene",
+ "title": "Appel à l'action avec logo",
+ "description": "Logo de la charte (fond blanc fondu en multiply), titre, filet, infos pratiques.",
+ "when_to_use": "Fin de toute vidéo : venir, appeler, réserver, visiter le site.",
+ "tags": [
+  "cta",
+  "logo",
+  "fin",
+  "contact"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"cta\", \"text\": \"Venez nous rencontrer\", \"sub\": \"Ouvert du jeudi au samedi, 10 h – 18 h\", \"voice\": \"…\", \"hold\": 1.2}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

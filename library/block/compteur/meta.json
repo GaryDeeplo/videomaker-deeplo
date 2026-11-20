@@ -1,0 +1,21 @@
+{
+ "name": "compteur",
+ "type": "block",
+ "title": "Compteur animé",
+ "description": "Nombre qui compte jusqu'à sa valeur (préfixe, suffixe, décimales) puis rebondit, légende dessous.",
+ "when_to_use": "Chiffre clé réel : clients, années, projets, kilos, euros économisés.",
+ "tags": [
+  "compteur",
+  "chiffre",
+  "stat",
+  "nombre"
+ ],
+ "files": [
+  "compteur.html"
+ ],
+ "usage": "{\"block\": \"compteur\", \"vars\": {\"from\": 0, \"to\": 250, \"prefix\": \"+\", \"suffix\": \"\", \"decimals\": 0, \"label\": \"…\"}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

@@ -1,0 +1,20 @@
+{
+ "name": "plan-de-coupe-plein-ecran",
+ "type": "component",
+ "title": "Plan de coupe plein écran",
+ "description": "Image ou vidéo (client ou Pixabay) en plein écran pendant une phrase, léger travelling, whoosh discret ; la voix et les sous-titres continuent.",
+ "when_to_use": "Rush face caméra qui reste statique : illustrer ce qui est dit (2 à 5 s), visage dans le cadre.",
+ "tags": [
+  "b-roll",
+  "plan de coupe",
+  "pixabay",
+  "illustration",
+  "rush"
+ ],
+ "files": [],
+ "usage": "[{\"word\": \"<mot dit>\", \"until\": \"<mot de fin>\", \"image\": \"assets/broll/pbv-123.mp4\", \"mode\": \"full\"}] dans work/<slug>_broll.json ; ou broll.py auto",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

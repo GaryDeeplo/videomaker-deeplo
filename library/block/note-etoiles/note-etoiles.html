@@ -1,0 +1,67 @@
+<!-- deeplo-library-block: note-etoiles · note sur 5 : étoiles qui se remplissent jusqu'à la note réelle, nombre d'avis -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="note-etoiles" data-composition-id="note-etoiles" data-start="0" data-duration="3.4" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "rating", "type": "number", "label": "Note (sur 5)", "default": 4.9, "min": 0, "max": 5}, {"id": "count", "type": "string", "label": "Nombre d&#39;avis + source", "default": "127 avis Google"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="st-card">
+        <div class="st-row"><span class="st-score">4,9</span><span class="st-stars"></span></div>
+        <div class="st-count" data-var-text="count">127 avis Google</div></div></div>
+      <style>
+        #note-etoiles { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #note-etoiles .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #note-etoiles .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #note-etoiles .st-card { padding: 3vmin 5vmin; border-radius: 3vmin; background: var(--card); opacity: 0; text-align: center;
+                                  box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25); }
+        #note-etoiles .st-row { display: flex; align-items: center; gap: 3vmin; }
+        #note-etoiles .st-score { font-size: 13vmin; font-weight: 800; line-height: 1; }
+        #note-etoiles .st-stars { display: flex; gap: 1vmin; }
+        #note-etoiles .st-star { position: relative; width: 8vmin; height: 8vmin; }
+        #note-etoiles .st-star svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+        #note-etoiles .st-on { clip-path: inset(0 100% 0 0); }
+        #note-etoiles .st-count { font-size: 4vmin; margin-top: 1.6vmin; opacity: 0; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("note-etoiles");
+        const r = '[data-composition-id="note-etoiles"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.4;
+        const K = Math.min(1, D / 3.4);  // tout se resserre si le bloc est monté plus court que prévu
+        const P = "M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z";
+        const rating = Math.max(0, Math.min(5, Number(v.rating) || 0));
+        document.querySelector(r + ".st-score").textContent = rating.toLocaleString("fr-BE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        const box = document.querySelector(r + ".st-stars");
+        for (let i = 0; i < 5; i++) {
+          box.insertAdjacentHTML("beforeend", '<span class="st-star"><svg viewBox="0 0 24 24"><path d="' + P + '" fill="rgba(255,255,255,.22)"/></svg>' +
+            '<svg class="st-on" viewBox="0 0 24 24"><path d="' + P + '" fill="#FFC527"/></svg></span>');
+        }
+        tl.fromTo(r + ".st-card", { y: 40, scale: 0.9 }, { y: 0, scale: 1, duration: 0.5, ease: "back.out(1.8)" }, 0);
+        tl.fromTo(r + ".st-card", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0);  // opaque tout de suite : contraste
+        document.querySelectorAll(r + ".st-on").forEach(function (el, i) {
+          const part = Math.max(0, Math.min(1, rating - i));
+          if (part > 0) tl.fromTo(el, { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 " + (100 - part * 100) + "% 0 0)", duration: 0.22, ease: "power1.out" }, (0.4 + i * 0.16) * K);
+          if (part > 0) tl.fromTo(el.parentNode, { scale: 1 }, { scale: 1.18, duration: 0.11, yoyo: true, repeat: 1 }, (0.4 + i * 0.16) * K);
+        });
+        tl.fromTo(r + ".st-count", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 }, 1.3 * K);
+        tl.to(r + ".st-card", { opacity: 0, y: -24, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["note-etoiles"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

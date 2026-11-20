@@ -1,0 +1,19 @@
+{
+ "name": "galerie-polaroids",
+ "type": "scene",
+ "title": "Galerie de 3 photos",
+ "description": "Trois photos cadre blanc qui arrivent en cascade avec rotation, titre sur fond de la charte.",
+ "when_to_use": "Montrer la variété : collection, réalisations, ambiance boutique.",
+ "tags": [
+  "galerie",
+  "photos",
+  "collection",
+  "variete"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"gallery\", \"images\": [\"a.jpg\", \"b.jpg\", \"c.jpg\"], \"text\": \"Des tissus qui ont du caractère\", \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

@@ -1,0 +1,21 @@
+{
+ "name": "tarif",
+ "type": "block",
+ "title": "Carte tarifaire",
+ "description": "Offre, prix d'accent, mention, atouts cochés un par un, bouton, badge « recommandé » (porté depuis Onda, MIT).",
+ "when_to_use": "Présenter une offre ou une formule avec son vrai prix.",
+ "tags": [
+  "tarif",
+  "prix",
+  "offre",
+  "formule"
+ ],
+ "files": [
+  "tarif.html"
+ ],
+ "usage": "{\"block\": \"tarif\", \"vars\": {\"tier\": \"…\", \"price\": \"…\", \"period\": \"…\", \"features\": \"a|b|c\", \"cta\": \"…\", \"badge\": \"…\"}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

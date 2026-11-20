@@ -1,0 +1,19 @@
+{
+ "name": "iris-zoom-flou",
+ "type": "transition",
+ "title": "Transitions iris, zoom, flou",
+ "description": "Entrées de scène portées depuis Onda (MIT) : cercle qui s'ouvre (iris), arrivée en zoom, mise au point depuis le flou.",
+ "when_to_use": "Changer de rythme entre deux scènes ; une par vidéo suffit, ne pas les mélanger toutes.",
+ "tags": [
+  "transition",
+  "iris",
+  "zoom",
+  "flou"
+ ],
+ "files": [],
+ "usage": "\"transition\": \"iris\" | \"zoom\" | \"blur\" (ou \"wipe-up\", \"wipe-left\", \"fade\") sur une scène",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

@@ -1,0 +1,21 @@
+{
+ "name": "notification",
+ "type": "block",
+ "title": "Notification smartphone",
+ "description": "Bannière façon iPhone qui descend avec l'icône de la marque, titre et message, petite vibration.",
+ "when_to_use": "Nouvelle commande, réservation, message client (scénarisé : à présenter comme illustration, pas comme une vraie donnée).",
+ "tags": [
+  "notification",
+  "smartphone",
+  "ui",
+  "social"
+ ],
+ "files": [
+  "notification.html"
+ ],
+ "usage": "{\"block\": \"notification\", \"vars\": {\"app\": \"…\", \"title\": \"…\", \"message\": \"…\"}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

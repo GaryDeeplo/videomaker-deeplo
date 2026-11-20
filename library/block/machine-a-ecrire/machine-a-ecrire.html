@@ -1,0 +1,59 @@
+<!-- deeplo-library-block: machine-a-ecrire · porté depuis Onda (MIT, Rodrigo Botelho) · texte tapé lettre par lettre avec curseur ; mode « barre de recherche » façon moteur de recherche -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="machine-a-ecrire" data-composition-id="machine-a-ecrire" data-start="0" data-duration="3.2" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "text", "type": "string", "label": "Texte tapé", "default": "boulanger à Lyon"}, {"id": "search", "type": "boolean", "label": "Dans une barre de recherche", "default": true}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="tw-box"><svg class="tw-loupe" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="#5f6368" stroke-width="2.4"/>
+        <path d="M15.5 15.5 L21 21" stroke="#5f6368" stroke-width="2.4" stroke-linecap="round"/></svg><span class="tw-txt"></span><span class="tw-cur">|</span></div></div>
+      <style>
+        #machine-a-ecrire { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #machine-a-ecrire .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #machine-a-ecrire .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #machine-a-ecrire .tw-box { display: inline-flex; align-items: center; gap: 2.4vmin; font-size: 7vmin; font-weight: 600; opacity: 0; max-width: 88%;
+                                    color: var(--ink, var(--text)); white-space: nowrap; }
+        #machine-a-ecrire .tw-box.sb { padding: 2.6vmin 4.4vmin; border-radius: 99px; background: #fff; color: #202124; font-size: 5.6vmin; font-weight: 500;
+                                       box-shadow: 0 1vmin 4vmin rgba(0,0,0,.18), 0 0 0 0.3vmin rgba(0,0,0,.06); min-width: 70%; }
+        #machine-a-ecrire .tw-loupe { width: 5.4vmin; height: 5.4vmin; flex: none; display: none; }
+        #machine-a-ecrire .tw-box.sb .tw-loupe { display: block; }
+        #machine-a-ecrire .tw-cur { color: var(--accent); font-weight: 400; margin-left: -1.4vmin; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("machine-a-ecrire");
+        const r = '[data-composition-id="machine-a-ecrire"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.2;
+        const K = Math.min(1, D / 3.2);  // tout se resserre si le bloc est monté plus court que prévu
+        const box = document.querySelector(r + ".tw-box"), txt = document.querySelector(r + ".tw-txt"), cur = document.querySelector(r + ".tw-cur");
+        if (v.search === true || v.search === "true") box.classList.add("sb");
+        const full = String(v.text || ""), clock = { t: 0 }, typeDur = Math.min(Math.max(0.6, full.length * 0.06), D * 0.6);
+        function show(t) {
+          const n = Math.max(0, Math.min(full.length, Math.floor(((t - 0.35) / typeDur) * full.length)));
+          txt.textContent = full.slice(0, n);
+          cur.style.opacity = Math.floor(t / 0.5) % 2 === 0 ? 1 : 0;  // clignotement déterministe
+        }
+        show(0);
+        tl.fromTo(box, { opacity: 0, y: 24, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "power3.out" }, 0);
+        tl.fromTo(clock, { t: 0 }, { t: D, duration: D, ease: "none", onUpdate: function () { show(clock.t); } }, 0);
+        tl.to(box, { opacity: 0, duration: 0.3 }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["machine-a-ecrire"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

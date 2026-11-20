@@ -1,0 +1,65 @@
+{
+ "modele": "recrutement",
+ "_quand": "Annonce d'emploi sur LinkedIn / Instagram (25-40 s).",
+ "_musique": "upbeat",
+ "scenes": [
+  {
+   "kind": "block",
+   "block": "intro-marque",
+   "hold": 1.6
+  },
+  {
+   "kind": "hook",
+   "image": "<photo de l'équipe ou du lieu>",
+   "kicker": "<On recrute>",
+   "text": "<intitulé du poste>",
+   "voice": "<on cherche un·e … à …>"
+  },
+  {
+   "kind": "team",
+   "title": "<Votre future équipe>",
+   "members": [
+    {
+     "photo": "<photo>",
+     "name": "<prénom>",
+     "role": "<fonction>"
+    }
+   ],
+   "voice": "<prénoms dits>"
+  },
+  {
+   "kind": "points",
+   "title": "<Ce qu'on offre>",
+   "items": [
+    "<avantage 1>",
+    "<avantage 2>",
+    "<avantage 3>"
+   ],
+   "voice": "<avantages, mêmes mots>"
+  },
+  {
+   "kind": "steps",
+   "title": "<Pour postuler>",
+   "steps": [
+    "<envoyer CV>",
+    "<entretien>",
+    "<démarrage>"
+   ],
+   "voice": "<process en 1 phrase>"
+  },
+  {
+   "kind": "cta",
+   "text": "<Postulez avant le JJ/MM>",
+   "sub": "<email ou lien>",
+   "voice": "<appel à postuler>",
+   "hold": 1.2
+  },
+  {
+   "kind": "block",
+   "block": "outro-marque",
+   "text": "<accroche officielle de la charte (sinon vide)>",
+   "sub": "<site ou téléphone>",
+   "hold": 3.4
+  }
+ ]
+}

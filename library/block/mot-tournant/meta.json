@@ -1,0 +1,21 @@
+{
+ "name": "mot-tournant",
+ "type": "block",
+ "title": "Mot qui tourne",
+ "description": "Phrase fixe dont un mot change en boucle à la couleur d'accent (porté depuis Onda, MIT).",
+ "when_to_use": "Accroche qui liste des publics, des usages ou des produits : « Pour les restaurants / commerces / artisans ».",
+ "tags": [
+  "texte",
+  "accroche",
+  "kinetic",
+  "liste"
+ ],
+ "files": [
+  "mot-tournant.html"
+ ],
+ "usage": "{\"kind\": \"block\", \"block\": \"mot-tournant\", \"vars\": {\"before\": \"Pour les\", \"words\": \"restaurants|commerces|artisans\", \"after\": \"\"}, \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

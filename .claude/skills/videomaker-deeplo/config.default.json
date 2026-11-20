@@ -1,0 +1,60 @@
+{
+  "language": "fr",
+  "transcribe": {
+    "engine": "local",
+    "model": "large-v3-turbo",
+    "vocabulary": [
+      "Claude",
+      "Instagram",
+      "TikTok",
+      "Pixabay"
+    ]
+  },
+  "derush": {
+    "minSilence": 0.45,
+    "maxPad": 0.3,
+    "noiseDb": -32,
+    "fade": 0.04,
+    "voiceLufs": -16
+  },
+  "visual": {
+    "width": 1080,
+    "height": 1920,
+    "focusX": 50,
+    "fontFamily": "Inter",
+    "textColor": "#ffffff",
+    "accentColor": "#FFD60A",
+    "sizeScale": null
+  },
+  "text": {
+    "mode": "captions",
+    "captionStyle": "pop",
+    "captionEmoji": false,
+    "captionMaxWords": 4,
+    "captionTopPct": 66,
+    "overlaysPerMinute": 5
+  },
+  "camera": {
+    "enabled": true,
+    "punchesPerMinute": 2
+  },
+  "sfx": {
+    "enabled": true,
+    "whoosh": "openverse/whoosh/whoosh_34ba7605.mp3",
+    "tick": "openverse/tick/tick_b9e2d017.mp3",
+    "whooshVolume": 0.6,
+    "tickVolume": 0.25,
+    "pop": "openverse/pop/pop_6ff2d0e8.mp3",
+    "popVolume": 0.35
+  },
+  "voice": {
+    "fishVoice": "",
+    "fishModel": "s2-pro",
+    "localVoice": "ff_siwis",
+    "speed": 1.0,
+    "pause": 0.3,
+    "geminiVoice": "Sulafat",
+    "geminiStyle": "Lis d'une voix naturelle et chaleureuse, débit posé",
+    "geminiModel": "gemini-2.5-flash-preview-tts"
+  }
+}

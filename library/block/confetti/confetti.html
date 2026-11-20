@@ -1,0 +1,71 @@
+<!-- deeplo-library-block: confetti · porté depuis Onda (MIT, Rodrigo Botelho) · explosion de confettis : départ d'un point, éventail, gravité, rotation ; tirage fixe (graine) -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="confetti" data-composition-id="confetti" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "count", "type": "number", "label": "Nombre de confettis", "default": 90, "min": 10, "max": 250}, {"id": "ox", "type": "number", "label": "Départ horizontal (%)", "default": 50, "min": 0, "max": 100}, {"id": "oy", "type": "number", "label": "Départ vertical (%)", "default": 62, "min": 0, "max": 100}, {"id": "spread", "type": "number", "label": "Ouverture (degrés)", "default": 110, "min": 10, "max": 360}, {"id": "seed", "type": "number", "label": "Graine (tirage)", "default": 7}, {"id": "colors", "type": "string", "label": "Couleurs (séparées par des virgules)", "default": "#FFC527,#ffffff,#69CD3A,#3B82F6"}]'>
+      <div class="mf-fill"></div>
+      <div class="cf-layer"></div>
+      <style>
+        #confetti { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #confetti .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #confetti .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #confetti .cf-layer { position: absolute; inset: 0; overflow: hidden; }
+        #confetti .cf-p { position: absolute; left: 0; top: 0; border-radius: 1px; will-change: transform, opacity; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("confetti");
+        const r = '[data-composition-id="confetti"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const K = Math.min(1, D / 3.0);  // tout se resserre si le bloc est monté plus court que prévu
+        function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+        const layer = document.querySelector(r + ".cf-layer"), W = layer.clientWidth || 1080, H = layer.clientHeight || 1920;
+        const rand = mulberry32(Number(v.seed) || 7), n = Math.max(10, Math.min(250, Number(v.count) || 90));
+        const cols = [v.accent].concat(String(v.colors || "").split(",").map(function (c) { return c.trim(); }).filter(Boolean));
+        const ox = (Number(v.ox) || 50) / 100 * W, oy = (Number(v.oy) || 62) / 100 * H, spr = (Number(v.spread) || 110) * Math.PI / 180;
+        const sc = Math.min(W, H) / 1080, FPS = 30, pieces = [];
+        for (let i = 0; i < n; i++) {
+          const aJit = rand(), speed = 9 + rand() * 13, spin = (rand() - 0.5) * 28, spin0 = rand() * 360;
+          const col = cols[Math.floor(rand() * cols.length)] || cols[0], wf = 0.7 + rand() * 0.6, sj = 0.7 + rand() * 0.8;
+          const life = (D * FPS) * (0.8 + rand() * 0.4) * 0.95, drift = (rand() - 0.5) * 4, size = 18 * sc;
+          const el = document.createElement("i"); el.className = "cf-p";
+          el.style.width = (size * sj * wf) + "px"; el.style.height = (size * sj) + "px"; el.style.background = col; el.style.opacity = 0;
+          layer.appendChild(el);
+          const ang = -Math.PI / 2 + (aJit - 0.5) * spr;
+          pieces.push({ el: el, vx: Math.cos(ang) * speed * sc, vy: Math.sin(ang) * speed * sc, spin: spin, spin0: spin0, life: life, drift: drift, i: i,
+                        w: size * sj * wf, h: size * sj });
+        }
+        const g = 0.55 * sc, clock = { f: 0 };
+        function draw(f) {
+          pieces.forEach(function (p) {
+            if (f > p.life) { p.el.style.opacity = 0; return; }
+            const x = ox + p.vx * f + Math.sin(f * 0.18 + p.i) * p.drift, y = oy + p.vy * f + 0.5 * g * f * f;
+            const u = f / p.life, op = u < 0.15 ? u / 0.15 : u > 0.7 ? Math.max(0, (1 - u) / 0.3) : 1;
+            p.el.style.opacity = op;
+            p.el.style.transform = "translate(" + (x - p.w / 2) + "px," + (y - p.h / 2) + "px) rotate(" + (p.spin0 + p.spin * f) + "deg)";
+          });
+        }
+        draw(0);
+        tl.fromTo(clock, { f: 0 }, { f: D * FPS, duration: D, ease: "none", onUpdate: function () { draw(clock.f); } }, 0);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["confetti"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

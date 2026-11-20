@@ -1,0 +1,20 @@
+{
+ "name": "etoile",
+ "type": "lottie",
+ "title": "Lottie : etoile",
+ "description": "Animation Lottie rendue en vidéo transparente (1.783 s). Animation « etoile » : Google (Noto Animated Emoji), CC BY 4.0 (https://googlefonts.github.io/noto-emoji-animation/)",
+ "when_to_use": "Réaction, emoji, illustration animée par-dessus une scène ou un rush.",
+ "tags": [
+  "lottie",
+  "animation",
+  "CC BY 4.0"
+ ],
+ "files": [
+  "etoile.webm"
+ ],
+ "usage": "{\"block\": \"lottie\", \"name\": \"etoile\", \"word\": \"<mot dit>\", \"dur\": 1.783, \"vars\": {\"x\": 50, \"y\": 30, \"size\": 34}}",
+ "source_job": null,
+ "preview": "preview.mp4",
+ "created": "",
+ "uses": 0
+}

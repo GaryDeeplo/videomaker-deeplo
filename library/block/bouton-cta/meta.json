@@ -1,0 +1,21 @@
+{
+ "name": "bouton-cta",
+ "type": "block",
+ "title": "Bouton d'action avec tap",
+ "description": "Bouton à la couleur d'accent qui pulse puis un doigt le touche (onde), sous-texte « lien en bio ».",
+ "when_to_use": "Fin de vidéo : réserver, commander, s'inscrire, en complément ou à la place du cta classique.",
+ "tags": [
+  "cta",
+  "bouton",
+  "action",
+  "tap"
+ ],
+ "files": [
+  "bouton-cta.html"
+ ],
+ "usage": "{\"block\": \"bouton-cta\", \"vars\": {\"label\": \"Réserver maintenant\", \"sub\": \"lien en bio\"}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

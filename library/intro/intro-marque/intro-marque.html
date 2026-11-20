@@ -1,0 +1,49 @@
+<!-- deeplo-library-block: intro-marque · ouverture courte (1,6 s) : logo révélé, filet d'accent, sortie en volet vers la vidéo -->
+<!doctype html>
+<html
+  lang="fr"
+  data-composition-variables='[
+    {"id":"logo","type":"string","label":"Logo (chemin assets/…)","default":""},
+    {"id":"bg","type":"color","label":"Fond","default":"#f6f1e8"},
+    {"id":"accent","type":"color","label":"Accent","default":"#7a1f1f"},
+    {"id":"blend","type":"enum","label":"Fusion du logo","default":"normal","options":[{"value":"normal","label":"normal"},{"value":"multiply","label":"multiply (logo sur fond blanc)"}]}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="intro-marque" data-composition-id="intro-marque" data-start="0" data-duration="1.6" data-width="1080" data-height="1920">
+      <div class="im-stage">
+        <div class="im-box">
+          <img class="im-logo" data-var-src="logo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" />
+          <div class="im-rule"></div>
+        </div>
+      </div>
+      <style>
+        #intro-marque { position: absolute; inset: 0; }
+        #intro-marque .im-stage {
+          position: absolute; inset: 0; background: var(--bg, #f6f1e8);
+          display: flex; align-items: center; justify-content: center;
+        }
+        #intro-marque .im-box { display: flex; flex-direction: column; align-items: center; width: 100%; }
+        #intro-marque .im-logo { width: min(66%, 70vmin); height: auto; mix-blend-mode: var(--blend, normal); opacity: 0; }
+        #intro-marque .im-rule { width: 16vmin; height: 0.7vmin; background: var(--accent, #7a1f1f); margin-top: 4vmin; transform: scaleX(0); }
+      </style>
+      <script>
+        (function () {
+          const r = '[data-composition-id="intro-marque"] ';
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo(r + ".im-logo", { opacity: 0, scale: 1.08, clipPath: "inset(0 50% 0 50%)" },
+            { opacity: 1, scale: 1, clipPath: "inset(0 0% 0 0%)", duration: 0.7, ease: "power3.out" }, 0.05);
+          tl.fromTo(r + ".im-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.inOut" }, 0.45);
+          tl.fromTo(r + ".im-stage", { clipPath: "inset(0 0 0% 0)" },
+            { clipPath: "inset(0 0 100% 0)", duration: 0.42, ease: "power3.inOut" }, 1.15);
+          window.__timelines = window.__timelines || {};
+          window.__timelines["intro-marque"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

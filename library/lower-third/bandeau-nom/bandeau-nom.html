@@ -1,0 +1,53 @@
+<!-- deeplo-library-block: bandeau-nom · « Prénom Nom, fonction » sur un face caméra, 4 s, couleurs et police de la charte -->
+<!doctype html>
+<html
+  lang="fr"
+  data-composition-variables='[
+    {"id":"name","type":"string","label":"Nom","default":"Prénom Nom"},
+    {"id":"role","type":"string","label":"Fonction","default":"Fonction, entreprise"},
+    {"id":"accent","type":"color","label":"Accent","default":"#c2410c"},
+    {"id":"font","type":"string","label":"Police","default":"Inter"},
+    {"id":"top","type":"number","label":"Hauteur (% du cadre)","default":52,"min":5,"max":90,"unit":"%"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="bandeau-nom" data-composition-id="bandeau-nom" data-start="0" data-duration="4" data-width="1080" data-height="1920">
+      <div class="bn-card">
+        <div class="bn-bar"></div>
+        <div class="bn-txt">
+          <div class="bn-name" data-var-text="name">Prénom Nom</div>
+          <div class="bn-role" data-var-text="role">Fonction, entreprise</div>
+        </div>
+      </div>
+      <style>
+        #bandeau-nom { position: absolute; inset: 0; pointer-events: none; }
+        #bandeau-nom .bn-card {
+          position: absolute; left: 6%; top: calc(var(--top, 52) * 1%); max-width: 80%;
+          display: flex; align-items: stretch; gap: 2.2vmin; padding: 2vmin 3.2vmin 2vmin 2vmin;
+          background: rgba(18, 17, 16, 0.62); border-radius: 1.2vmin; opacity: 0;
+          font-family: var(--font, "Inter"), "Inter", sans-serif; color: #fff;
+        }
+        #bandeau-nom .bn-bar { width: 0.9vmin; border-radius: 0.5vmin; background: var(--accent, #c2410c); transform-origin: 50% 0; }
+        #bandeau-nom .bn-name { font-size: 5vmin; font-weight: 700; line-height: 1.1; }
+        #bandeau-nom .bn-role { font-size: 3.2vmin; line-height: 1.25; opacity: 0; margin-top: 0.6vmin; }
+      </style>
+      <script>
+        (function () {
+          const r = '[data-composition-id="bandeau-nom"] ';
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo(r + ".bn-card", { opacity: 0, x: -40, clipPath: "inset(0 100% 0 0)" },
+            { opacity: 1, x: 0, clipPath: "inset(0 0% 0 0)", duration: 0.55, ease: "power3.out" }, 0);
+          tl.fromTo(r + ".bn-bar", { scaleY: 0 }, { scaleY: 1, duration: 0.4, ease: "power2.out" }, 0.15);
+          tl.fromTo(r + ".bn-role", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.35);
+          tl.to(r + ".bn-card", { opacity: 0, x: -30, duration: 0.35, ease: "power2.in" }, 3.55);
+          window.__timelines = window.__timelines || {};
+          window.__timelines["bandeau-nom"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

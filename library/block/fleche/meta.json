@@ -1,0 +1,21 @@
+{
+ "name": "fleche",
+ "type": "block",
+ "title": "Flèche dessinée à la main",
+ "description": "Flèche et cercle tracés à la main vers un point de l'image, étiquette en italique.",
+ "when_to_use": "Montrer un détail : une finition, un produit dans le cadre, un chiffre à l'écran.",
+ "tags": [
+  "fleche",
+  "annotation",
+  "dessin",
+  "detail"
+ ],
+ "files": [
+  "fleche.html"
+ ],
+ "usage": "\"motions\": [{\"block\": \"fleche\", \"word\": \"<mot>\", \"dur\": 2, \"vars\": {\"label\": \"…\", \"x\": 45, \"y\": 46}}]",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

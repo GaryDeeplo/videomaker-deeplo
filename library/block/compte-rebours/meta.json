@@ -1,0 +1,21 @@
+{
+ "name": "compte-rebours",
+ "type": "block",
+ "title": "Compte à rebours",
+ "description": "Chiffres qui basculent (J-5 → J-3, 3-2-1), légende ; pour l'urgence d'une offre ou d'un événement.",
+ "when_to_use": "Fin d'offre réelle, ouverture, événement à venir.",
+ "tags": [
+  "compte-a-rebours",
+  "urgence",
+  "offre",
+  "evenement"
+ ],
+ "files": [
+  "compte-rebours.html"
+ ],
+ "usage": "{\"block\": \"compte-rebours\", \"vars\": {\"from\": 5, \"to\": 3, \"prefix\": \"J-\", \"label\": \"…\"}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

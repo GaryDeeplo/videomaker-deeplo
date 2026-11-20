@@ -1,0 +1,20 @@
+{
+ "name": "adresse-horaires",
+ "type": "scene",
+ "title": "Adresse et horaires",
+ "description": "Photo du lieu en bandeau, épingle qui tombe, titre, adresse en gras, horaires ligne par ligne.",
+ "when_to_use": "Commerce physique : venir en boutique, au showroom, au cabinet.",
+ "tags": [
+  "adresse",
+  "horaires",
+  "local",
+  "boutique",
+  "venir"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"address\", \"image\": \"facade.jpg\", \"title\": \"Venez nous voir\", \"address\": \"…\", \"hours\": [\"…\"], \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

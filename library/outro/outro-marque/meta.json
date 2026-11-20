@@ -1,0 +1,22 @@
+{
+ "name": "outro-marque",
+ "type": "outro",
+ "title": "Outro de marque (bloc réglable)",
+ "description": "Bloc HyperFrames : logo qui sort du flou sur halo d'accent, filet, accroche, infos pratiques. Couleurs, police, logo et textes en variables, remplis depuis la charte.",
+ "when_to_use": "Fin de toute vidéo d'un client, avec ou sans rush, pour signer la série.",
+ "tags": [
+  "outro",
+  "logo",
+  "marque",
+  "fin",
+  "bloc"
+ ],
+ "files": [
+  "outro-marque.html"
+ ],
+ "usage": "{\"kind\": \"block\", \"block\": \"outro-marque\", \"text\": \"accroche (sinon tagline de la charte)\", \"sub\": \"infos pratiques\", \"hold\": 3.6}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

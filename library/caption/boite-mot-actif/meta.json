@@ -1,0 +1,20 @@
+{
+ "name": "boite-mot-actif",
+ "type": "caption",
+ "title": "Sous-titres boîte (mot dit surligné)",
+ "description": "Le mot prononcé passe dans une boîte couleur d'accent, texte contrasté calculé automatiquement ; style CapCut.",
+ "when_to_use": "Reels et TikTok dynamiques, face caméra ; lisible sur image chargée.",
+ "tags": [
+  "sous-titres",
+  "boite",
+  "capcut",
+  "karaoke",
+  "mot actif"
+ ],
+ "files": [],
+ "usage": "build_composition.py <job> <slug> --style boite [--emoji]  |  build_scenes.py <job> <slug> --style boite",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

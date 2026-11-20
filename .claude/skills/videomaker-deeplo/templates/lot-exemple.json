@@ -1,0 +1,24 @@
+{
+ "name": "<client>-<campagne>",
+ "client": "<Client>",
+ "items": [
+  {
+   "job": "<dossier du job 1>",
+   "slug": "<slug>"
+  },
+  {
+   "job": "<dossier du job 2>",
+   "slug": "<slug>"
+  }
+ ],
+ "langs": [
+  "fr",
+  "nl"
+ ],
+ "formats": [
+  "9:16",
+  "1:1"
+ ],
+ "quality": "delivery",
+ "reuse": true
+}

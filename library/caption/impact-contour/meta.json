@@ -1,0 +1,20 @@
+{
+ "name": "impact-contour",
+ "type": "caption",
+ "title": "Sous-titres impact (contour noir)",
+ "description": "Gros caractères contour noir, le mot dit grossit en couleur d'accent ; style Hormozi.",
+ "when_to_use": "Accroches fortes, contenus business / conseils ; mettre text.captionMaxWords à 2 ou 3.",
+ "tags": [
+  "sous-titres",
+  "impact",
+  "hormozi",
+  "contour",
+  "gros"
+ ],
+ "files": [],
+ "usage": "build_composition.py <job> <slug> --style impact  (config text.captionMaxWords: 2-3)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

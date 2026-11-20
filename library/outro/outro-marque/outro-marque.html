@@ -1,0 +1,64 @@
+<!-- deeplo-library-block: outro-marque · bloc HyperFrames réglable par variables (logo, accroche, infos, couleurs, police) -->
+<!doctype html>
+<html
+  lang="fr"
+  data-composition-variables='[
+    {"id":"logo","type":"string","label":"Logo (chemin assets/…)","default":"assets/img/logo.png"},
+    {"id":"tagline","type":"string","label":"Accroche","default":"Votre accroche"},
+    {"id":"info","type":"string","label":"Infos pratiques","default":"adresse · site · téléphone"},
+    {"id":"bg","type":"color","label":"Fond","default":"#f6f1e8"},
+    {"id":"ink","type":"color","label":"Texte","default":"#1d1915"},
+    {"id":"accent","type":"color","label":"Accent","default":"#7a1f1f"},
+    {"id":"font","type":"string","label":"Police","default":"Inter"},
+    {"id":"blend","type":"enum","label":"Fusion du logo","default":"normal","options":[{"value":"normal","label":"normal"},{"value":"multiply","label":"multiply (logo sur fond blanc)"}]}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="outro-marque" data-composition-id="outro-marque" data-start="0" data-duration="4" data-width="1080" data-height="1920">
+      <div class="om-stage">
+        <div class="om-glow"></div>
+        <img class="om-logo" data-var-src="logo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" />
+        <div class="om-rule"></div>
+        <div class="om-tag" data-var-text="tagline">Votre accroche</div>
+        <div class="om-info" data-var-text="info">adresse · site · téléphone</div>
+      </div>
+      <style>
+        #outro-marque { position: absolute; inset: 0; }
+        #outro-marque .om-stage {
+          position: absolute; inset: 0; background: var(--bg, #f6f1e8); color: var(--ink, #1d1915);
+          font-family: var(--font, "Inter"), "Inter", sans-serif;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+          padding: 0 8%;
+        }
+        #outro-marque .om-glow {
+          position: absolute; left: 50%; top: 45%; width: 70vmin; height: 70vmin; margin: -35vmin 0 0 -35vmin;
+          border-radius: 50%; background: radial-gradient(circle, var(--accent, #7a1f1f) 0%, transparent 65%);
+          opacity: 0;
+        }
+        #outro-marque .om-logo { position: relative; width: min(72%, 78vmin); height: auto; mix-blend-mode: var(--blend, normal); opacity: 0; }
+        #outro-marque .om-rule { position: relative; width: 14vmin; height: 0.6vmin; background: var(--accent, #7a1f1f); margin: 5vmin 0 4vmin; transform: scaleX(0); }
+        #outro-marque .om-tag { position: relative; font-size: 5.4vmin; font-weight: 700; line-height: 1.15; opacity: 0; text-wrap: balance; }
+        #outro-marque .om-info { position: relative; margin-top: 2.6vmin; font-size: 3.4vmin; letter-spacing: 0.08em; opacity: 0; }
+      </style>
+      <script>
+        (function () {
+          const root = '[data-composition-id="outro-marque"] ';
+          const tl = gsap.timeline({ paused: true });
+          tl.fromTo(root + ".om-glow", { opacity: 0, scale: 0.6 }, { opacity: 0.18, scale: 1, duration: 1.2, ease: "power2.out" }, 0);
+          tl.fromTo(root + ".om-logo", { opacity: 0, scale: 0.92, filter: "blur(14px)" },
+            { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.1, ease: "power3.out" }, 0.15);
+          tl.fromTo(root + ".om-rule", { scaleX: 0 }, { scaleX: 1, duration: 0.7, ease: "power2.inOut" }, 0.9);
+          tl.fromTo(root + ".om-tag", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 1.15);
+          tl.fromTo(root + ".om-info", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 1.45);
+          tl.to(root + ".om-glow", { opacity: 0, duration: 1.2, ease: "power1.in" }, 2.4);
+          window.__timelines = window.__timelines || {};
+          window.__timelines["outro-marque"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

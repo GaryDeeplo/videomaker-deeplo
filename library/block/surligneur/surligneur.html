@@ -1,0 +1,54 @@
+<!-- deeplo-library-block: surligneur · phrase forte dont un mot-clé est surligné au marqueur (balayage), pour une accroche -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="surligneur" data-composition-id="surligneur" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "before", "type": "string", "label": "Texte avant le mot-clé", "default": "Le pain le plus"}, {"id": "mark", "type": "string", "label": "Mot-clé surligné", "default": "croustillant"}, {"id": "after", "type": "string", "label": "Texte après", "default": "de Lyon"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="sl-txt"><span class="sl-a" data-var-text="before">Le pain le plus</span>
+        <span class="sl-m"><i class="sl-hl"></i><span data-var-text="mark">croustillant</span></span>
+        <span class="sl-b" data-var-text="after">de Lyon</span></div></div>
+      <style>
+        #surligneur { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #surligneur .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #surligneur .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #surligneur .sl-txt { color: var(--ink, var(--text)); width: 86%; text-align: center; font-size: 10vmin; font-weight: 800; line-height: 1.15; text-wrap: balance;
+                               text-shadow: 0 0.6vmin 2vmin rgba(0,0,0,.45); }
+        #surligneur .sl-a, #surligneur .sl-b, #surligneur .sl-m { display: inline-block; opacity: 0; }
+        #surligneur .sl-m { position: relative; padding: 0 1.2vmin; }
+        #surligneur .sl-m span { position: relative; }
+        #surligneur .sl-hl { position: absolute; left: 0; right: 0; top: 18%; bottom: 8%; background: var(--accent); border-radius: 1vmin;
+                              transform-origin: 0 50%; transform: scaleX(0) skewX(-6deg); }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("surligneur");
+        const r = '[data-composition-id="surligneur"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const K = Math.min(1, D / 3.0);  // tout se resserre si le bloc est monté plus court que prévu
+        tl.fromTo(r + ".sl-a", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0);
+        tl.fromTo(r + ".sl-m", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.15 * K);
+        tl.fromTo(r + ".sl-b", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.3 * K);
+        tl.fromTo(r + ".sl-hl", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.inOut" }, 0.7 * K);
+        tl.to(r + ".sl-m", { scale: 1.06, duration: 0.18, yoyo: true, repeat: 1 }, 1.15 * K);
+        tl.to(r + ".sl-txt", { opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["surligneur"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

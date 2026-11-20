@@ -1,0 +1,68 @@
+<!-- deeplo-library-block: barres · porté depuis Onda (MIT, Rodrigo Botelho) · graphique en barres horizontales qui poussent, valeurs qui comptent, une barre mise en avant -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="barres" data-composition-id="barres" data-start="0" data-duration="3.6" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "title", "type": "string", "label": "Titre", "default": "Délai de livraison (jours)"}, {"id": "items", "type": "string", "label": "Barres « libellé:valeur » séparées par |", "default": "Concurrent A:21|Concurrent B:14|Nous:7"}, {"id": "suffix", "type": "string", "label": "Unité après la valeur", "default": ""}, {"id": "highlight", "type": "number", "label": "Barre mise en avant (1 = première, 0 = dernière)", "default": 0}, {"id": "max", "type": "number", "label": "Maximum (0 = plus grande valeur)", "default": 0}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="br-card"><div class="br-title" data-var-text="title"></div><div class="br-rows"></div></div></div>
+      <style>
+        #barres { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #barres .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #barres .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #barres .br-card { width: 86%; padding: 4vmin 5vmin; border-radius: 3vmin; background: var(--card); opacity: 0; box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25); }
+        #barres .br-title { font-size: 4.6vmin; font-weight: 700; margin-bottom: 3vmin; }
+        #barres .br-title:empty { display: none; }
+        #barres .br-row { margin-bottom: 2.6vmin; opacity: 0; }
+        #barres .br-head { display: flex; justify-content: space-between; font-size: 3.8vmin; margin-bottom: 1vmin; }
+        #barres .br-val { font-weight: 800; font-variant-numeric: tabular-nums; }
+        #barres .br-track { height: 3.4vmin; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; }
+        #barres .br-bar { height: 100%; border-radius: 99px; background: rgba(255,255,255,.55); transform-origin: 0 50%; transform: scaleX(0); }
+        #barres .br-row.hi .br-bar { background: var(--accent); }
+        #barres .br-row.hi .br-val { color: var(--accent); }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("barres");
+        const r = '[data-composition-id="barres"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.6;
+        const K = Math.min(1, D / 3.6);  // tout se resserre si le bloc est monté plus court que prévu
+        const rows = String(v.items || "").split("|").map(function (x) { const k = x.lastIndexOf(":"); return { l: x.slice(0, k).trim(), v: Number(x.slice(k + 1)) || 0 }; })
+          .filter(function (x) { return x.l; });
+        const mx = Number(v.max) > 0 ? Number(v.max) : Math.max.apply(null, rows.map(function (x) { return x.v; }).concat([1]));
+        const hi = Number(v.highlight) > 0 ? Number(v.highlight) - 1 : rows.length - 1, box = document.querySelector(r + ".br-rows");
+        rows.forEach(function (x, i) {
+          box.insertAdjacentHTML("beforeend", '<div class="br-row' + (i === hi ? ' hi' : '') + '"><div class="br-head"><span class="br-l"></span><span class="br-val">0</span></div>' +
+            '<div class="br-track"><div class="br-bar"></div></div></div>');
+          box.lastChild.querySelector(".br-l").textContent = x.l;
+        });
+        tl.fromTo(r + ".br-card", { y: 40, scale: 0.94 }, { y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 0);
+        tl.fromTo(r + ".br-card", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0);
+        const per = Math.min(0.35, (D * 0.45) / Math.max(1, rows.length)), grow = Math.min(1.0, D * 0.3);
+        document.querySelectorAll(r + ".br-row").forEach(function (row, i) {
+          const t = 0.3 * K + i * per, o = { n: 0 }, val = row.querySelector(".br-val");
+          tl.fromTo(row, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3 }, t);
+          tl.fromTo(row.querySelector(".br-bar"), { scaleX: 0 }, { scaleX: rows[i].v / mx, duration: grow, ease: "power2.out" }, t + 0.1);
+          tl.to(o, { n: rows[i].v, duration: grow, ease: "power2.out", onUpdate: function () { val.textContent = Math.round(o.n).toLocaleString("fr-BE") + (v.suffix || ""); } }, t + 0.1);
+        });
+        tl.to(r + ".br-card", { opacity: 0, y: -24, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["barres"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

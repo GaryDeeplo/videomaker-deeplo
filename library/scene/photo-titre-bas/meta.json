@@ -1,0 +1,18 @@
+{
+ "name": "photo-titre-bas",
+ "type": "scene",
+ "title": "Photo + titre en bas",
+ "description": "Photo en Ken Burns latéral, dégradé sombre, sur-titre et titre posés en bas à gauche.",
+ "when_to_use": "Montrer une réalisation, un produit ou un lieu avec une phrase-clé.",
+ "tags": [
+  "photo",
+  "realisation",
+  "titre"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"photo\", \"image\": \"x.jpg\", \"kicker\": \"Sur mesure\", \"text\": \"Rideaux, voilages et stores\", \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

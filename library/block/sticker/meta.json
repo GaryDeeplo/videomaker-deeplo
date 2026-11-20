@@ -1,0 +1,21 @@
+{
+ "name": "sticker",
+ "type": "block",
+ "title": "Sticker étoilé",
+ "description": "Badge en étoile qui surgit en tournant (NOUVEAU, -20 %, OFFERT), rotation lente continue.",
+ "when_to_use": "Nouveauté, promotion réelle, mention spéciale, par-dessus un produit ou une photo.",
+ "tags": [
+  "sticker",
+  "badge",
+  "promo",
+  "nouveau"
+ ],
+ "files": [
+  "sticker.html"
+ ],
+ "usage": "\"motions\": [{\"block\": \"sticker\", \"word\": \"nouveau\", \"dur\": 2.4, \"vars\": {\"label\": \"NOUVEAU\", \"top\": 22, \"left\": 72}}]",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

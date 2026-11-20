@@ -1,0 +1,20 @@
+{
+ "name": "alarme",
+ "type": "lottie",
+ "title": "Lottie : alarme",
+ "description": "Animation Lottie rendue en vidéo transparente (0.567 s). Animation « alarme » : Google (Noto Animated Emoji), CC BY 4.0 (https://googlefonts.github.io/noto-emoji-animation/)",
+ "when_to_use": "Réaction, emoji, illustration animée par-dessus une scène ou un rush.",
+ "tags": [
+  "lottie",
+  "animation",
+  "CC BY 4.0"
+ ],
+ "files": [
+  "alarme.webm"
+ ],
+ "usage": "{\"block\": \"lottie\", \"name\": \"alarme\", \"word\": \"<mot dit>\", \"dur\": 0.567, \"vars\": {\"x\": 50, \"y\": 30, \"size\": 34}}",
+ "source_job": null,
+ "preview": "preview.mp4",
+ "created": "",
+ "uses": 0
+}

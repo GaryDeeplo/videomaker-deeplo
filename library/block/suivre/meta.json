@@ -1,0 +1,21 @@
+{
+ "name": "suivre",
+ "type": "block",
+ "title": "Carte « Suivre »",
+ "description": "Carte de profil (logo, nom, @compte), bouton Suivre touché qui devient Abonné ✓.",
+ "when_to_use": "Fin de vidéo réseaux sociaux : inviter à s'abonner au compte réel du client.",
+ "tags": [
+  "suivre",
+  "abonnement",
+  "social",
+  "instagram"
+ ],
+ "files": [
+  "suivre.html"
+ ],
+ "usage": "{\"block\": \"suivre\", \"vars\": {\"name\": \"…\", \"handle\": \"@…\"}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}

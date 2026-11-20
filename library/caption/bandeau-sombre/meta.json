@@ -1,0 +1,19 @@
+{
+ "name": "bandeau-sombre",
+ "type": "caption",
+ "title": "Sous-titres en bandeau",
+ "description": "Groupes de 4 mots dans un bandeau sombre arrondi, lisibles sur fond clair comme sur photo.",
+ "when_to_use": "Vidéos sans rush (voix off) et chartes claires ; défaut de build_scenes.py.",
+ "tags": [
+  "sous-titres",
+  "bandeau",
+  "sobre",
+  "lisible"
+ ],
+ "files": [],
+ "usage": "build_scenes.py (style minimal) ; text.captionStyle = \"minimal\"",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

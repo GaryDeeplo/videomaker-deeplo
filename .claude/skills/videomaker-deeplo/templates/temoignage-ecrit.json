@@ -1,0 +1,49 @@
+{
+ "modele": "temoignage-ecrit",
+ "_quand": "Mettre en avant un VRAI avis client écrit (Google, email) avec son accord (20-30 s).",
+ "_musique": "inspiring",
+ "scenes": [
+  {
+   "kind": "block",
+   "block": "intro-marque",
+   "hold": 1.6
+  },
+  {
+   "kind": "hook",
+   "image": "<photo de la réalisation pour ce client>",
+   "kicker": "<Ils nous font confiance>",
+   "text": "<résultat obtenu>",
+   "voice": "<contexte du client>"
+  },
+  {
+   "kind": "quote",
+   "text": "<avis client mot pour mot>",
+   "author": "<Prénom, ville>",
+   "voice": "<lecture de l'avis ou résumé fidèle>"
+  },
+  {
+   "kind": "beforeafter",
+   "before": "<photo avant réelle>",
+   "after": "<photo après réelle>",
+   "labels": [
+    "Avant",
+    "Après"
+   ],
+   "voice": "<… avant, et après.>"
+  },
+  {
+   "kind": "cta",
+   "text": "<Votre projet ?>",
+   "sub": "<contact>",
+   "voice": "<appel à l'action>",
+   "hold": 1.2
+  },
+  {
+   "kind": "block",
+   "block": "outro-marque",
+   "text": "<accroche officielle de la charte (sinon vide)>",
+   "sub": "<site ou téléphone>",
+   "hold": 3.4
+  }
+ ]
+}

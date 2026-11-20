@@ -1,0 +1,19 @@
+{
+ "name": "points-bandeau-photo",
+ "type": "scene",
+ "title": "Liste de points calée sur la voix",
+ "description": "Bandeau photo en haut, titre, puces carrées d'accent ; chaque point apparaît quand la voix le prononce.",
+ "when_to_use": "Étapes, services, avantages (2 à 4 items de 1 à 3 mots).",
+ "tags": [
+  "liste",
+  "etapes",
+  "services",
+  "avantages"
+ ],
+ "files": [],
+ "usage": "{\"kind\": \"points\", \"image\": \"atelier.jpg\", \"title\": \"Notre savoir-faire\", \"items\": [\"Choisir\", \"Façonner\", \"Installer\", \"Vivre\"], \"voice\": \"… choisir, façonner, installer, et enfin, vivre.\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-19",
+ "uses": 0
+}

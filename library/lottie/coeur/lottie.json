@@ -1,0 +1,16 @@
+{
+ "name": "coeur",
+ "file": "coeur.json",
+ "url": "https://fonts.gstatic.com/s/e/notoemoji/latest/2764/lottie.json",
+ "license": "CC BY 4.0",
+ "author": "Google (Noto Animated Emoji)",
+ "source": "https://googlefonts.github.io/noto-emoji-animation/",
+ "credit": "Animation « coeur » : Google (Noto Animated Emoji), CC BY 4.0 (https://googlefonts.github.io/noto-emoji-animation/)",
+ "fps": 60.0,
+ "duration": 1.833,
+ "w": 800,
+ "h": 800,
+ "webm": "coeur.webm",
+ "rendered_size": 600,
+ "rendered_duration": 1.833
+}

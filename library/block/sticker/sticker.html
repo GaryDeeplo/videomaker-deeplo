@@ -1,0 +1,56 @@
+<!-- deeplo-library-block: sticker · sticker étoilé qui surgit en tournant (NOUVEAU, -20 %, OFFERT…), légère rotation continue -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="sticker" data-composition-id="sticker" data-start="0" data-duration="2.8" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "label", "type": "string", "label": "Texte", "default": "NOUVEAU"}, {"id": "left", "type": "number", "label": "Position horizontale (%)", "default": 50, "min": 0, "max": 100}]'>
+      <div class="mf-fill"></div>
+      <div class="sk-wrap"><div class="sk-badge">
+        <svg viewBox="0 0 200 200"><path class="sk-star" d=""/></svg><span class="sk-txt" data-var-text="label">NOUVEAU</span></div></div>
+      <style>
+        #sticker { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #sticker .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #sticker .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #sticker .sk-wrap { position: absolute; top: calc(var(--top, 40) * 1%); left: calc(var(--left, 50) * 1%); width: 0; height: 0; }
+        #sticker .sk-badge { position: absolute; width: 36vmin; height: 36vmin; left: -18vmin; top: -18vmin; opacity: 0; }
+        #sticker svg { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 1.4vmin 2.4vmin rgba(0,0,0,.3)); }
+        #sticker .sk-star { fill: var(--accent); }
+        #sticker .sk-txt { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+                           padding: 0 5vmin; font-size: 6.4vmin; font-weight: 900; line-height: 1; color: #fff; text-transform: uppercase; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("sticker");
+        const r = '[data-composition-id="sticker"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 2.8;
+        const K = Math.min(1, D / 2.8);  // tout se resserre si le bloc est monté plus court que prévu
+        let d = "";
+        for (let i = 0; i < 32; i++) {
+          const ang = (Math.PI * 2 * i) / 32, rad = i % 2 ? 84 : 98;
+          d += (i ? "L" : "M") + (100 + rad * Math.cos(ang)).toFixed(1) + " " + (100 + rad * Math.sin(ang)).toFixed(1);
+        }
+        document.querySelector(r + ".sk-star").setAttribute("d", d + "Z");
+        tl.fromTo(r + ".sk-badge", { opacity: 0, scale: 0, rotation: -40 }, { opacity: 1, scale: 1, rotation: -8, duration: 0.6, ease: "back.out(2.6)" }, 0);
+        tl.to(r + ".sk-badge svg", { rotation: 40, duration: D, ease: "none" }, 0);
+        tl.to(r + ".sk-badge", { scale: 1.06, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 0.9);
+        tl.to(r + ".sk-badge", { opacity: 0, scale: 0.6, duration: 0.25, ease: "power2.in" }, D - 0.3);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["sticker"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+ "name": "surligneur",
+ "type": "block",
+ "title": "Texte surligné au marqueur",
+ "description": "Phrase forte, le mot-clé est surligné d'un trait d'accent qui balaie puis rebondit.",
+ "when_to_use": "Accroche, promesse, mot important d'une phrase ; en scène plein écran ou par-dessus une vidéo.",
+ "tags": [
+  "texte",
+  "accroche",
+  "surligneur",
+  "kinetic"
+ ],
+ "files": [
+  "surligneur.html"
+ ],
+ "usage": "{\"kind\": \"block\", \"block\": \"surligneur\", \"vars\": {\"before\": \"…\", \"mark\": \"mot-clé\", \"after\": \"…\"}, \"voice\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-20",
+ "uses": 0
+}
