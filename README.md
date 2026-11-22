@@ -98,3 +98,7 @@ L'accueil du skill prévient quand une nouvelle version est publiée (voir `CHAN
 « mets à jour le skill », ou lancez `python .claude/skills/videomaker-deeplo/scripts/update.py install`. Vos chartes,
 projets, clés et motions ajoutées ne sont jamais touchés. Sur GitHub, « Watch → Custom → Releases » envoie un e-mail à
 chaque version.
+
+## Licence
+Usage libre, y compris pour votre entreprise et vos clients ; revente, redistribution et service payant
+sur accord. Détails : `LICENSE.md`.
