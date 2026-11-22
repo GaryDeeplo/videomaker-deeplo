@@ -15,6 +15,18 @@ Visuels en plus :
     panel.py fetch la cherche sur Pixabay (planche de choix, panel.py pick) ;
   - "lottie": {"name": "valide", "x": 78, "y": 72, "size": 26} sur n'importe quel temps fort : emoji animé (library/lottie)
     posé dans la scène (x / y en % de la scène, taille en % de sa largeur).
+Maquettes d'interface :
+  {"type": "form", "word": "…", "url": "site.be/contact", "title": "Demande de devis",
+   "fields": [{"label": "Prénom", "value": "Camille"}], "button": "Envoyer", "done": "Envoyé"}
+  {"type": "chat", "word": "…", "title": "Messages", "messages": [{"from": "them", "text": "…"}, {"from": "me", "text": "…"}]}
+  {"type": "rank", "word": "…", "title": "Google · coiffeur lyon", "items": [{"text": "Concurrent A", "sub": "…"}, "…"], "highlight": 2, "to": 0}
+  {"type": "progress", "word": "…", "label": "/seo audit monsite.be", "to": 128, "unit": "pages", "done": "Audit terminé"}
+  {"type": "hub", "word": "…", "title": "…", "center": {"icon": "store"} | {"image": "inbox/logo.png"} | "Texte",
+   "items": [{"icon": "mail", "label": "Mails"}, …]}   (8 au plus)
+  {"type": "browser", "word": "…", "url": "…", "site": {"title": "…", "sub": "…", "button": "…", "tiles": ["…", "…", "…"]},
+   "notes": [{"on": "title", "text": "Titre trop long"}]}   (ou "image": capture + notes {"text", "x", "y", "w", "h"} en %)
+Liste : "list": {"n": 1, "of": 5, "name": "…", "icon": "…"} sur les temps forts d'un élément -> en-tête « 1 SUR 5 ».
+Thèmes : dark (écran partagé), light (écran partagé clair), cards (cartes sur la vidéo plein écran), paper (explainer).
 *mot* = mot fort en italique serif. Chiffres, avis, résultats : uniquement des données réelles du client.
 Sans fichier : un temps fort « title » par phrase forte (overlays gardés de text.json).
 
@@ -53,8 +65,20 @@ def icon(name):
     return re.sub(r'\swidth="24"\s+height="24"', ' width="100%" height="100%"', svg, count=1)
 
 
+def glue(text):
+    """Texte court à l'écran : espace insécable avant ? ! : ; » et après un petit mot (de, la, à…), pour que la
+    ligne ne se coupe jamais au mauvais endroit."""
+    from build_text import HARD, deac
+    nb = " "
+    t = re.sub(r"\s+([?!:;»])", nb + r"\1", str(text))
+    t = re.sub(r"«\s+", "«" + nb, t)
+    ws = t.split(" ")
+    return "".join(w + ((nb if deac(re.sub(r"[^\w'’]", "", w).lower()) in HARD else " ") if i + 1 < len(ws) else "")
+                   for i, w in enumerate(ws))
+
+
 def item_text(it):
-    return it.get("text") or it.get("label") or "" if isinstance(it, dict) else str(it)
+    return glue(it.get("text") or it.get("label") or "" if isinstance(it, dict) else str(it))
 
 
 def item_icon(it):
@@ -66,6 +90,8 @@ def media_box(W, ph, theme):
     u = W / 1080
     if theme == "paper":
         l, t, b, bw, rad = round(110 * u), round(ph * 0.12), round(ph * 0.16), max(2, round(3 * u)), round(10 * u)
+    elif theme in ("light", "cards"):
+        l, t, b, bw, rad = round(110 * u), round(ph * 0.12), round(ph * 0.16), 1, round(26 * u)
     else:
         l, t, b, bw, rad = round(110 * u), round(120 * u), round(ph * 0.14), 2, round(24 * u)
     return l + bw, t + bw, W - 2 * l - 2 * bw, ph - t - b - 2 * bw, max(0, rad - bw)
@@ -209,7 +235,97 @@ def css(W, ph, fam, vis):
   .ic .cir svg {{ width: 50%; height: 50%; stroke-width: 2; }}
   .ic .lab {{ margin-top: {round(22*u)}px; font-size: {round(46*u)}px; font-weight: 700; line-height: 1.1; }}
   .ihead {{ position: absolute; left: 0; right: 0; top: {round(ph*0.08)}px; text-align: center; font: 500 {round(26*u)}px 'IBM Plex Mono', monospace;
-           letter-spacing: .12em; text-transform: uppercase; opacity: .65; }}"""
+           letter-spacing: .12em; text-transform: uppercase; opacity: .65; }}""" + css_ui(W, ph, acc, on_acc)
+
+
+def css_ui(W, ph, acc, on_acc):
+    """Maquettes d'interface (formulaire, chat, classement, progression, étoile d'icônes, site annoté) et en-tête de
+    liste « 1 SUR 5 ». Couleurs en variables : le thème papier / clair ne redéfinit que les variables."""
+    u = W / 1080
+    rh = round(104 * u)
+    mono = "'IBM Plex Mono', monospace"
+    return f"""
+  #panel {{ --acc: {acc}; --on-acc: {on_acc}; --ui-ink: #f4f4f2; --ui-line: rgba(255,255,255,.13); --ui-soft: rgba(255,255,255,.07);
+           --ui-mute: rgba(244,244,242,.55); --ui-solid: #17181b; }}
+  .url {{ margin-left: {round(14*u)}px; flex: 1; padding: {round(8*u)}px {round(18*u)}px; border-radius: 999px; background: var(--ui-soft);
+         font: 500 {round(24*u)}px {mono}; color: var(--ui-mute); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }}
+  .fbody {{ padding: {round(26*u)}px {round(34*u)}px {round(32*u)}px; }}
+  .ftitle {{ font-size: {round(50*u)}px; font-weight: 800; margin-bottom: {round(16*u)}px; }}
+  .ff {{ margin-bottom: {round(16*u)}px; }}
+  .ff label {{ display: block; font: 500 {round(24*u)}px {mono}; letter-spacing: .08em; text-transform: uppercase; color: var(--ui-mute);
+              margin-bottom: {round(8*u)}px; }}
+  .fv {{ height: {round(76*u)}px; border-radius: {round(14*u)}px; border: 2px solid var(--ui-line); padding: 0 {round(22*u)}px; display: flex;
+        align-items: center; font-size: {round(42*u)}px; font-weight: 600; }}
+  .fv .q::after {{ content: ""; display: inline-block; width: {round(4*u)}px; height: .9em; background: var(--acc); margin-left: 4px; vertical-align: -.1em; opacity: 0; }}
+  .fv.on {{ border-color: var(--acc); box-shadow: 0 0 0 {round(5*u)}px {acc}33; }}
+  .fv.on .q::after {{ opacity: 1; }}
+  .fbtn {{ margin-top: {round(8*u)}px; height: {round(86*u)}px; border-radius: {round(16*u)}px; background: var(--acc); color: var(--on-acc);
+          font-size: {round(42*u)}px; font-weight: 800; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }}
+  .fbtn .t2 {{ position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #1f9d55; color: #fff; opacity: 0; }}
+  .hand {{ position: absolute; left: 0; top: 0; width: {round(84*u)}px; height: {round(84*u)}px; color: var(--ui-ink); z-index: 4; opacity: 0;
+          filter: drop-shadow(0 {round(6*u)}px {round(10*u)}px rgba(0,0,0,.35)); }}
+  .hand svg {{ fill: var(--ui-solid); stroke-width: 1.6; }}
+  .chat .msg {{ display: flex; margin: {round(14*u)}px 0; opacity: 0; }}
+  .chat .msg span {{ max-width: 80%; padding: {round(20*u)}px {round(26*u)}px; border-radius: {round(28*u)}px; font-size: {round(42*u)}px;
+                    font-weight: 600; line-height: 1.2; }}
+  .chat .them span {{ background: var(--ui-soft); border: 1px solid var(--ui-line); border-bottom-left-radius: {round(8*u)}px; }}
+  .chat .me {{ justify-content: flex-end; }}
+  .chat .me span {{ background: var(--acc); color: var(--on-acc); border-bottom-right-radius: {round(8*u)}px; }}
+  .dots i {{ display: inline-block; width: {round(14*u)}px; height: {round(14*u)}px; margin: 0 {round(4*u)}px; border-radius: 50%; background: currentColor; opacity: .5; }}
+  .rk {{ position: relative; }}
+  .rrow {{ position: absolute; left: {round(70*u)}px; right: 0; height: {rh - round(14*u)}px; display: flex; align-items: center; gap: {round(18*u)}px;
+          padding: 0 {round(24*u)}px; border-radius: {round(16*u)}px; background: var(--ui-soft); border: 1px solid var(--ui-line);
+          font-size: {round(42*u)}px; font-weight: 700; opacity: 0; white-space: nowrap; overflow: hidden; }}
+  .rrow small {{ margin-left: auto; font: 500 {round(24*u)}px {mono}; color: var(--ui-mute); }}
+  .rrow.hl {{ background: var(--acc); color: var(--on-acc); border-color: var(--acc); box-shadow: 0 {round(12*u)}px {round(30*u)}px {acc}55; z-index: 2; }}
+  .rrow.hl small {{ color: inherit; opacity: .8; }}
+  .rnum {{ position: absolute; left: 0; width: {round(54*u)}px; height: {rh - round(14*u)}px; display: flex; align-items: center; justify-content: center;
+          font: 500 {round(30*u)}px {mono}; color: var(--ui-mute); }}
+  .cmd {{ font: 500 {round(38*u)}px {mono}; padding: {round(22*u)}px {round(26*u)}px; border-radius: {round(14*u)}px; background: var(--ui-soft);
+         border: 1px solid var(--ui-line); min-height: {round(50*u)}px; }}
+  .cmd .q::after {{ content: ""; display: inline-block; width: {round(4*u)}px; height: .9em; background: var(--acc); margin-left: 4px; vertical-align: -.1em; }}
+  .pbar {{ margin-top: {round(30*u)}px; height: {round(22*u)}px; border-radius: 99px; background: var(--ui-soft); overflow: hidden; }}
+  .pbar i {{ display: block; height: 100%; background: var(--acc); transform-origin: 0 50%; transform: scaleX(0); border-radius: inherit; }}
+  .pmeta {{ margin-top: {round(16*u)}px; display: flex; justify-content: space-between; font: 500 {round(28*u)}px {mono}; color: var(--ui-mute); }}
+  .pdone {{ margin-top: {round(26*u)}px; display: inline-flex; align-items: center; gap: {round(12*u)}px; padding: {round(12*u)}px {round(24*u)}px;
+           border-radius: 99px; background: #1f9d55; color: #fff; font-size: {round(36*u)}px; font-weight: 800; opacity: 0; }}
+  .hubl {{ position: absolute; left: 0; top: 0; overflow: visible; }}
+  .hubl line {{ stroke: var(--acc); stroke-width: {max(2, round(4*u))}px; stroke-linecap: round; }}
+  .hc, .hs {{ position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; opacity: 0; }}
+  .hc {{ background: var(--acc); color: var(--on-acc); box-shadow: 0 0 {round(50*u)}px {acc}66; font-weight: 800; text-align: center; overflow: hidden; }}
+  .hc svg {{ width: 52%; height: 52%; }}
+  .hc img {{ width: 72%; height: 72%; object-fit: contain; }}
+  .hs {{ background: var(--ui-solid); border: 2px solid var(--ui-line); color: var(--acc); }}
+  .hs svg {{ width: 50%; height: 50%; }}
+  .hs .hl {{ position: absolute; top: 108%; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: {round(30*u)}px; font-weight: 700;
+            color: var(--ui-ink); }}
+  .site .hero {{ margin: {round(24*u)}px; padding: {round(38*u)}px {round(34*u)}px; border-radius: {round(18*u)}px; background: var(--acc); color: var(--on-acc); }}
+  .site .h1 {{ font-size: {round(62*u)}px; font-weight: 800; line-height: 1.05; position: relative; display: inline-block; }}
+  .site .h2 {{ margin-top: {round(14*u)}px; font-size: {round(34*u)}px; opacity: .85; position: relative; display: inline-block; }}
+  .site .btn {{ margin-top: {round(24*u)}px; display: table; padding: {round(14*u)}px {round(28*u)}px; border-radius: {round(12*u)}px; background: var(--ui-solid);
+               color: var(--ui-ink); font-size: {round(34*u)}px; font-weight: 800; position: relative; }}
+  .site .tiles {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: {round(16*u)}px; margin: 0 {round(24*u)}px {round(28*u)}px; }}
+  .site .tiles div {{ padding: {round(22*u)}px {round(16*u)}px; border-radius: {round(14*u)}px; background: var(--ui-soft); border: 1px solid var(--ui-line);
+                     font-size: {round(30*u)}px; font-weight: 700; position: relative; }}
+  .site .shotw {{ position: relative; margin: {round(24*u)}px; border-radius: {round(14*u)}px; overflow: visible; }}
+  .site .shotw img {{ display: block; width: 100%; max-height: {round(ph*0.5)}px; object-fit: cover; object-position: top; border-radius: {round(14*u)}px; }}
+  .note {{ position: absolute; right: -{round(10*u)}px; top: -{round(36*u)}px; padding: {round(6*u)}px {round(14*u)}px; border-radius: {round(8*u)}px;
+          background: #d62f33; color: #fff; font: 700 {round(26*u)}px 'Inter', sans-serif; white-space: nowrap; transform: rotate(-3deg); opacity: 0; z-index: 3; }}
+  .note.side {{ right: auto; left: calc(100% + {round(18*u)}px); top: 50%; margin-top: -.8em; }}
+  .ring {{ position: absolute; inset: -{round(8*u)}px; border: {max(2, round(4*u))}px solid #d62f33; border-radius: {round(12*u)}px; opacity: 0; pointer-events: none; }}
+  #panel.haslist .beat .bi {{ top: {round(128*u)}px; }}
+  .lhead {{ position: absolute; left: 0; right: 0; top: {round(34*u)}px; height: {round(96*u)}px; z-index: 6; }}
+  .lhead .ll {{ position: absolute; left: {round(130*u)}px; right: {round(130*u)}px; top: {round(47*u)}px; height: {max(2, round(4*u))}px; background: var(--acc);
+               transform: scaleX(0); }}
+  .lhead .le {{ position: absolute; top: {round(10*u)}px; width: {round(76*u)}px; height: {round(76*u)}px; border-radius: 50%; background: var(--ui-solid);
+               border: 2px solid var(--acc); color: var(--acc); display: flex; align-items: center; justify-content: center; opacity: 0; }}
+  .lhead .le svg {{ width: 52%; height: 52%; }}
+  .lhead .le.l {{ left: {round(54*u)}px; }}
+  .lhead .le.r {{ right: {round(54*u)}px; }}
+  .lhead .lp {{ position: absolute; left: 50%; top: 0; transform: translateX(-50%); padding: {round(8*u)}px {round(30*u)}px {round(10*u)}px;
+               border-radius: {round(16*u)}px; border: 2px solid var(--acc); background: var(--ui-solid); text-align: center; white-space: nowrap; opacity: 0; }}
+  .lhead .lp small {{ display: block; font: 500 {round(20*u)}px {mono}; letter-spacing: .14em; color: var(--ui-mute); }}
+  .lhead .lp b {{ display: block; font-size: {round(42*u)}px; font-weight: 800; line-height: 1.1; color: var(--ui-ink); }}"""
 
 
 def title_words(text):
@@ -314,7 +430,43 @@ def css_paper(W, ph, fam, vis):
   #panel.paper .ic .cir {{ width: {round(270*u)}px; height: {round(270*u)}px; }}
   #panel.paper .ic .lab {{ font-size: {round(58*u)}px; margin-top: {round(28*u)}px; }}
   #panel.paper .ihead {{ top: {round(ph*0.1)}px; font-size: {round(30*u)}px; }}
-  #panel.paper .ihead {{ color: {ink}; }}"""
+  #panel.paper .ihead {{ color: {ink}; }}
+  #panel.paper {{ --acc: {acc}; --on-acc: #fff; --ui-ink: {ink}; --ui-line: {ink}24; --ui-soft: {ink}0b; --ui-mute: {ink}99; --ui-solid: #fff; }}
+  #panel.paper .rrow.hl {{ box-shadow: none; }}"""
+
+
+def css_light(W, ph, fam, vis, cards=False):
+    """Thème clair de l'écran partagé (fond blanc cassé, cartes à ombre douce) ; cards=True : rien derrière, les
+    temps forts deviennent des cartes blanches posées sur la vidéo plein écran."""
+    bg, ink, acc, paper = paper_colors(vis)
+    u = W / 1080
+    soft = f"0 {round(18*u)}px {round(50*u)}px rgba(0,0,0,.14)"
+    line = f"1px solid {ink}1c"
+    s = css_paper(W, ph, fam, vis) + f"""
+  #panel.paper.light {{ inset: auto; left: 0; top: 0; width: {W}px; height: {ph}px; z-index: 20; background: {_mix(bg, '#ffffff', 0.7)}; }}
+  #panel.light .card, #panel.light .stp, #panel.light .ph, #panel.light .ic .cir, #panel.light .stamp {{ border: {line}; box-shadow: {soft};
+             border-radius: {round(26*u)}px; }}
+  #panel.light .stp.on {{ border-color: {acc}; }}
+  #panel.light .wbar {{ border-bottom: {line}; background: {ink}06; }}
+  #panel.light .field {{ border: 2px solid {acc}; }}"""
+    if cards:
+        s += f"""
+  #panel.paper.light.cards {{ background: transparent; overflow: visible; }}
+  #panel.cards .beat .bi {{ transform: scale(.88); transform-origin: 50% 0; }}
+  #panel.cards .hs .hl {{ background: #fff; padding: {round(4*u)}px {round(14*u)}px; border-radius: 99px; box-shadow: {soft}; }}
+  #panel.cards .ttl {{ left: {round(60*u)}px; right: auto; max-width: {round(W - 120*u)}px; top: {round(ph*0.14)}px; padding: {round(26*u)}px {round(34*u)}px;
+             background: #fff; border-radius: {round(28*u)}px; box-shadow: {soft}; font-size: {round(74*u)}px; }}
+  #panel.cards .big {{ left: 22%; right: 22%; top: {round(ph*0.12)}px; padding: {round(20*u)}px 0; background: #fff; border-radius: {round(30*u)}px;
+             box-shadow: {soft}; font-size: {round(190*u)}px; }}
+  #panel.cards .bar {{ display: none; }}
+  #panel.cards .lbl {{ left: 18%; right: 18%; top: {round(ph*0.12 + 250*u)}px; padding: {round(12*u)}px {round(20*u)}px; background: #fff;
+             border-radius: {round(20*u)}px; box-shadow: {soft}; font-size: {round(58*u)}px; }}
+  #panel.cards .ihead, #panel.cards .cap2 {{ left: 50%; right: auto; transform: translateX(-50%); white-space: nowrap; padding: {round(10*u)}px {round(22*u)}px;
+             background: #fff; border-radius: 99px; box-shadow: {soft}; opacity: 1; }}
+  #panel.cards .mark {{ display: none; }}
+  #panel.cards .bigico {{ display: none; }}
+  #panel.cards .hs, #panel.cards .hc {{ box-shadow: {soft}; }}"""
+    return s
 
 
 def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
@@ -335,6 +487,11 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
     if placed:
         placed[0] = (0.0, placed[0][1])  # le panneau n'est jamais vide au début
     html_, js, rep = [], ([background_js(dur, T0)] if theme == "dark" else []), []
+    has_list = any(b.get("list") for _, b in placed)
+    if has_list:
+        hh, hj = list_heads(placed, dur, T0, W)
+        html_ += hh
+        js += hj
     for k, (t0, b) in enumerate(placed):
         t1 = placed[k + 1][0] if k + 1 < len(placed) else dur
         if t1 - t0 < 0.5:
@@ -391,11 +548,12 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
             bj.append(f'  tl.fromTo("#{sid} .bar", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.7, ease: "power3.inOut", immediateRender: false }}, {s0 + 0.4});')
             bj.append(f'  tl.fromTo("#{sid} .lbl", {{ opacity: 0, y: 20 }}, {{ opacity: 1, y: 0, duration: 0.45, ease: "power2.out", immediateRender: false }}, {s0 + 0.7});')
         elif typ == "search":
-            q, res = b.get("query", ""), b.get("results", [])[:3]
-            rows = "".join(f'<div class="res{" top" if j == 0 else ""} s{j}">{esc(r)}<small></small></div>' for j, r in enumerate(res))
+            q, res = b.get("query", ""), b.get("results", [])[:4]
+            hi = int(b.get("highlight", 0))  # la ligne du client
+            rows = "".join(f'<div class="res{" top" if j == hi else ""} s{j}">{esc(item_text(r))}<small></small></div>' for j, r in enumerate(res))
             inner = (f'<div class="card win"><div class="wbar"><b></b><b></b><b></b></div><div class="field"><span class="q"></span></div>{rows}</div>')
             bj.append(f'  tl.fromTo("#{sid} .card", {{ opacity: 0, y: 40, scale: 0.96 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
-            tq = round(min(1.4, 0.06 * len(q) + 0.2), 2)
+            tq = round(min(0.9, 0.04 * len(q) + 0.15), 2)
             bj.append(f'  (function () {{ const el = document.querySelector("#{sid} .q"), q = {json.dumps(q, ensure_ascii=False)}, o = {{ n: 0 }};'
                       f' tl.fromTo(o, {{ n: 0 }}, {{ n: q.length, duration: {tq}, ease: "none", immediateRender: false,'
                       f' onUpdate: function () {{ el.textContent = q.slice(0, Math.round(o.n)); }} }}, {s0 + 0.4}); }})();')
@@ -454,6 +612,8 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
                 tj = round(s0 + 0.15 + j * span, 3)
                 bj.append(f'  tl.fromTo("#{sid} .c{j}", {{ opacity: 0, y: -{round(120*u)}, rotation: {(-12, 10, -6, 8, -10, 6)[j]} }}, {{ opacity: 1, y: 0, rotation: 0, '
                           f'duration: 0.7, ease: "bounce.out", immediateRender: false }}, {tj});')
+        elif typ in UI_TYPES:
+            inner, bj = ui_beat(job, typ, b, sid, s0, d, W, ph - (round(128 * u) if has_list else 0))
         else:
             rep.append({"type": typ, "pose": False, "raison": "type inconnu"})
             continue
@@ -490,9 +650,237 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
         rep.append({"type": typ, "a": s0, "duree": d, "mot": b.get("word")})
     panel = (f'    <div id="panel"><div class="pbg"></div><div class="floor"><div class="fl"></div></div><div class="sweep"></div>'
              f'\n{chr(10).join(html_)}\n      <div class="flash"></div><div class="grain"></div><div class="vig"></div></div>')
+    hl = " haslist" if has_list else ""
+    if theme == "dark" and has_list:
+        panel = panel.replace('<div id="panel">', f'<div id="panel" class="{hl.strip()}">', 1)
     if theme == "paper":  # pas de décor sombre : le papier et le motif sont dessinés par build_explainer
-        panel = f'    <div id="panel" class="paper">\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
+        panel = f'    <div id="panel" class="paper{hl}">\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
+    elif theme in ("light", "cards"):
+        cls = "paper light" + (" cards" if theme == "cards" else "") + hl
+        panel = f'    <div id="panel" class="{cls}">\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
     return panel, js, rep, layers
+
+
+UI_TYPES = ("form", "chat", "rank", "progress", "hub", "browser")
+
+
+def _typing(sel, text, dur, at):
+    """Texte qui se tape (état calculé depuis le temps : juste à n'importe quelle image)."""
+    return (f'  (function () {{ const el = document.querySelector("{sel}"), q = {json.dumps(text, ensure_ascii=False)}, o = {{ n: 0 }};'
+            f' tl.fromTo(o, {{ n: 0 }}, {{ n: q.length, duration: {dur}, ease: "none", immediateRender: false,'
+            f' onUpdate: function () {{ el.textContent = q.slice(0, Math.round(o.n)); }} }}, {at}); }})();')
+
+
+def _cls_at(sel, cls, on, at):
+    """Ajoute / retire une classe à un instant, de façon réversible (un petit tween porte l'état)."""
+    return (f'  (function () {{ const el = document.querySelector("{sel}"), o = {{ v: 0 }};'
+            f' tl.fromTo(o, {{ v: 0 }}, {{ v: 1, duration: 0.01, immediateRender: false, onUpdate: function () {{'
+            f' el.classList.toggle("{cls}", {"o.v > 0.5" if on else "o.v < 0.5"}); }} }}, {at}); }})();')
+
+
+def ui_beat(job, typ, b, sid, s0, d, W, ph):
+    """Maquettes d'interface animées -> (html, lignes JS). ph : hauteur utile (sous l'en-tête de liste s'il y en a un)."""
+    u = W / 1080
+    bj = []
+    card_in = (f'  tl.fromTo("#{sid} .card", {{ opacity: 0, y: 46, scale: 0.97 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.5, '
+               f'ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
+    wbar = (f'<div class="wbar"><b></b><b></b><b></b>' + (f'<span class="url">{esc(b["url"])}</span>' if b.get("url") else "") + '</div>')
+    if typ == "form":
+        fields = b.get("fields", [])[:3]
+        rows = "".join(f'<div class="ff"><label>{esc(f.get("label", ""))}</label><div class="fv v{j}"><span class="q"></span></div></div>'
+                       for j, f in enumerate(fields))
+        inner = (f'<div class="card win">{wbar}<div class="fbody">'
+                 + (f'<div class="ftitle">{esc(b["title"])}</div>' if b.get("title") else "")
+                 + f'{rows}<div class="fbtn"><span>{esc(b.get("button", "Envoyer"))}</span><span class="t2">✓ {esc(b.get("done", "Envoyé"))}</span></div>'
+                 f'</div><div class="hand">{icon("pointer")}</div></div>')
+        bj.append(card_in)
+        # position de la main : calculée sur les hauteurs fixes du CSS (barre, titre, champs)
+        top0 = round(64 * u + 26 * u + (66 * u if b.get("title") else 0))
+        fh = round((24 + 8 + 76 + 16) * u)
+        span = max(0.55, (d * 0.72 - 0.9) / max(1, len(fields) + 1))
+        hx = round(W * 0.56)
+        t = s0 + 0.45
+        bj.append(f'  tl.fromTo("#{sid} .hand", {{ opacity: 0, x: {hx + 60}, y: {top0 + fh} }}, {{ opacity: 1, x: {hx}, y: {top0 + round(50*u)}, '
+                  f'duration: 0.35, ease: "power2.out", immediateRender: false }}, {round(t, 3)});')
+        for j, f in enumerate(fields):
+            tj = round(t + j * span, 3)
+            fy = top0 + j * fh + round(52 * u)
+            if j:
+                bj.append(f'  tl.to("#{sid} .hand", {{ x: {hx}, y: {fy}, duration: 0.28, ease: "power2.inOut" }}, {tj});')
+            bj.append(f'  tl.fromTo("#{sid} .hand", {{ scale: 1 }}, {{ scale: 0.82, duration: 0.09, yoyo: true, repeat: 1, immediateRender: false }}, {round(tj + 0.28, 3)});')
+            bj.append(_cls_at(f"#{sid} .v{j}", "on", True, round(tj + 0.3, 3)))
+            val = str(f.get("value", ""))
+            bj.append(_typing(f"#{sid} .v{j} .q", val, round(min(span - 0.35, 0.05 * len(val) + 0.15), 2), round(tj + 0.32, 3)))
+            bj.append(_cls_at(f"#{sid} .v{j}", "on", False, round(tj + span - 0.02, 3)))
+        tb = round(t + len(fields) * span, 3)
+        by = top0 + len(fields) * fh + round(50 * u)
+        bj.append(f'  tl.to("#{sid} .hand", {{ x: {round(W * 0.42)}, y: {by}, duration: 0.3, ease: "power2.inOut" }}, {tb});')
+        bj.append(f'  tl.fromTo("#{sid} .fbtn", {{ scale: 1 }}, {{ scale: 0.95, duration: 0.1, yoyo: true, repeat: 1, immediateRender: false }}, {round(tb + 0.3, 3)});')
+        bj.append(f'  tl.fromTo("#{sid} .fbtn .t2", {{ opacity: 0, y: 30 }}, {{ opacity: 1, y: 0, duration: 0.3, ease: "back.out(2)", immediateRender: false }}, {round(tb + 0.42, 3)});')
+        bj.append(f'  tl.to("#{sid} .hand", {{ opacity: 0, duration: 0.3 }}, {round(tb + 0.8, 3)});')
+    elif typ == "chat":
+        msgs = b.get("messages", [])[:4]
+        rows = "".join(f'<div class="msg {"me" if m.get("from") in ("me", "client", "moi") else "them"} m{j}"><span>'
+                       f'{esc(glue(m.get("text", "")))}</span></div>' for j, m in enumerate(msgs))
+        inner = f'<div class="card chat">' + (f'<div class="chead">{esc(b["title"])}</div>' if b.get("title") else "") + f'{rows}</div>'
+        bj.append(card_in)
+        span = max(0.6, (d * 0.75 - 0.5) / max(1, len(msgs)))
+        for j, m in enumerate(msgs):
+            tj = round(s0 + 0.4 + j * span, 3)
+            them = m.get("from") not in ("me", "client", "moi")
+            bj.append(f'  tl.fromTo("#{sid} .m{j}", {{ opacity: 0, y: 24, scale: 0.85 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.32, '
+                      f'ease: "back.out(2)", transformOrigin: "{"0% 100%" if them else "100% 100%"}", immediateRender: false }}, {tj});')
+            if them:  # « … » le temps d'écrire, puis le texte
+                txt = json.dumps(glue(m.get("text", "")), ensure_ascii=False)
+                bj.append(f'  (function () {{ const el = document.querySelector("#{sid} .m{j} span"), o = {{ v: 0 }};'
+                          f' tl.fromTo(o, {{ v: 0 }}, {{ v: 1, duration: 0.55, ease: "none", immediateRender: true, onUpdate: function () {{'
+                          f' if (o.v < 1) {{ el.innerHTML = \'<span class="dots"><i></i><i></i><i></i></span>\'; }} else {{ el.textContent = {txt}; }} }} }}, {tj}); }})();')
+    elif typ == "rank":
+        items = b.get("items", [])[:5]
+        n = len(items)
+        hi = int(b.get("highlight", n - 1))
+        to = int(b.get("to", hi))
+        rh = round(104 * u)
+        nums = "".join(f'<div class="rnum" style="top:{j * rh}px">{j + 1}</div>' for j in range(n))
+        rows = "".join(f'<div class="rrow{" hl" if j == hi else ""} q{j}" style="top:{j * rh}px"><span>{esc(item_text(it))}</span>'
+                       + (f'<small>{esc(it.get("sub", ""))}</small>' if isinstance(it, dict) and it.get("sub") else "") + '</div>'
+                       for j, it in enumerate(items))
+        inner = (f'<div class="card">' + (f'<div class="chead">{esc(b["title"])}</div>' if b.get("title") else "")
+                 + f'<div class="rk" style="height:{n * rh}px">{nums}{rows}</div></div>')
+        bj.append(card_in)
+        for j in range(n):
+            bj.append(f'  tl.fromTo("#{sid} .q{j}", {{ opacity: 0, x: 30 }}, {{ opacity: 1, x: 0, duration: 0.3, ease: "power2.out", immediateRender: false }}, '
+                      f'{round(s0 + 0.35 + j * 0.14, 3)});')
+        if to != hi and 0 <= to < n and 0 <= hi < n:
+            tm = round(s0 + max(1.2, d * 0.45), 3)
+            bj.append(f'  tl.to("#{sid} .q{hi}", {{ y: {(to - hi) * rh}, scale: 1.04, duration: 0.7, ease: "power3.inOut" }}, {tm});')
+            bj.append(f'  tl.to("#{sid} .q{hi}", {{ scale: 1, duration: 0.25 }}, {round(tm + 0.7, 3)});')
+            step = 1 if to < hi else -1
+            for j in range(to, hi, 1) if to < hi else range(hi + 1, to + 1):
+                bj.append(f'  tl.to("#{sid} .q{j}", {{ y: {step * rh}, duration: 0.7, ease: "power3.inOut" }}, {tm});')
+    elif typ == "progress":
+        to = b.get("to", 100)
+        inner = (f'<div class="card">' + (f'<div class="chead">{esc(b["title"])}</div>' if b.get("title") else "")
+                 + f'<div class="cmd"><span class="q"></span></div><div class="pbar"><i></i></div>'
+                 f'<div class="pmeta"><span><span class="pn">0</span> / {esc(to)} {esc(b.get("unit", ""))}</span><span class="pp">0 %</span></div>'
+                 + (f'<div class="pdone">✓ {esc(b["done"])}</div>' if b.get("done") else "") + '</div>')
+        bj.append(card_in)
+        lab = str(b.get("label", ""))
+        tq = round(min(0.8, 0.035 * len(lab) + 0.15), 2)
+        bj.append(_typing(f"#{sid} .cmd .q", lab, tq, round(s0 + 0.35, 3)))
+        tf = round(max(0.6, min(2.2, d - tq - 1.0)), 2)
+        t2 = round(s0 + 0.5 + tq, 3)
+        bj.append(f'  tl.fromTo("#{sid} .pbar i", {{ scaleX: 0 }}, {{ scaleX: 1, duration: {tf}, ease: "power1.inOut", immediateRender: false }}, {t2});')
+        bj.append(f'  (function () {{ const a = document.querySelector("#{sid} .pn"), p = document.querySelector("#{sid} .pp"), o = {{ v: 0 }};'
+                  f' tl.fromTo(o, {{ v: 0 }}, {{ v: 1, duration: {tf}, ease: "power1.inOut", immediateRender: false, onUpdate: function () {{'
+                  f' a.textContent = Math.round(o.v * {float(to)}).toLocaleString("fr-FR"); p.textContent = Math.round(o.v * 100) + " %"; }} }}, {t2}); }})();')
+        if b.get("done"):
+            bj.append(f'  tl.fromTo("#{sid} .pdone", {{ opacity: 0, scale: 0.6 }}, {{ opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.4)", '
+                      f'immediateRender: false }}, {round(t2 + tf + 0.1, 3)});')
+    elif typ == "hub":
+        items = b.get("items", [])[:8]
+        cx, cy = W / 2, ph * (0.53 if b.get("title") else 0.48)
+        R = min(W * 0.32, ph * 0.27)
+        cs, ss = round(220 * u), round(124 * u)
+        import math
+        c = b.get("center", {})
+        if isinstance(c, str):
+            c = {"text": c}
+        cin = icon(c["icon"]) if c.get("icon") else (f'<img src="{esc(c["image"])}" alt="">' if c.get("image")
+                                                    else f'<span style="font-size:{round(38*u)}px;padding:0 .3em">{esc(c.get("text", ""))}</span>')
+        pts = [(cx + R * math.cos(-math.pi / 2 + 2 * math.pi * j / max(1, len(items))),
+                cy + R * math.sin(-math.pi / 2 + 2 * math.pi * j / max(1, len(items)))) for j in range(len(items))]
+        lines = "".join(f'<line class="h{j}" x1="{cx:.0f}" y1="{cy:.0f}" x2="{x:.0f}" y2="{y:.0f}" />' for j, (x, y) in enumerate(pts))
+        sats = "".join(f'<div class="hs s{j}" style="left:{x - ss / 2:.0f}px;top:{y - ss / 2:.0f}px;width:{ss}px;height:{ss}px">{item_icon(it)}'
+                       + (f'<span class="hl">{esc(item_text(it))}</span>' if item_text(it) else "") + '</div>'
+                       for j, ((x, y), it) in enumerate(zip(pts, items)))
+        inner = ((f'<div class="ihead">{esc(b["title"])}</div>' if b.get("title") else "")
+                 + f'<svg class="hubl" width="{W}" height="{round(ph)}" viewBox="0 0 {W} {round(ph)}">{lines}</svg>'
+                 + f'<div class="hc" style="left:{cx - cs / 2:.0f}px;top:{cy - cs / 2:.0f}px;width:{cs}px;height:{cs}px">{cin}</div>{sats}')
+        bj.append(f'  tl.fromTo("#{sid} .hc", {{ opacity: 0, scale: 0.3 }}, {{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(2.2)", immediateRender: false }}, {s0 + 0.08});')
+        span = max(0.16, min(0.4, (d * 0.6 - 0.6) / max(1, len(items))))
+        for j, (x, y) in enumerate(pts):
+            L = math.hypot(x - cx, y - cy)
+            tj = round(s0 + 0.5 + j * span, 3)
+            bj.append(f'  tl.fromTo("#{sid} .h{j}", {{ attr: {{ "stroke-dasharray": {L:.0f}, "stroke-dashoffset": {L:.0f} }} }}, '
+                      f'{{ attr: {{ "stroke-dashoffset": {round(cs / 2)} }}, duration: 0.4, ease: "power2.out", immediateRender: true }}, {tj});')
+            bj.append(f'  tl.fromTo("#{sid} .s{j}", {{ opacity: 0, scale: 0.4 }}, {{ opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.6)", '
+                      f'immediateRender: false }}, {round(tj + 0.28, 3)});')
+    else:  # browser : site maquette (ou capture) annoté
+        notes = b.get("notes", [])[:4]
+        on = {n_.get("on"): n_ for n_ in notes if n_.get("on")}
+
+        def mark(key, j):
+            n_ = on.get(key)
+            if not n_:
+                return ""
+            side = " side" if key == "button" else ""
+            return f'<i class="ring k{notes.index(n_)}"></i><span class="note{side} k{notes.index(n_)}">{esc(glue(n_.get("text", "")))}</span>'
+        if b.get("image"):
+            src = b["image"]
+            p = Path(src)
+            for base in (job / "inbox", ROOT):
+                if not (job / p).exists() and (base / p).exists():
+                    (job / "assets" / "img").mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(base / p, job / "assets" / "img" / p.name)
+                    src = f"assets/img/{p.name}"
+            free = "".join(f'<i class="ring k{j}" style="left:{n_.get("x", 50)}%;top:{n_.get("y", 50)}%;width:{n_.get("w", 30)}%;'
+                           f'height:{n_.get("h", 10)}%;inset:auto"></i><span class="note k{j}" style="left:{n_.get("x", 50)}%;'
+                           f'top:calc({n_.get("y", 50)}% - {round(40*u)}px);right:auto">{esc(n_.get("text", ""))}</span>'
+                           for j, n_ in enumerate(notes) if not n_.get("on"))
+            body = f'<div class="shotw"><img src="{esc(src)}" alt="">{free}</div>'
+        else:
+            s_ = b.get("site", {})
+            tiles = s_.get("tiles", [])[:3]
+            body = (f'<div class="hero"><div class="h1">{esc(s_.get("title", ""))}{mark("title", 0)}</div><br>'
+                    + (f'<div class="h2">{esc(s_.get("sub", ""))}{mark("sub", 1)}</div>' if s_.get("sub") else "")
+                    + (f'<div class="btn">{esc(s_.get("button", ""))}{mark("button", 2)}</div>' if s_.get("button") else "") + '</div>'
+                    + (f'<div class="tiles">' + "".join(f'<div>{esc(t_)}{mark(f"tile{j + 1}", 3 + j)}</div>' for j, t_ in enumerate(tiles)) + '</div>'
+                       if tiles else ""))
+        inner = f'<div class="card win site">{wbar}{body}</div>'
+        bj.append(card_in)
+        span = max(0.45, (d * 0.7 - 0.8) / max(1, len(notes)))
+        for j in range(len(notes)):
+            tj = round(s0 + 0.8 + j * span, 3)
+            bj.append(f'  tl.fromTo("#{sid} .ring.k{j}", {{ opacity: 0, scale: 1.25 }}, {{ opacity: 1, scale: 1, duration: 0.3, ease: "power2.out", '
+                      f'immediateRender: false }}, {tj});')
+            bj.append(f'  tl.fromTo("#{sid} .note.k{j}", {{ opacity: 0, y: 14, scale: 0.6 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.32, '
+                      f'ease: "back.out(2.6)", immediateRender: false }}, {round(tj + 0.12, 3)});')
+    return inner, bj
+
+
+def list_heads(placed, dur, T0, W):
+    """En-tête de liste « 1 SUR 5 · Nom » : un par élément de la liste, posé au-dessus des temps forts qui le portent."""
+    u = W / 1080
+    segs = []
+    for k, (t0, b) in enumerate(placed):
+        L = b.get("list")
+        if not L:
+            continue
+        key = (L.get("n"), L.get("name"))
+        t1 = placed[k + 1][0] if k + 1 < len(placed) else dur
+        if segs and segs[-1]["key"] == key and abs(segs[-1]["t1"] - t0) < 0.05:
+            segs[-1]["t1"] = t1
+        else:
+            segs.append({"key": key, "t0": t0, "t1": t1, "L": L})
+    html_, js = [], []
+    for i, s in enumerate(segs):
+        L, s0, d = s["L"], round(s["t0"], 3), round(s["t1"] - s["t0"], 3)
+        hid = f"lh{i}"
+        of = L.get("of")
+        top = f'{L.get("n")} SUR {of}' if of else str(L.get("n", ""))
+        html_.append(f'      <div class="clip lhead" id="{hid}" data-start="{round(s0 + T0, 3)}" data-duration="{d}" data-track-index="{66 + i % 2}">'
+                     f'<i class="ll"></i><span class="le l">{icon(L.get("left", "sparkles"))}</span>'
+                     + (f'<span class="le r">{icon(L["icon"])}</span>' if L.get("icon") else "")
+                     + f'<div class="lp"><small>{esc(top)}</small><b>{esc(L.get("name", ""))}</b></div></div>')
+        js.append(f'  tl.fromTo("#{hid} .ll", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.45, ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
+        js.append(f'  tl.fromTo("#{hid} .le", {{ opacity: 0, scale: 0.4 }}, {{ opacity: 1, scale: 1, duration: 0.4, stagger: 0.1, ease: "back.out(2.4)", '
+                  f'immediateRender: false }}, {s0 + 0.15});')
+        js.append(f'  tl.fromTo("#{hid} .lp", {{ opacity: 0, y: -16, scale: 0.85 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.42, ease: "back.out(2.2)", '
+                  f'immediateRender: false }}, {s0 + 0.1});')
+        if i + 1 < len(segs):
+            js.append(f'  tl.to("#{hid} > *", {{ opacity: 0, duration: 0.2 }}, {round(s["t1"] - 0.2, 3)});')
+    return html_, js
 
 
 def default_beats(text_json):

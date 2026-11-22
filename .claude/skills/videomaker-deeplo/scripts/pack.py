@@ -1,7 +1,7 @@
 """CHOIX DU PACK et PREMIER JET des temps forts, à partir de la demande, du brief et de ce qui est dit.
 
   python pack.py choose <job> [--slug s] [--demande "texte de la demande"]
-      -> pack conseillé (ecran-partage | explainer | punch | classique) + pourquoi + commandes à lancer
+      -> pack conseillé (ecran-partage | explainer | punch | infographie | classique) + pourquoi + commandes à lancer
   python pack.py draft <job> <slug> [--pack auto|ecran-partage|explainer|punch]
       -> work/<slug>_panels.json (écran partagé, explainer) ou work/<slug>_punch.json (punch), posés sur les mots dits.
          Si le fichier existe déjà : work/<slug>_panels_draft.json / <slug>_punch_draft.json (rien n'est écrasé).
@@ -289,6 +289,8 @@ def choose(job_name, slug=None, demande=""):
         else:
             pack, why = "ecran-partage", (f"rush face caméra ({rushes[0].name}) : animation en haut, visage en bas, "
                                           "sous-titres sur la jointure")
+    elif len(re.findall(r"\b\d[\d\s.,]*\s*(?:%|€|euros|vues|clients|ventes|jours|ans)|\bpour ?cent\b", txt)) >= 3:
+        pack, why = "infographie", "pas de rush et un propos porté par des chiffres : graphiques façon journal de données"
     elif explain >= 2 or "inform" in obj or "conseil" in obj:
         pack, why = "explainer", "pas de rush et contenu qui explique (étapes, conseils) : fiche papier animée par chapitres"
     elif announce >= 2 or any(x in obj for x in ("vend", "remplir", "promo", "annonc")) or (dur and dur <= 20):
@@ -301,11 +303,12 @@ def choose(job_name, slug=None, demande=""):
         "ecran-partage": ["layout split (visual.layout ou --layout split)", "pack.py draft <job> <slug>", "panel.py fetch / pick",
                           "build_composition.py <job> <slug> --layout split"],
         "explainer": ["pack.py draft <job> <slug>", "panel.py fetch / pick", "build_explainer.py <job> <slug>"],
+        "infographie": ["work/<slug>_data.json (un graphique par chiffre dit, voir build_data.py)", "build_data.py <job> <slug>"],
         "punch": ["pack.py draft <job> <slug>", "build_punch.py fetch / pick", "build_punch.py <job> <slug>"],
         "classique": ["parcours rush → reel ou sans rush (build_scenes.py)"],
     }[pack]
     out(ok=True, pack=pack, pourquoi=why, rushs=[p.name for p in rushes], medias=len(files), ensuite=cmds,
-        autres=[p for p in ("ecran-partage", "explainer", "punch", "classique") if p != pack])
+        autres=[p for p in ("ecran-partage", "explainer", "punch", "infographie", "classique") if p != pack])
 
 
 def _assign_media(beats, files, rush_names):
@@ -487,8 +490,8 @@ def draft(job_name, slug, pack="auto"):
         with contextlib.redirect_stdout(buf):
             choose(job_name, slug)
         pack = json.loads(buf.getvalue())["pack"]
-        if pack == "classique":
-            fail("pack conseillé : classique (pas de temps forts à écrire) ; force --pack si tu veux quand même un pack")
+        if pack in ("classique", "infographie"):
+            fail(f"pack conseillé : {pack} (pas de brouillon automatique : écris les temps forts toi-même) ; force --pack si tu veux quand même un pack")
     sents = [p for s_ in sentences(words) for p in split_long(s_)]
     files = media_files(job)
     story = (job / "work" / f"{slug}_storyboard.json").exists()

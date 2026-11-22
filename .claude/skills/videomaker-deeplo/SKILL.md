@@ -82,7 +82,7 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
    ligne (voix locale de test) avant de lancer.
 7. **Le pack (rendu), choisi tout seul** : dès que les fichiers et le brief sont là,
    `python scripts/pack.py choose <job> [--slug s] --demande "<la demande>"` conseille un pack d'après les fichiers
-   (rush avec du son = écran partagé), le brief (informer / conseiller = explainer ; vendre, annoncer, ≤ 20 s = punch ;
+   (rush avec du son = écran partagé), des chiffres dans le propos (= infographie), le brief (informer / conseiller = explainer ; vendre, annoncer, ≤ 20 s = punch ;
    ton sobre ou haut de gamme = classique) et ce qui est dit. Annonce-le en une ligne dans le récap du point 5
    (« écran partagé : animation en haut, visage en bas ») ; tu ne poses la question que si deux packs se valent
    vraiment. L'utilisateur peut toujours dire « plutôt en punch ».
@@ -108,6 +108,7 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
 | Plusieurs vidéos × langues × formats | « lot » | `templates/lot-exemple.json` + `batch.py plan` |
 | Planning de publication d'un lot | « calendrier » | `planning.py` |
 | Annonce / promo / récap rythmée | « actu / punch » | `build_punch.py` |
+| Bilan, étude de cas, chiffres clés | « infographie » | `build_data.py` |
 
 Toujours : charte du client dans `brands/` (sinon la créer depuis `brands/_exemple/`), recherche dans la bibliothèque
 avant de créer, `check` + `snapshot` avant de montrer, pas de rendu final sans accord.
@@ -168,6 +169,23 @@ fort dans une boîte d'accent) sur la jointure. Pour un rush face caméra vertic
 Inspiré des Reels « split screen » d'experts tech : on reprend les principes (panneau, jointure, typo mêlée, interfaces
 qui changent d'état), jamais leurs visuels ni leurs contenus.
 
+### Maquettes d'interface, liste « 1 sur 5 », thème clair, cartes sur le visage
+Ce qui donne l'air « vrai » : l'écran montre l'outil ou le parcours du client en train de se faire. Types de temps forts
+en plus (détails et exemple JSON dans `scripts/panel.py`) :
+- `form` : formulaire dans un navigateur qui se remplit (main qui clique, texte qui se tape, bouton « Réservé ✓ ») ;
+- `chat` : bulles qui arrivent (« … » le temps d'écrire) ; `search` : recherche qui se tape, `highlight` = ligne du client ;
+- `rank` : classement, la ligne du client (`highlight`) monte à la place `to` ; `progress` : commande + barre + compteur ;
+- `hub` : logo ou picto au centre, outils / services autour, reliés par des traits ; `browser` : maquette de site (ou
+  capture `image`) annotée de défauts en rouge (`notes`, `on`: title | sub | button | tile1-3, ou x / y sur une capture).
+- **Format liste** : `"list": {"n": 1, "of": 5, "name": "Perplexity", "icon": "search"}` sur les temps forts d'un même élément ->
+  en-tête fixe « 1 SUR 5 · Nom » relié par un trait (top conseils, erreurs, outils, étapes).
+- **Thème clair** de l'écran partagé : `visual.panelTheme: "light"` ou `--panel-theme light` (fond blanc cassé, cartes à
+  ombre douce). **Cartes sur le visage** : `visual.layout: "cards"` ou `--layout cards` (vidéo plein écran, temps forts en
+  cartes blanches en haut) — seulement si le visage est au centre ou plus bas dans l'image (regarde le snapshot : si les
+  cartes couvrent les yeux, repasse en écran partagé).
+Contenu réel uniquement : un classement, un formulaire ou un chat illustre ce qui est dit (jamais de faux avis, de faux
+concurrent nommé ni de vraie conversation client sans accord) ; noms de concurrents remplacés par « Concurrent A ».
+
 ### Visuels dans les temps forts (écran partagé ET explainer) : à mélanger, pas que du texte
 Un temps fort sur deux devrait montrer quelque chose : picto, vraie photo ou vidéo, emoji animé.
 - **Pictos** (Lucide, ISC, ~1 500 sur lucide.dev/icons, téléchargés à la demande dans `vendor/lucide/`) : `"icon"` sur un
@@ -205,6 +223,18 @@ tape, date, chiffre, picto, emoji animé), sous-titres « impact » en bas (`--n
 3. `python scripts/build_punch.py <job> <slug>` puis check + snapshot. Couleur d'accent : `visual.punchAccent` (une couleur
    de la charte qui se lit sur les images). Inspiré des formats « actu » courts : principes repris, jamais leurs visuels.
    Une notification est une illustration (contenu vrai), jamais une capture présentée comme réelle.
+
+### Pack « infographie chiffrée » : raconter des résultats avec des graphiques
+Sans visage, façon page de journal de données : fond papier, rubrique en haut (« VUES PAR REEL · JOUR 03 ») sous un
+double filet, un graphique par idée, la phrase dite en bas qui passe du gris à l'encre (chiffres et mot fort en boîte),
+frise des jours avec drapeau. Pour un bilan, une étude de cas, une méthode « en 14 jours », des chiffres clés.
+1. Storyboard + `voice.py` + `build_text.py` + `add_music.py` (comme une vidéo sans rush).
+2. `work/<slug>_data.json` (détails dans `scripts/build_data.py`) : un temps fort par chiffre dit, posé sur un mot ;
+   types `bars` (barres qui poussent + compteurs), `grid` (« ×10 » + tuiles), `people` (foule de pictos + étiquette),
+   `flip` (compteur à volets), `line` (courbe, en escalier si `steps`, notes « version 2 »), `pct` (pourcentages, le
+   plus fort entouré), `days` (cases cochées + tampon), `title`, `end` (nom + lien). `head` et `day` restent acquis.
+3. `python scripts/build_data.py <job> <slug>` puis check + snapshot. Accent : `visual.dataAccent`.
+   **Uniquement des chiffres réels du client.** Un scénario d'exemple doit être dit comme tel à l'oral et à l'écran.
 
 ### Plusieurs rushs → une vidéo
 Le client a filmé 5 ou 6 clips, dans le désordre, avec des reprises : mets-les tous dans `inbox/` (`new_job.py --rush a b c`).
