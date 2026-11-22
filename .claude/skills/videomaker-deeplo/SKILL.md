@@ -88,6 +88,7 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
 | Le client va filmer lui-même | « guide de tournage » | `guide.py` (à lui envoyer AVANT) |
 | Rush face caméra, interview courte | « rush → reel » | `transcribe.py` |
 | Plusieurs petits clips (téléphone) | « plusieurs rushs » puis « rush → reel » | `multi.py list` |
+| Expliquer un service / un déroulé, sans rush | « explainer papier » | `build_explainer.py` |
 | Photos + idée / texte, pas de rush | « sans rush » | un modèle de `templates/` (promo, boutique, recrutement, témoignage, produit) |
 | Longue vidéo → plusieurs reels | « shorts » | `shorts.py sentences` |
 | Même vidéo dans une autre langue | « versions traduites » | `translate.py export` |
@@ -152,6 +153,18 @@ fort dans une boîte d'accent) sur la jointure. Pour un rush face caméra vertic
    Formats 1:1 et 16:9 : retour à la mise en page classique.
 Inspiré des Reels « split screen » d'experts tech : on reprend les principes (panneau, jointure, typo mêlée, interfaces
 qui changent d'état), jamais leurs visuels ni leurs contenus.
+
+### Pack « explainer papier » : vidéo sans rush façon fiche pratique
+Pour expliquer un service, un déroulé, une offre : carte papier à ombre franche sur fond à carreaux (couleurs de la
+charte), bandeau d'étapes fixe en haut (une puce par chapitre, la courante s'allume) + barre de progression du récit,
+temps forts du panneau en thème papier, sous-titres karaoké dans un cadre (mot dit en encre, mot fort dans une boîte).
+1. Storyboard : un champ `voice` par phrase (le `kind` n'est pas utilisé ici), avec les vraies infos du client.
+   `jobs/<job>/config.json` : `{"text": {"captionMaxWords": 3}}`.
+2. `voice.py` (Gemini / Fish / `--file`) -> `build_text.py` -> `add_music.py`.
+3. `work/<slug>_panels.json` : mêmes temps forts que l'écran partagé (`title`, `check`, `stat`, `search`, `image`,
+   `steps`), avec `"chapter"` (2 à 5 chapitres de 1-2 mots : « AVANT », « LE SOIN », « APRÈS », « RÉSERVER »).
+4. `python scripts/build_explainer.py <job> <slug>` (fin de marque si la charte en a une ; `--no-outro` sinon), puis
+   check + snapshot + aperçu. Inspiré des explainers « interface papier » : principes repris, jamais les visuels.
 
 ### Plusieurs rushs → une vidéo
 Le client a filmé 5 ou 6 clips, dans le désordre, avec des reprises : mets-les tous dans `inbox/` (`new_job.py --rush a b c`).

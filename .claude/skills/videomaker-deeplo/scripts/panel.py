@@ -152,7 +152,10 @@ def title_words(text):
             out_ += [f'<span class="w it">{esc(w)}</span>' for w in m.group(1).split()]
         else:
             out_.append(f'<span class="w">{esc(m.group(2))}</span>')
-    return " ".join(out_)
+    h = " ".join(out_)
+    # ponctuation jamais seule en début de ligne : collée au mot d'avant (espace insécable devant ? ! : ; à la française)
+    h = re.sub(r'</span> <span class="w">([?!:;»]+)</span>', lambda m_: "&nbsp;" + m_.group(1) + "</span>", h)
+    return re.sub(r'</span> <span class="w">([,.…]+)</span>', lambda m_: m_.group(1) + "</span>", h)
 
 
 def background_js(dur, T0):
@@ -163,7 +166,65 @@ def background_js(dur, T0):
             f'immediateRender: false }}, 0.5);')
 
 
-def nodes(job, beats, words, dur, T0, W, ph, vis):
+def paper_colors(vis):
+    """Thème papier : fond de la charte, encre, accent assez soutenu pour porter du texte blanc."""
+    bg, ink = vis.get("bgColor", "#f4efe6"), vis.get("inkColor", "#1d1b19")
+    if _lum(bg) < 150:  # charte sombre : le papier reste clair
+        bg = "#f4efe6"
+    acc = vis.get("paperAccent") or vis.get("accentColor", "#9b1b30")
+    if _lum(acc) > 165:
+        acc = _mix(acc, ink, 0.45)
+    return bg, ink, acc, _mix(bg, "#ffffff", 0.65)
+
+
+def css_paper(W, ph, fam, vis):
+    """Thème « explainer papier » : mêmes temps forts, rendu carte papier, encre, ombres franches (surcharge du thème sombre)."""
+    bg, ink, acc, paper = paper_colors(vis)
+    u = W / 1080
+    sh = f"{round(8*u)}px {round(8*u)}px 0 {ink}"
+    return css(W, ph, fam, {**vis, "panelAccent": acc}) + f"""
+  #panel.paper {{ position: absolute; inset: 0; width: auto; height: auto; background: transparent; color: {ink}; z-index: 5; }}
+  #panel.paper .tag {{ display: none; }}
+  #panel.paper .flash {{ background: radial-gradient(circle, {acc}66 0%, transparent 65%); }}
+  #panel.paper .ttl {{ color: {ink}; }}
+  #panel.paper .ttl .it {{ color: {acc}; }}
+  #panel.paper .mark {{ background: {acc}; filter: none; }}
+  #panel.paper .card {{ background: #fff; border: {max(2, round(3*u))}px solid {ink}; border-radius: {round(10*u)}px; box-shadow: {sh}; color: {ink}; }}
+  #panel.paper .chead {{ color: {ink}; opacity: .6; }}
+  #panel.paper .row {{ border-top: 1px solid {ink}22; }}
+  #panel.paper .box {{ border-color: {ink}; }}
+  #panel.paper .box i {{ background: {acc}; color: #fff; }}
+  #panel.paper .stamp {{ background: #fff; color: {acc}; border-color: {acc}; box-shadow: {sh}; }}
+  #panel.paper .big, #panel.paper .lbl {{ color: {ink}; }}
+  #panel.paper .big .px {{ color: {acc}; }}
+  #panel.paper .bar {{ background: {acc}; box-shadow: none; }}
+  #panel.paper .wbar {{ background: {ink}0d; border-bottom: 2px solid {ink}; }}
+  #panel.paper .wbar b {{ background: {ink}55; }}
+  #panel.paper .field {{ border-color: {ink}; box-shadow: none; }}
+  #panel.paper .field .q::after {{ background: {acc}; }}
+  #panel.paper .res {{ background: {ink}08; }}
+  #panel.paper .res small {{ background: {ink}22; }}
+  #panel.paper .res.top {{ border: 2px solid {acc}; box-shadow: none; }}
+  #panel.paper .ph {{ border: {max(2, round(3*u))}px solid {ink}; box-shadow: {sh}; border-radius: {round(10*u)}px; }}
+  #panel.paper .cap2 {{ color: {ink}; opacity: .7; }}
+  #panel.paper .stp {{ background: #fff; border: {max(2, round(3*u))}px solid {ink}; box-shadow: {sh}; color: {ink}; }}
+  #panel.paper .stp .n {{ border-color: {ink}; }}
+  #panel.paper .stp.on {{ background: {acc}; color: #fff; border-color: {ink}; }}
+  #panel.paper .stp.on .n {{ background: #fff; color: {acc}; border-color: #fff; }}
+  #panel.paper .ttl {{ top: {round(ph*0.24)}px; font-size: {round(118*u)}px; }}
+  #panel.paper .mark {{ top: {round(ph*0.66)}px; }}
+  #panel.paper .card {{ top: {round(ph*0.22)}px; }}
+  #panel.paper .row {{ font-size: {round(62*u)}px; padding: {round(26*u)}px 0; }}
+  #panel.paper .chead {{ font-size: {round(28*u)}px; }}
+  #panel.paper .big {{ top: {round(ph*0.24)}px; font-size: {round(300*u)}px; }}
+  #panel.paper .bar {{ top: {round(ph*0.24 + 320*u)}px; }}
+  #panel.paper .lbl {{ top: {round(ph*0.24 + 345*u)}px; font-size: {round(84*u)}px; }}
+  #panel.paper .stps {{ top: {round(ph*0.2)}px; }}
+  #panel.paper .stp {{ font-size: {round(64*u)}px; padding: {round(32*u)}px {round(34*u)}px; margin-bottom: {round(28*u)}px; }}
+  #panel.paper .ph {{ top: {round(ph*0.12)}px; bottom: {round(ph*0.16)}px; }}"""
+
+
+def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark"):
     """-> (html du panneau, lignes JS, rapport). Temps : contenu (avant intro) ; T0 ajouté aux data-start."""
     u = W / 1080
     placed = []
@@ -176,7 +237,7 @@ def nodes(job, beats, words, dur, T0, W, ph, vis):
     placed.sort(key=lambda x: x[0])
     if placed:
         placed[0] = (0.0, placed[0][1])  # le panneau n'est jamais vide au début
-    html_, js, rep = [], [background_js(dur, T0)], []
+    html_, js, rep = [], ([background_js(dur, T0)] if theme == "dark" else []), []
     for k, (t0, b) in enumerate(placed):
         t1 = placed[k + 1][0] if k + 1 < len(placed) else dur
         if t1 - t0 < 0.5:
@@ -278,6 +339,8 @@ def nodes(job, beats, words, dur, T0, W, ph, vis):
         rep.append({"type": typ, "a": s0, "duree": d, "mot": b.get("word")})
     panel = (f'    <div id="panel"><div class="pbg"></div><div class="floor"><div class="fl"></div></div><div class="sweep"></div>'
              f'\n{chr(10).join(html_)}\n      <div class="flash"></div><div class="grain"></div><div class="vig"></div></div>')
+    if theme == "paper":  # pas de décor sombre : le papier et le motif sont dessinés par build_explainer
+        panel = f'    <div id="panel" class="paper">\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
     return panel, js, rep
 
 
