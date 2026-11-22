@@ -7,9 +7,10 @@
   </head>
   <body>
     <div id="accroche-neon" data-composition-id="accroche-neon" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
-      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#ff3cac"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#160033"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#ffffff"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
+      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#ff3cac"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#160033"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#ffffff"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "art", "type": "string", "label": "Dessin du sujet (SVG, facultatif)", "default": ""}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
       <div class="hk">
         <i class="sky"></i><i class="sun"></i><div class="floor"><i class="fg"></i></div>
+        <div class="hk-art"></div>
         <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
       </div>
       <style>
@@ -20,6 +21,10 @@
         #accroche-neon .hk-t .wd { display: inline-block; white-space: nowrap; }
         #accroche-neon .hk-t .ch { display: inline-block; }
         #accroche-neon .hk-s { margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }
+        #accroche-neon .hk-art { position: absolute; left: 12%; right: 12%; top: 40%; height: 44%; z-index: 4; display: none; }
+        #accroche-neon .hk-art svg { width: 100%; height: 100%; overflow: visible; }
+        #accroche-neon .hk-art svg > * { transform-box: fill-box; transform-origin: 50% 50%; }
+        #accroche-neon .hk.has-art .hk-box { top: 22%; }
         #accroche-neon .sky { position: absolute; inset: 0; background: linear-gradient(#0c0024 0%, var(--bg) 55%, #3a0a5c 100%); }
         #accroche-neon .sun { position: absolute; left: 50%; top: 18%; width: 56vmin; height: 56vmin; margin-left: -28vmin; border-radius: 50%;
                background: linear-gradient(#ffe66d, var(--accent));
@@ -58,11 +63,25 @@
         host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
         const CH = document.querySelectorAll(r + ".ch");
         const EXIT = Math.max(1.2, D - 0.45);
+        // dessin du sujet (variable "art" : SVG écrit par Claude dans le style) : la mise en page lui fait de la place
+        const ART = document.querySelector(r + ".hk-art");
+        let PIECES = [], STROKES = [];
+        if (v.art) {
+          ART.innerHTML = String(v.art); ART.style.display = "block"; document.querySelector(r + ".hk").classList.add("has-art");
+          const sv = ART.querySelector("svg"); if (sv) { sv.removeAttribute("width"); sv.removeAttribute("height"); }
+          PIECES = Array.from(ART.querySelectorAll("svg > *"));
+          STROKES = Array.from(ART.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect"));
+          STROKES.forEach(function (e) { try { const L = e.getTotalLength(); e.style.strokeDasharray = L; e.dataset.l = L; } catch (x) {} });
+        }
         tl.fromTo(r + ".sun", { y: "40vmin", opacity: 0 }, { y: 0, opacity: 1, duration: 1.0, ease: "power2.out" }, 0);
         tl.fromTo(r + ".fg", { y: 0 }, { y: "10vmin", duration: 0.5, ease: "none", repeat: Math.ceil(D / 0.5) }, 0);
         tl.fromTo(r + ".hk-t", { opacity: 0 }, { opacity: 1, duration: 0.05 }, 0.5);
         [0.58, 0.66, 0.74, 0.9].forEach(function (t, i) { tl.to(r + ".hk-t", { opacity: i % 2 ? 1 : 0.25, duration: 0.03 }, t); });
         tl.to(r + ".hk-t", { opacity: 1, duration: 0.05 }, 0.96);
+        if (PIECES.length) {
+          STROKES.forEach(function (e, i) { tl.fromTo(e, { strokeDashoffset: e.dataset.l || 0 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 0.3 + i * 0.04); });
+          [0.95, 1.02, 1.1].forEach(function (t, i) { tl.to(ART, { opacity: i % 2 ? 1 : 0.3, duration: 0.03 }, t); });
+        }
         tl.fromTo(r + ".hk-s", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, Math.min(1.2, D * 0.4));
         tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);
         window.__timelines = window.__timelines || {};

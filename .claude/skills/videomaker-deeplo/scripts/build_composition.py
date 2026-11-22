@@ -482,6 +482,8 @@ def main():
         text = hk.get("text") or (read_json(hook)["text"] if hook.exists() else "")
         hv = {"text": text, "sub": hk.get("sub", ""), "accent": hk.get("accent") or accent, "font": family}
         hv.update({k: hk[k] for k in ("bg", "ink") if hk.get(k)})
+        if hk.get("art") and (job / hk["art"]).exists():  # dessin du sujet (SVG) : references/accroches-dessin.md
+            hv["art"] = (job / hk["art"]).read_text(encoding="utf-8")
         blocks = [mount(hname, "hook-anim", 0, hdur, W, H, 20, hv, z=200)]
         T0 = round(hdur - 0.45, 3)  # la vidéo démarre sous le volet de sortie
 

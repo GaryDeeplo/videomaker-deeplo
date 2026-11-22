@@ -3,6 +3,11 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.22.2
+- Accroche avec le sujet dessiné : le plat, la façade ou le produit apparaît dans le style choisi (tracé au trait, rebond, papier qui tombe…).
+- À l'accueil, une question « Accroche animée ? » (non / titre animé / avec le sujet dessiné), retenue pour la marque si vous le voulez.
+- Vérification de l'installation plus tolérante (la voix locale suffit pour tester) ; l'accroche en scène garde les couleurs de son style.
+
 ## 2026.11.22
 - Accroches animées de 3 s en 10 styles (papier, plan technique, pâte à modeler, néon, aquarelle, pixel, isométrique, mosaïque, encre, relief 3D).
 - Images sans paroles (chantier, ambiance, plats, événement) : meilleurs passages repérés tout seuls, accélérés, « JOUR 12 », avant / après, journal de chantier.

@@ -13,6 +13,22 @@ from pathlib import Path
 LIB = Path(__file__).resolve().parents[4] / "library" / "block"
 DUR = 3.0
 
+# entrée du dessin selon le style (PIECES = éléments de premier niveau du SVG, STROKES = formes à tracer)
+ART_ANIM = {
+    "_": """          tl.fromTo(PIECES, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5, stagger: 0.06, ease: "back.out(2)" }, 0.5);""",
+    "papier": """          tl.fromTo(PIECES, { opacity: 0, y: -90, rotation: function (i) { return i % 2 ? 16 : -14; } }, { opacity: 1, y: 0, rotation: 0, duration: 0.5, stagger: 0.07, ease: "back.out(2)" }, 0.35);""",
+    "plan": """          STROKES.forEach(function (e, i) { tl.fromTo(e, { strokeDashoffset: e.dataset.l || 0 }, { strokeDashoffset: 0, duration: 0.8, ease: "power1.inOut" }, 0.3 + i * 0.05); });""",
+    "pate": """          tl.fromTo(PIECES, { scale: 0 }, { scale: 1, duration: 0.7, stagger: 0.08, ease: "elastic.out(1, 0.5)" }, 0.4);""",
+    "neon": """          STROKES.forEach(function (e, i) { tl.fromTo(e, { strokeDashoffset: e.dataset.l || 0 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 0.3 + i * 0.04); });
+          [0.95, 1.02, 1.1].forEach(function (t, i) { tl.to(ART, { opacity: i % 2 ? 1 : 0.3, duration: 0.03 }, t); });""",
+    "aquarelle": """          tl.fromTo(ART, { opacity: 0, scale: 0.92, filter: "blur(2vmin)" }, { opacity: 1, scale: 1, filter: "blur(0vmin)", duration: 1.1, ease: "power2.out" }, 0.3);""",
+    "pixel": """          tl.fromTo(PIECES, { opacity: 0 }, { opacity: 1, duration: 0.2, stagger: 0.05, ease: "steps(3)" }, 0.3);""",
+    "isometrique": """          tl.fromTo(PIECES, { opacity: 0, y: 70 }, { opacity: 1, y: 0, duration: 0.55, stagger: 0.07, ease: "back.out(1.6)" }, 0.3);""",
+    "mosaique": """          tl.fromTo(PIECES, { opacity: 0, rotationY: 90 }, { opacity: 1, rotationY: 0, duration: 0.45, stagger: 0.05, ease: "power2.out" }, 0.5);""",
+    "encre": """          STROKES.forEach(function (e, i) { tl.fromTo(e, { strokeDashoffset: e.dataset.l || 0 }, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, 0.2 + i * 0.06); });""",
+    "relief": """          tl.fromTo(ART, { opacity: 0, rotationY: -50, scale: 0.7 }, { opacity: 1, rotationY: 0, scale: 1, duration: 0.9, ease: "power3.out" }, 0.3);""",
+}
+
 READ = """function V(id) {
           var out = {}, root = document.getElementById(id);
           try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
@@ -51,6 +67,7 @@ def hook(style, desc, defaults, deco, css, js):
              {"id": "bg", "type": "color", "label": "Fond", "default": defaults["bg"]},
              {"id": "ink", "type": "color", "label": "Encre", "default": defaults["ink"]},
              {"id": "font", "type": "string", "label": "Police", "default": "Inter"},
+             {"id": "art", "type": "string", "label": "Dessin du sujet (SVG, facultatif)", "default": ""},
              {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]
     decl = json.dumps(vars_, ensure_ascii=False).replace("'", "&#39;")
     return f"""<!-- deeplo-library-block: {name} · {desc} -->
@@ -65,6 +82,7 @@ def hook(style, desc, defaults, deco, css, js):
       data-composition-variables='{decl}'>
       <div class="hk">
 {deco}
+        <div class="hk-art"></div>
         <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
       </div>
       <style>
@@ -75,6 +93,10 @@ def hook(style, desc, defaults, deco, css, js):
         #{name} .hk-t .wd {{ display: inline-block; white-space: nowrap; }}
         #{name} .hk-t .ch {{ display: inline-block; }}
         #{name} .hk-s {{ margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }}
+        #{name} .hk-art {{ position: absolute; left: 12%; right: 12%; top: 40%; height: 44%; z-index: 4; display: none; }}
+        #{name} .hk-art svg {{ width: 100%; height: 100%; overflow: visible; }}
+        #{name} .hk-art svg > * {{ transform-box: fill-box; transform-origin: 50% 50%; }}
+        #{name} .hk.has-art .hk-box {{ top: 22%; }}
 {css}
       </style>
       <script>
@@ -85,7 +107,20 @@ def hook(style, desc, defaults, deco, css, js):
         const tl = gsap.timeline({{ paused: true }});
         const D = Number(v.dur) > 0 ? Number(v.dur) : {DUR};
 {SPLIT}
+        // dessin du sujet (variable "art" : SVG écrit par Claude dans le style) : la mise en page lui fait de la place
+        const ART = document.querySelector(r + ".hk-art");
+        let PIECES = [], STROKES = [];
+        if (v.art) {{
+          ART.innerHTML = String(v.art); ART.style.display = "block"; document.querySelector(r + ".hk").classList.add("has-art");
+          const sv = ART.querySelector("svg"); if (sv) {{ sv.removeAttribute("width"); sv.removeAttribute("height"); }}
+          PIECES = Array.from(ART.querySelectorAll("svg > *"));
+          STROKES = Array.from(ART.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect"));
+          STROKES.forEach(function (e) {{ try {{ const L = e.getTotalLength(); e.style.strokeDasharray = L; e.dataset.l = L; }} catch (x) {{}} }});
+        }}
 {js}
+        if (PIECES.length) {{
+{ART_ANIM.get(style, ART_ANIM["_"])}
+        }}
         tl.fromTo(r + ".hk-s", {{ opacity: 0, y: 14 }}, {{ opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }}, Math.min(1.2, D * 0.4));
 {EXIT}
         window.__timelines = window.__timelines || {{}};
@@ -125,7 +160,8 @@ H["plan"] = hook("plan", "plan technique (blueprint) : grille qui se trace, titr
         .hk-t { color: transparent; -webkit-text-stroke: 0.35vmin var(--ink); font-family: monospace; text-transform: uppercase; letter-spacing: 0.04em; }
         .cote { position: absolute; left: 12vmin; right: 12vmin; top: 64%; text-align: center; font: 600 3.2vmin monospace; color: var(--accent); }
         .cote .cl { display: block; height: 0.4vmin; background: var(--accent); margin-bottom: 1.6vmin; transform-origin: 50% 50%; }
-        .hk-s { color: var(--accent); font-family: monospace; text-transform: uppercase; letter-spacing: .12em; }""",
+        .hk-s { color: var(--accent); font-family: monospace; text-transform: uppercase; letter-spacing: .12em; }
+        .hk.has-art .cote { display: none; }""",
     """        tl.fromTo(r + ".grid", { scaleY: 0 }, { scaleY: 1, duration: 0.7, ease: "power2.inOut" }, 0);
         tl.fromTo(r + ".cn", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.35, stagger: 0.06, ease: "power2.out" }, 0.3);
         tl.fromTo(CH, { opacity: 0 }, { opacity: 1, duration: 0.05, stagger: 0.04 }, 0.4);
@@ -140,7 +176,8 @@ H["pate"] = hook("pate", "pâte à modeler : formes molles qui rebondissent, let
         .b2 { width: 30vmin; height: 30vmin; right: -6vmin; top: 22%; background: #7bd389; }
         .b3 { width: 48vmin; height: 36vmin; left: 22%; bottom: 6%; background: #8ec5ff; }
         .hk-t { color: var(--ink); text-shadow: 0 0.9vmin 0 color-mix(in srgb, var(--ink) 60%, #000), 0 1.6vmin 2vmin rgba(0,0,0,.18); }
-        .hk-t .ch { transform-origin: 50% 100%; }""",
+        .hk-t .ch { transform-origin: 50% 100%; }
+        .hk.has-art .b3 { display: none; }""",
     """        tl.fromTo(r + ".bl", { scale: 0 }, { scale: 1, duration: 0.7, stagger: 0.1, ease: "elastic.out(1, 0.5)" }, 0);
         tl.to(r + ".bl", { borderRadius: "58% 42% 37% 63% / 59% 56% 44% 41%", duration: 1.2, yoyo: true, repeat: 1, ease: "sine.inOut" }, 0.6);
         CH.forEach(function (c, i) {

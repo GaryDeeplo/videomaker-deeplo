@@ -44,7 +44,10 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
      options ; sinon l'utilisateur colle un chemin dans « Autre ») · **Où sera-t-elle publiée ?** (Reels / TikTok
      9:16 · tous les formats · YouTube 16:9) · **Quel rendu ?** (« comme la dernière fois pour <marque> » si des
      réglages existent pour cette marque et ce parcours, sinon
-     « je choisis pour vous (recommandé) », style dynamique boîte + plans de coupe, style sobre minimal).
+     « je choisis pour vous (recommandé) », style dynamique boîte + plans de coupe, style sobre minimal) ·
+     **Accroche animée ?** (3 s d'ouverture : « non » · « oui, titre animé » · « oui, avec le sujet dessiné » ; mets en
+     premier « recommandé » : « oui, titre animé » pour un reel d'annonce ou un journal de chantier, « non » pour un
+     témoignage ou un ton sobre. Si la marque a déjà un réglage `accroche`, ne pose pas la question).
    - Vidéo sans rush : au tour 2, remplace « Les fichiers ? » par **le message** (« Décrivez en une phrase ce que la
      vidéo doit dire » via « Autre ») et **les photos** (dossier, ou « je n'en ai pas : images d'ambiance Pixabay »).
    - **Tour 3, le brief** (toujours, sauf si la demande y répond déjà) — 4 questions ensemble, chacune avec
@@ -71,6 +74,7 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
    | mentions | doivent apparaître à l'écran ET dans le post ; si la vidéo ne les dit pas, demande où les placer |
    | à éviter | jamais à l'écran, dans le post, les plans de coupe ni les suggestions de motion |
    | langues | `translate.py` pour chaque langue en plus, posts traduits |
+   | accroche | `titre` : `"hook": {"style": <selon le ton>, "text": <titre court>}` ; `dessin` : en plus, dessine le sujet en SVG (`references/accroches-dessin.md`, `"art"`) ; `non` : rien |
    Le brief appartient à CETTE vidéo : il n'entre dans les réglages de la marque que si l'utilisateur le veut (même
    question à choix qu'au point 5 ; par exemple « public » et « ton » sont souvent stables pour une marque).
 5. Récapitule en une ligne (« Reel 9:16 pour la Boulangerie Martin, style boîte, musique upbeat, plans de coupe : je lance. »)
@@ -194,7 +198,14 @@ Blocs `library/block/accroche-<style>` (variables text, sub, accent, bg, ink, fo
 - Vidéo sans rush : une scène `{"kind": "block", "block": "accroche-plan", "vars": {"text": "…"}, "hold": 3}`.
 Choix du style selon le ton : chantier / artisan -> `plan`, enfant / food fun -> `pate`, tech / soirée -> `neon` ou
 `relief`, haut de gamme / bien-être -> `aquarelle` ou `encre`, jeu / rétro -> `pixel`, chiffres / immobilier ->
-`isometrique`. Pour un sujet précis (le plat signature, le bâtiment), dessine-le en SVG dans une copie du bloc.
+`isometrique`.
+**Avec le sujet dessiné** (brief `accroche=dessin`) : lis `references/accroches-dessin.md`, regarde la photo du sujet
+(plat signature, façade, produit, outil), écris `work/<slug>_art.svg` dans le style choisi (15 à 40 formes, morceaux
+groupés dans l'ordre d'apparition), puis `"art": "work/<slug>_art.svg"` dans `hook` (ou dans la scène `accroche-…`).
+Le titre remonte, le dessin entre à la manière du style (tracé, rebond, pièces de papier…). Snapshot obligatoire : le
+dessin doit être reconnaissable et ne pas toucher le titre ; sinon, simplifie-le plutôt que d'ajouter des détails.
+Pour toute une marque : `onboard.py profil --marque <m> --parcours <p> accroche=titre|dessin accroche_style=<style>`
+(avec accord), puis `"hook"` dans la charte : toutes ses vidéos s'ouvrent ainsi.
 
 ### Maquettes d'interface, liste « 1 sur 5 », thème clair, cartes sur le visage
 Ce qui donne l'air « vrai » : l'écran montre l'outil ou le parcours du client en train de se faire. Types de temps forts

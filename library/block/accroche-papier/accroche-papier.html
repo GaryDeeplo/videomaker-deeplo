@@ -7,9 +7,10 @@
   </head>
   <body>
     <div id="accroche-papier" data-composition-id="accroche-papier" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
-      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#e4572e"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#f3ead8"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#2b2118"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
+      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#e4572e"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#f3ead8"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#2b2118"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "art", "type": "string", "label": "Dessin du sujet (SVG, facultatif)", "default": ""}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
       <div class="hk">
         <i class="pl p1"></i><i class="pl p2"></i><i class="pl p3"></i>
+        <div class="hk-art"></div>
         <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
       </div>
       <style>
@@ -20,6 +21,10 @@
         #accroche-papier .hk-t .wd { display: inline-block; white-space: nowrap; }
         #accroche-papier .hk-t .ch { display: inline-block; }
         #accroche-papier .hk-s { margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }
+        #accroche-papier .hk-art { position: absolute; left: 12%; right: 12%; top: 40%; height: 44%; z-index: 4; display: none; }
+        #accroche-papier .hk-art svg { width: 100%; height: 100%; overflow: visible; }
+        #accroche-papier .hk-art svg > * { transform-box: fill-box; transform-origin: 50% 50%; }
+        #accroche-papier .hk.has-art .hk-box { top: 22%; }
         #accroche-papier .pl { position: absolute; left: -20%; width: 140%; height: 60%; border-radius: 50% 50% 0 0 / 22% 22% 0 0; box-shadow: 0 -1.2vmin 2.4vmin rgba(0,0,0,.18); }
         #accroche-papier .p1 { bottom: -18%; background: var(--accent); }
         #accroche-papier .p2 { bottom: -30%; background: color-mix(in srgb, var(--accent) 55%, var(--bg)); left: -40%; }
@@ -49,10 +54,23 @@
         host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
         const CH = document.querySelectorAll(r + ".ch");
         const EXIT = Math.max(1.2, D - 0.45);
+        // dessin du sujet (variable "art" : SVG écrit par Claude dans le style) : la mise en page lui fait de la place
+        const ART = document.querySelector(r + ".hk-art");
+        let PIECES = [], STROKES = [];
+        if (v.art) {
+          ART.innerHTML = String(v.art); ART.style.display = "block"; document.querySelector(r + ".hk").classList.add("has-art");
+          const sv = ART.querySelector("svg"); if (sv) { sv.removeAttribute("width"); sv.removeAttribute("height"); }
+          PIECES = Array.from(ART.querySelectorAll("svg > *"));
+          STROKES = Array.from(ART.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect"));
+          STROKES.forEach(function (e) { try { const L = e.getTotalLength(); e.style.strokeDasharray = L; e.dataset.l = L; } catch (x) {} });
+        }
         tl.fromTo(r + ".pl", { y: "60%" }, { y: "0%", duration: 0.8, stagger: 0.12, ease: "back.out(1.4)" }, 0);
         CH.forEach(function (c, i) {
           tl.fromTo(c, { opacity: 0, y: -60, rotation: (i % 2 ? 14 : -12) }, { opacity: 1, y: 0, rotation: (i % 3 - 1) * 3, duration: 0.45, ease: "back.out(2.2)" }, 0.25 + i * 0.035);
         });
+        if (PIECES.length) {
+          tl.fromTo(PIECES, { opacity: 0, y: -90, rotation: function (i) { return i % 2 ? 16 : -14; } }, { opacity: 1, y: 0, rotation: 0, duration: 0.5, stagger: 0.07, ease: "back.out(2)" }, 0.35);
+        }
         tl.fromTo(r + ".hk-s", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, Math.min(1.2, D * 0.4));
         tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);
         window.__timelines = window.__timelines || {};

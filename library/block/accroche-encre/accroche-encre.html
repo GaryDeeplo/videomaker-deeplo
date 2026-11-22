@@ -7,11 +7,12 @@
   </head>
   <body>
     <div id="accroche-encre" data-composition-id="accroche-encre" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
-      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#c1121f"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#f4efe4"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#111111"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
+      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#c1121f"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#f4efe4"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#111111"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "art", "type": "string", "label": "Dessin du sujet (SVG, facultatif)", "default": ""}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
       <div class="hk">
         <svg class="brush" viewBox="0 0 1000 400" preserveAspectRatio="none"><defs><filter id="rough" filterUnits="userSpaceOnUse" x="-100" y="-300" width="1200" height="1000"><feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" />
           <feDisplacementMap in="SourceGraphic" scale="22" /></filter></defs>
           <path d="M 60 215 C 300 175, 650 245, 940 190" pathLength="1000" /></svg><i class="seal"></i>
+        <div class="hk-art"></div>
         <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
       </div>
       <style>
@@ -22,6 +23,10 @@
         #accroche-encre .hk-t .wd { display: inline-block; white-space: nowrap; }
         #accroche-encre .hk-t .ch { display: inline-block; }
         #accroche-encre .hk-s { margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }
+        #accroche-encre .hk-art { position: absolute; left: 12%; right: 12%; top: 40%; height: 44%; z-index: 4; display: none; }
+        #accroche-encre .hk-art svg { width: 100%; height: 100%; overflow: visible; }
+        #accroche-encre .hk-art svg > * { transform-box: fill-box; transform-origin: 50% 50%; }
+        #accroche-encre .hk.has-art .hk-box { top: 22%; }
         #accroche-encre .brush { position: absolute; left: 0; width: 100%; top: 54%; height: 18%; overflow: visible; }
         #accroche-encre .brush path { fill: none; stroke: var(--ink); stroke-width: 70; stroke-linecap: round; filter: url(#rough); stroke-dasharray: 1000; opacity: .9; }
         #accroche-encre .seal { position: absolute; right: 12vmin; bottom: 22%; width: 13vmin; height: 13vmin; background: var(--accent); border-radius: 1.2vmin;
@@ -52,9 +57,22 @@
         host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
         const CH = document.querySelectorAll(r + ".ch");
         const EXIT = Math.max(1.2, D - 0.45);
+        // dessin du sujet (variable "art" : SVG écrit par Claude dans le style) : la mise en page lui fait de la place
+        const ART = document.querySelector(r + ".hk-art");
+        let PIECES = [], STROKES = [];
+        if (v.art) {
+          ART.innerHTML = String(v.art); ART.style.display = "block"; document.querySelector(r + ".hk").classList.add("has-art");
+          const sv = ART.querySelector("svg"); if (sv) { sv.removeAttribute("width"); sv.removeAttribute("height"); }
+          PIECES = Array.from(ART.querySelectorAll("svg > *"));
+          STROKES = Array.from(ART.querySelectorAll("path, line, polyline, polygon, circle, ellipse, rect"));
+          STROKES.forEach(function (e) { try { const L = e.getTotalLength(); e.style.strokeDasharray = L; e.dataset.l = L; } catch (x) {} });
+        }
         tl.fromTo(r + ".brush path", { attr: { "stroke-dashoffset": 1000 } }, { attr: { "stroke-dashoffset": 0 }, duration: 0.8, ease: "power2.inOut" }, 0.05);
         tl.fromTo(CH, { opacity: 0, filter: "blur(1.5vmin)" }, { opacity: 1, filter: "blur(0vmin)", duration: 0.5, stagger: 0.03, ease: "power2.out" }, 0.55);
         tl.fromTo(r + ".seal", { opacity: 0, scale: 2.2, rotation: -20 }, { opacity: 1, scale: 1, rotation: -6, duration: 0.3, ease: "back.out(2)" }, 1.3);
+        if (PIECES.length) {
+          STROKES.forEach(function (e, i) { tl.fromTo(e, { strokeDashoffset: e.dataset.l || 0 }, { strokeDashoffset: 0, duration: 0.7, ease: "power2.inOut" }, 0.2 + i * 0.06); });
+        }
         tl.fromTo(r + ".hk-s", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, Math.min(1.2, D * 0.4));
         tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);
         window.__timelines = window.__timelines || {};

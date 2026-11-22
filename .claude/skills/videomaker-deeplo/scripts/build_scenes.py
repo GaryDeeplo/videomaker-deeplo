@@ -150,6 +150,9 @@ def main():
             if name.startswith("accroche-"):  # l'accroche garde le fond et l'encre de son style (sauf vars explicites)
                 vals = {"accent": accent, "font": fam, "text": sc.get("text", ""), "sub": sc.get("sub", "")}
             vals.update(sc.get("vars", {}))
+            art = sc.get("art") or vals.get("art", "")
+            if str(art).endswith(".svg") and (job / art).exists():  # dessin du sujet (references/accroches-dessin.md)
+                vals["art"] = (job / art).read_text(encoding="utf-8")
             nodes.append(mount(name, sid, s, d, W, H, 1 + i % 2, vals, z=i + 1))
             if i:
                 sfx_times.append(s)

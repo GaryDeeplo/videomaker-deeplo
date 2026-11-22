@@ -1,0 +1,19 @@
+{
+ "name": "accroche-avec-dessin",
+ "type": "component",
+ "title": "Accroche avec le sujet dessiné",
+ "description": "L'accroche montre aussi le sujet (plat, façade, produit) dessiné en SVG dans le style : pizza qui rebondit en pâte à modeler, façade tracée au trait en plan technique.",
+ "when_to_use": "Ouverture d'une vidéo où le sujet compte : plat signature, lieu, produit phare.",
+ "tags": [
+  "accroche",
+  "dessin",
+  "svg",
+  "ouverture"
+ ],
+ "files": [],
+ "usage": "\"hook\": {\"style\": \"pate\", \"text\": \"…\", \"art\": \"work/<slug>_art.svg\"} (guide : references/accroches-dessin.md)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

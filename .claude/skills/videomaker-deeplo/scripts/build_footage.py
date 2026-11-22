@@ -223,6 +223,8 @@ def main():
         hdur = float(hk.get("dur", 3.0))
         hv = {"text": hk.get("text") or plan.get("title", ""), "sub": hk.get("sub", ""), "accent": hk.get("accent") or acc, "font": fam}
         hv.update({k: hk[k] for k in ("bg", "ink") if hk.get(k)})
+        if hk.get("art") and (job / hk["art"]).exists():  # dessin du sujet (SVG) : references/accroches-dessin.md
+            hv["art"] = (job / hk["art"]).read_text(encoding="utf-8")
         hook_html = mount(hname, "hook-anim", 0, hdur, W, H, 26, hv, z=200)
         T0 = round(hdur - 0.45, 3)
         if hk.get("text"):  # le titre est dans l'accroche : pas deux fois
