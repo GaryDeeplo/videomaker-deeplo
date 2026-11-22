@@ -1,0 +1,21 @@
+{
+ "name": "accroche-relief",
+ "type": "block",
+ "title": "Accroche : Relief 3D",
+ "description": "relief 3D : titre extrudé qui pivote dans la lumière, faisceau qui le balaie",
+ "when_to_use": "Ouverture de 3 s (titre + petite ligne) avant n'importe quelle vidéo ; la vidéo démarre sous son volet de sortie.",
+ "tags": [
+  "accroche",
+  "ouverture",
+  "titre",
+  "relief"
+ ],
+ "files": [
+  "accroche-relief.html"
+ ],
+ "usage": "\"hook\": {\"style\": \"relief\", \"text\": \"…\", \"sub\": \"…\"} (config, plan de montage) ou build_composition.py --accroche relief",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

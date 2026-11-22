@@ -1,0 +1,63 @@
+<!-- deeplo-library-block: accroche-mosaique · mosaïque : carreaux qui se retournent depuis le centre, titre sur un bandeau -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="accroche-mosaique" data-composition-id="accroche-mosaique" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#e63946"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#1d3557"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#ffffff"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
+      <div class="hk">
+        <div class="mz"><i class="tl t0"></i><i class="tl t1"></i><i class="tl t2"></i><i class="tl t3"></i><i class="tl t4"></i><i class="tl t5"></i><i class="tl t6"></i><i class="tl t7"></i><i class="tl t8"></i><i class="tl t9"></i><i class="tl t10"></i><i class="tl t11"></i><i class="tl t12"></i><i class="tl t13"></i><i class="tl t14"></i><i class="tl t15"></i><i class="tl t16"></i><i class="tl t17"></i><i class="tl t18"></i><i class="tl t19"></i><i class="tl t20"></i><i class="tl t21"></i><i class="tl t22"></i><i class="tl t23"></i><i class="tl t24"></i><i class="tl t25"></i><i class="tl t26"></i><i class="tl t27"></i><i class="tl t28"></i><i class="tl t29"></i><i class="tl t30"></i><i class="tl t31"></i><i class="tl t32"></i><i class="tl t33"></i><i class="tl t34"></i><i class="tl t35"></i><i class="tl t36"></i><i class="tl t37"></i><i class="tl t38"></i><i class="tl t39"></i><i class="tl t40"></i><i class="tl t41"></i><i class="tl t42"></i><i class="tl t43"></i><i class="tl t44"></i><i class="tl t45"></i><i class="tl t46"></i><i class="tl t47"></i><i class="tl t48"></i><i class="tl t49"></i><i class="tl t50"></i><i class="tl t51"></i><i class="tl t52"></i><i class="tl t53"></i><i class="tl t54"></i><i class="tl t55"></i><i class="tl t56"></i><i class="tl t57"></i><i class="tl t58"></i><i class="tl t59"></i><i class="tl t60"></i><i class="tl t61"></i><i class="tl t62"></i><i class="tl t63"></i><i class="tl t64"></i><i class="tl t65"></i><i class="tl t66"></i><i class="tl t67"></i><i class="tl t68"></i><i class="tl t69"></i><i class="tl t70"></i><i class="tl t71"></i><i class="tl t72"></i><i class="tl t73"></i><i class="tl t74"></i><i class="tl t75"></i><i class="tl t76"></i><i class="tl t77"></i><i class="tl t78"></i><i class="tl t79"></i><i class="tl t80"></i><i class="tl t81"></i><i class="tl t82"></i><i class="tl t83"></i><i class="tl t84"></i><i class="tl t85"></i><i class="tl t86"></i><i class="tl t87"></i><i class="tl t88"></i><i class="tl t89"></i><i class="tl t90"></i><i class="tl t91"></i><i class="tl t92"></i><i class="tl t93"></i><i class="tl t94"></i><i class="tl t95"></i><i class="tl t96"></i><i class="tl t97"></i><i class="tl t98"></i><i class="tl t99"></i><i class="tl t100"></i><i class="tl t101"></i><i class="tl t102"></i><i class="tl t103"></i><i class="tl t104"></i><i class="tl t105"></i><i class="tl t106"></i><i class="tl t107"></i><i class="tl t108"></i><i class="tl t109"></i><i class="tl t110"></i><i class="tl t111"></i></div><i class="band"></i>
+        <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
+      </div>
+      <style>
+        #accroche-mosaique { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; }
+        #accroche-mosaique .hk { position: absolute; inset: 0; overflow: hidden; background: var(--bg); color: var(--ink); }
+        #accroche-mosaique .hk-box { position: absolute; left: 7vmin; right: 7vmin; top: 50%; transform: translateY(-50%); text-align: center; z-index: 5; }
+        #accroche-mosaique .hk-t { font-weight: 900; line-height: 1.02; letter-spacing: -0.02em; }
+        #accroche-mosaique .hk-t .wd { display: inline-block; white-space: nowrap; }
+        #accroche-mosaique .hk-t .ch { display: inline-block; }
+        #accroche-mosaique .hk-s { margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }
+        #accroche-mosaique .mz { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(14, 1fr); gap: 0.5vmin; padding: 0.5vmin; perspective: 80vmin; }
+        #accroche-mosaique .mz .tl { background: var(--accent); border-radius: 0.6vmin; }
+        #accroche-mosaique .mz .tl:nth-child(3n) { background: #f1faee; } #accroche-mosaique .mz .tl:nth-child(4n+1) { background: #a8dadc; } #accroche-mosaique .mz .tl:nth-child(5n+2) { background: #457b9d; }
+        #accroche-mosaique .band { position: absolute; left: 0; right: 0; top: 50%; height: 30vmin; margin-top: -15vmin; background: var(--bg); transform-origin: 50% 50%; }
+        #accroche-mosaique .hk-t { color: var(--ink); } #accroche-mosaique .hk-s { color: #a8dadc; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("accroche-mosaique");
+        const r = '[data-composition-id="accroche-mosaique"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const T = String(v.text || ""), host = document.querySelector(r + ".hk-t");
+        T.split(" ").forEach(function (w, wi) {
+          const ws = document.createElement("span"); ws.className = "wd";
+          Array.from(w).forEach(function (c) { const s = document.createElement("span"); s.className = "ch"; s.textContent = c; ws.appendChild(s); });
+          host.appendChild(ws); if (wi < T.split(" ").length - 1) host.appendChild(document.createTextNode(" "));
+        });
+        host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
+        const CH = document.querySelectorAll(r + ".ch");
+        const EXIT = Math.max(1.2, D - 0.45);
+        tl.fromTo(r + ".mz .tl", { rotationY: 90, opacity: 0 }, { rotationY: 0, opacity: 1, duration: 0.45, ease: "power2.out", stagger: { each: 0.006, from: "center", grid: [14, 8] } }, 0);
+        tl.fromTo(r + ".band", { scaleY: 0 }, { scaleY: 1, duration: 0.4, ease: "power3.inOut" }, 0.7);
+        tl.fromTo(CH, { opacity: 0, rotationX: -90 }, { opacity: 1, rotationX: 0, duration: 0.35, stagger: 0.03, ease: "back.out(2)" }, 0.95);
+        tl.fromTo(r + ".hk-s", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, Math.min(1.2, D * 0.4));
+        tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["accroche-mosaique"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

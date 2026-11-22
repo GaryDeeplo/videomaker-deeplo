@@ -292,6 +292,8 @@ def main():
     ap.add_argument("--size", help="9:16 | 1:1 | 4:5 | 16:9 | LxH (défaut : config)")
     ap.add_argument("--layout", choices=["full", "split", "cards"],
                     help="split : animation en haut, visage en bas ; cards : visage plein écran, cartes en haut (visual.layout)")
+    ap.add_argument("--accroche", help="accroche animée de 3 s en ouverture : papier, plan, pate, neon, aquarelle, pixel, isometrique, mosaique, encre, relief")
+    ap.add_argument("--accroche-texte", help="titre de l'accroche (sinon config hook.text ou l'accroche du short)")
     ap.add_argument("--panel-theme", choices=["dark", "light"], help="écran partagé : panneau sombre ou clair (visual.panelTheme)")
     ap.add_argument("--mode", choices=["captions", "overlays", "both", "none"])
     ap.add_argument("--no-captions", action="store_true", help="= --mode none (couverture)")
@@ -468,6 +470,20 @@ def main():
         idur = float(br.get("introDuration", 1.6))
         T0 = round(idur - 0.45, 3)  # la vidéo démarre sous le volet de sortie de l'intro (pas d'écran noir)
         blocks.append(mount(br["intro"], "brand-intro", 0, idur, W, H, 20, common_vals, z=200))
+    hk = dict(c.get("hook") or {})
+    if a.accroche:
+        hk["style"] = a.accroche
+    if a.accroche_texte:
+        hk["text"] = a.accroche_texte
+    if hk.get("style"):  # accroche animée par style (library/block/accroche-<style>) : remplace l'intro de marque
+        hname = f"accroche-{hk['style']}"
+        block_file(job, hname)
+        hdur = float(hk.get("dur", 3.0))
+        text = hk.get("text") or (read_json(hook)["text"] if hook.exists() else "")
+        hv = {"text": text, "sub": hk.get("sub", ""), "accent": hk.get("accent") or accent, "font": family}
+        hv.update({k: hk[k] for k in ("bg", "ink") if hk.get(k)})
+        blocks = [mount(hname, "hook-anim", 0, hdur, W, H, 20, hv, z=200)]
+        T0 = round(hdur - 0.45, 3)  # la vidéo démarre sous le volet de sortie
 
     def shift(node):
         return re.sub(r'data-start="([\d.]+)"', lambda mm: f'data-start="{round(float(mm.group(1)) + T0, 3)}"', node)

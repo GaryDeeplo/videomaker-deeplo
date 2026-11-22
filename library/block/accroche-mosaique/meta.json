@@ -1,0 +1,21 @@
+{
+ "name": "accroche-mosaique",
+ "type": "block",
+ "title": "Accroche : Mosaïque",
+ "description": "mosaïque : carreaux qui se retournent depuis le centre, titre sur un bandeau",
+ "when_to_use": "Ouverture de 3 s (titre + petite ligne) avant n'importe quelle vidéo ; la vidéo démarre sous son volet de sortie.",
+ "tags": [
+  "accroche",
+  "ouverture",
+  "titre",
+  "mosaique"
+ ],
+ "files": [
+  "accroche-mosaique.html"
+ ],
+ "usage": "\"hook\": {\"style\": \"mosaique\", \"text\": \"…\", \"sub\": \"…\"} (config, plan de montage) ou build_composition.py --accroche mosaique",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

@@ -1,0 +1,67 @@
+<!-- deeplo-library-block: accroche-relief · relief 3D : titre extrudé qui pivote dans la lumière, faisceau qui le balaie -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="accroche-relief" data-composition-id="accroche-relief" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#f72585"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#0b0b12"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#ffffff"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
+      <div class="hk">
+        <i class="spot"></i>
+        <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
+      </div>
+      <style>
+        #accroche-relief { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; }
+        #accroche-relief .hk { position: absolute; inset: 0; overflow: hidden; background: var(--bg); color: var(--ink); }
+        #accroche-relief .hk-box { position: absolute; left: 7vmin; right: 7vmin; top: 50%; transform: translateY(-50%); text-align: center; z-index: 5; }
+        #accroche-relief .hk-t { font-weight: 900; line-height: 1.02; letter-spacing: -0.02em; }
+        #accroche-relief .hk-t .wd { display: inline-block; white-space: nowrap; }
+        #accroche-relief .hk-t .ch { display: inline-block; }
+        #accroche-relief .hk-s { margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }
+        #accroche-relief .hk { perspective: 120vmin; background: radial-gradient(ellipse 80% 60% at 50% 45%, color-mix(in srgb, var(--accent) 28%, var(--bg)) 0%, var(--bg) 70%); }
+        #accroche-relief .spot { position: absolute; top: -20%; left: -40%; width: 40%; height: 140%; transform: rotate(16deg); background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent); }
+        #accroche-relief .hk-box { transform-style: preserve-3d; }
+        #accroche-relief .hk-t { color: var(--ink); text-transform: uppercase;
+                text-shadow: 0 0.3vmin 0 color-mix(in srgb, var(--accent) 90%, #000), 0 0.6vmin 0 color-mix(in srgb, var(--accent) 80%, #000),
+                             0 0.9vmin 0 color-mix(in srgb, var(--accent) 70%, #000), 0 1.2vmin 0 color-mix(in srgb, var(--accent) 60%, #000),
+                             0 1.5vmin 0 color-mix(in srgb, var(--accent) 50%, #000), 0 1.8vmin 0 color-mix(in srgb, var(--accent) 40%, #000),
+                             0 3vmin 4vmin rgba(0,0,0,.6); }
+        #accroche-relief .hk-s { color: var(--accent); letter-spacing: .2em; text-transform: uppercase; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("accroche-relief");
+        const r = '[data-composition-id="accroche-relief"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const T = String(v.text || ""), host = document.querySelector(r + ".hk-t");
+        T.split(" ").forEach(function (w, wi) {
+          const ws = document.createElement("span"); ws.className = "wd";
+          Array.from(w).forEach(function (c) { const s = document.createElement("span"); s.className = "ch"; s.textContent = c; ws.appendChild(s); });
+          host.appendChild(ws); if (wi < T.split(" ").length - 1) host.appendChild(document.createTextNode(" "));
+        });
+        host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
+        const CH = document.querySelectorAll(r + ".ch");
+        const EXIT = Math.max(1.2, D - 0.45);
+        tl.fromTo(r + ".hk-t", { rotationX: 70, rotationY: -30, opacity: 0, scale: 0.7 }, { rotationX: 12, rotationY: 0, opacity: 1, scale: 1, duration: 0.9, ease: "power3.out" }, 0.1);
+        tl.to(r + ".hk-t", { rotationY: 10, rotationX: 6, duration: D - 1.2, ease: "sine.inOut" }, 1.0);
+        tl.fromTo(r + ".spot", { x: 0 }, { x: "260%", duration: 1.6, ease: "power1.inOut" }, 0.4);
+        tl.fromTo(r + ".hk-s", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, Math.min(1.2, D * 0.4));
+        tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["accroche-relief"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

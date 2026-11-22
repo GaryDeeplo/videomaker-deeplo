@@ -1,0 +1,74 @@
+<!-- deeplo-library-block: accroche-neon · néon synthwave : soleil rayé qui se lève, sol quadrillé qui avance, titre néon qui clignote -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="accroche-neon" data-composition-id="accroche-neon" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#ff3cac"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#160033"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#ffffff"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
+      <div class="hk">
+        <i class="sky"></i><i class="sun"></i><div class="floor"><i class="fg"></i></div>
+        <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
+      </div>
+      <style>
+        #accroche-neon { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; }
+        #accroche-neon .hk { position: absolute; inset: 0; overflow: hidden; background: var(--bg); color: var(--ink); }
+        #accroche-neon .hk-box { position: absolute; left: 7vmin; right: 7vmin; top: 50%; transform: translateY(-50%); text-align: center; z-index: 5; }
+        #accroche-neon .hk-t { font-weight: 900; line-height: 1.02; letter-spacing: -0.02em; }
+        #accroche-neon .hk-t .wd { display: inline-block; white-space: nowrap; }
+        #accroche-neon .hk-t .ch { display: inline-block; }
+        #accroche-neon .hk-s { margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }
+        #accroche-neon .sky { position: absolute; inset: 0; background: linear-gradient(#0c0024 0%, var(--bg) 55%, #3a0a5c 100%); }
+        #accroche-neon .sun { position: absolute; left: 50%; top: 18%; width: 56vmin; height: 56vmin; margin-left: -28vmin; border-radius: 50%;
+               background: linear-gradient(#ffe66d, var(--accent));
+               -webkit-mask: repeating-linear-gradient(transparent 0 58%, #000 58% 100%) , linear-gradient(#000 0 52%, transparent 52%);
+               -webkit-mask: linear-gradient(#000 0 54%, transparent 54% 60%, #000 60% 66%, transparent 66% 71%, #000 71% 77%, transparent 77% 81%, #000 81% 87%, transparent 87% 90%, #000 90%);
+               filter: drop-shadow(0 0 4vmin var(--accent)); }
+        #accroche-neon .floor { position: absolute; left: -50%; right: -50%; bottom: -10%; height: 50%; perspective: 40vmin; overflow: hidden; }
+        #accroche-neon .fg { position: absolute; left: 0; right: 0; top: 0; height: 300%; transform-origin: 50% 0; transform: rotateX(68deg);
+              background-image: linear-gradient(var(--accent) 0.3vmin, transparent 0.3vmin), linear-gradient(90deg, var(--accent) 0.3vmin, transparent 0.3vmin);
+              background-size: 10vmin 10vmin; opacity: .95; filter: drop-shadow(0 0 1vmin var(--accent)); }
+        #accroche-neon .hk-box { top: 42%; }
+        #accroche-neon .hk-t { color: #fff; text-transform: uppercase; font-style: italic;
+                text-shadow: 0 0 1vmin #fff, 0 0 2.5vmin var(--accent), 0 0 6vmin var(--accent); }
+        #accroche-neon .hk-s { color: #7df9ff; text-shadow: 0 0 1.5vmin #7df9ff; letter-spacing: .2em; text-transform: uppercase; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("accroche-neon");
+        const r = '[data-composition-id="accroche-neon"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const T = String(v.text || ""), host = document.querySelector(r + ".hk-t");
+        T.split(" ").forEach(function (w, wi) {
+          const ws = document.createElement("span"); ws.className = "wd";
+          Array.from(w).forEach(function (c) { const s = document.createElement("span"); s.className = "ch"; s.textContent = c; ws.appendChild(s); });
+          host.appendChild(ws); if (wi < T.split(" ").length - 1) host.appendChild(document.createTextNode(" "));
+        });
+        host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
+        const CH = document.querySelectorAll(r + ".ch");
+        const EXIT = Math.max(1.2, D - 0.45);
+        tl.fromTo(r + ".sun", { y: "40vmin", opacity: 0 }, { y: 0, opacity: 1, duration: 1.0, ease: "power2.out" }, 0);
+        tl.fromTo(r + ".fg", { y: 0 }, { y: "10vmin", duration: 0.5, ease: "none", repeat: Math.ceil(D / 0.5) }, 0);
+        tl.fromTo(r + ".hk-t", { opacity: 0 }, { opacity: 1, duration: 0.05 }, 0.5);
+        [0.58, 0.66, 0.74, 0.9].forEach(function (t, i) { tl.to(r + ".hk-t", { opacity: i % 2 ? 1 : 0.25, duration: 0.03 }, t); });
+        tl.to(r + ".hk-t", { opacity: 1, duration: 0.05 }, 0.96);
+        tl.fromTo(r + ".hk-s", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, Math.min(1.2, D * 0.4));
+        tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["accroche-neon"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

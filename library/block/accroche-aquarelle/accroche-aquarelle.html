@@ -1,0 +1,64 @@
+<!-- deeplo-library-block: accroche-aquarelle · aquarelle : taches de couleur qui diffusent sur le papier, titre qui se révèle au pinceau -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="accroche-aquarelle" data-composition-id="accroche-aquarelle" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#2a9d8f"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#f7f2e8"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#264653"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
+      <div class="hk">
+        <i class="wc w1"></i><i class="wc w2"></i><i class="wc w3"></i><i class="grainp"></i>
+        <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
+      </div>
+      <style>
+        #accroche-aquarelle { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; }
+        #accroche-aquarelle .hk { position: absolute; inset: 0; overflow: hidden; background: var(--bg); color: var(--ink); }
+        #accroche-aquarelle .hk-box { position: absolute; left: 7vmin; right: 7vmin; top: 50%; transform: translateY(-50%); text-align: center; z-index: 5; }
+        #accroche-aquarelle .hk-t { font-weight: 900; line-height: 1.02; letter-spacing: -0.02em; }
+        #accroche-aquarelle .hk-t .wd { display: inline-block; white-space: nowrap; }
+        #accroche-aquarelle .hk-t .ch { display: inline-block; }
+        #accroche-aquarelle .hk-s { margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }
+        #accroche-aquarelle .wc { position: absolute; border-radius: 50%; filter: blur(3.5vmin); mix-blend-mode: multiply; }
+        #accroche-aquarelle .w1 { width: 70vmin; height: 60vmin; left: -10vmin; top: 18%; background: radial-gradient(circle, color-mix(in srgb, var(--accent) 70%, transparent) 0%, transparent 70%); }
+        #accroche-aquarelle .w2 { width: 60vmin; height: 70vmin; right: -14vmin; top: 34%; background: radial-gradient(circle, rgba(233,196,106,.75) 0%, transparent 70%); }
+        #accroche-aquarelle .w3 { width: 64vmin; height: 50vmin; left: 18%; top: 52%; background: radial-gradient(circle, rgba(231,111,81,.55) 0%, transparent 70%); }
+        #accroche-aquarelle .grainp { position: absolute; inset: 0; opacity: .25; background-image: radial-gradient(rgba(0,0,0,.08) 1px, transparent 1px); background-size: 0.6vmin 0.6vmin; }
+        #accroche-aquarelle .hk-t { color: var(--ink); font-weight: 800; }
+        #accroche-aquarelle .hk-s { font-style: italic; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("accroche-aquarelle");
+        const r = '[data-composition-id="accroche-aquarelle"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const T = String(v.text || ""), host = document.querySelector(r + ".hk-t");
+        T.split(" ").forEach(function (w, wi) {
+          const ws = document.createElement("span"); ws.className = "wd";
+          Array.from(w).forEach(function (c) { const s = document.createElement("span"); s.className = "ch"; s.textContent = c; ws.appendChild(s); });
+          host.appendChild(ws); if (wi < T.split(" ").length - 1) host.appendChild(document.createTextNode(" "));
+        });
+        host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
+        const CH = document.querySelectorAll(r + ".ch");
+        const EXIT = Math.max(1.2, D - 0.45);
+        tl.fromTo(r + ".wc", { scale: 0.2, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.4, stagger: 0.18, ease: "power2.out" }, 0);
+        tl.fromTo(r + ".hk-t", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.9, ease: "power2.inOut" }, 0.45);
+        tl.fromTo(r + ".hk-s", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, Math.min(1.2, D * 0.4));
+        tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["accroche-aquarelle"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

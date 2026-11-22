@@ -1,0 +1,21 @@
+{
+ "name": "accroche-pixel",
+ "type": "block",
+ "title": "Accroche : Pixel art",
+ "description": "",
+ "when_to_use": "Ouverture de 3 s (titre + petite ligne) avant n'importe quelle vidéo ; la vidéo démarre sous son volet de sortie.",
+ "tags": [
+  "accroche",
+  "ouverture",
+  "titre",
+  "pixel"
+ ],
+ "files": [
+  "accroche-pixel.html"
+ ],
+ "usage": "\"hook\": {\"style\": \"pixel\", \"text\": \"…\", \"sub\": \"…\"} (config, plan de montage) ou build_composition.py --accroche pixel",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

@@ -1,0 +1,21 @@
+{
+ "name": "accroche-papier",
+ "type": "block",
+ "title": "Accroche : Papier découpé",
+ "description": "papier découpé : couches de papier qui montent, lettres en papier qui se posent",
+ "when_to_use": "Ouverture de 3 s (titre + petite ligne) avant n'importe quelle vidéo ; la vidéo démarre sous son volet de sortie.",
+ "tags": [
+  "accroche",
+  "ouverture",
+  "titre",
+  "papier"
+ ],
+ "files": [
+  "accroche-papier.html"
+ ],
+ "usage": "\"hook\": {\"style\": \"papier\", \"text\": \"…\", \"sub\": \"…\"} (config, plan de montage) ou build_composition.py --accroche papier",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

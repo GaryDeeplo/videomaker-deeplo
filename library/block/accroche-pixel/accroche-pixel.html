@@ -1,0 +1,64 @@
+<!-- deeplo-library-block: accroche-pixel · pixel art : étoiles qui clignotent, lettres qui apparaissent par à-coups avec ombre en blocs -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="accroche-pixel" data-composition-id="accroche-pixel" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#ffcd1f"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#1b1b3a"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#ffffff"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
+      <div class="hk">
+        <i class="px s1"></i><i class="px s2"></i><i class="px s3"></i><i class="px s4"></i><i class="px s5"></i><i class="ground"></i>
+        <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
+      </div>
+      <style>
+        #accroche-pixel { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; }
+        #accroche-pixel .hk { position: absolute; inset: 0; overflow: hidden; background: var(--bg); color: var(--ink); }
+        #accroche-pixel .hk-box { position: absolute; left: 7vmin; right: 7vmin; top: 50%; transform: translateY(-50%); text-align: center; z-index: 5; }
+        #accroche-pixel .hk-t { font-weight: 900; line-height: 1.02; letter-spacing: -0.02em; }
+        #accroche-pixel .hk-t .wd { display: inline-block; white-space: nowrap; }
+        #accroche-pixel .hk-t .ch { display: inline-block; }
+        #accroche-pixel .hk-s { margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }
+        #accroche-pixel .px { position: absolute; width: 1.6vmin; height: 1.6vmin; background: #fff; }
+        #accroche-pixel .s1 { left: 14%; top: 14%; } #accroche-pixel .s2 { left: 78%; top: 20%; } #accroche-pixel .s3 { left: 30%; top: 30%; } #accroche-pixel .s4 { left: 64%; top: 70%; } #accroche-pixel .s5 { left: 22%; top: 76%; }
+        #accroche-pixel .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 14%; background:
+                  repeating-linear-gradient(90deg, #3ec15b 0 6vmin, #2fa34a 6vmin 12vmin); box-shadow: 0 -2vmin 0 #2fa34a; }
+        #accroche-pixel .hk-t { color: var(--ink); text-transform: uppercase; letter-spacing: 0.06em; text-shadow: 0.9vmin 0.9vmin 0 var(--accent), 1.8vmin 1.8vmin 0 rgba(0,0,0,.35); }
+        #accroche-pixel .hk-s { color: var(--accent); text-transform: uppercase; letter-spacing: .1em; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("accroche-pixel");
+        const r = '[data-composition-id="accroche-pixel"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const T = String(v.text || ""), host = document.querySelector(r + ".hk-t");
+        T.split(" ").forEach(function (w, wi) {
+          const ws = document.createElement("span"); ws.className = "wd";
+          Array.from(w).forEach(function (c) { const s = document.createElement("span"); s.className = "ch"; s.textContent = c; ws.appendChild(s); });
+          host.appendChild(ws); if (wi < T.split(" ").length - 1) host.appendChild(document.createTextNode(" "));
+        });
+        host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
+        const CH = document.querySelectorAll(r + ".ch");
+        const EXIT = Math.max(1.2, D - 0.45);
+        tl.fromTo(r + ".px", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "steps(3)", stagger: { each: 0.2, repeat: Math.ceil(D / 1.2), yoyo: true } }, 0);
+        tl.fromTo(r + ".ground", { y: "100%" }, { y: "0%", duration: 0.4, ease: "steps(4)" }, 0.1);
+        tl.fromTo(CH, { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.2, ease: "steps(3)", stagger: 0.05 }, 0.35);
+        tl.fromTo(r + ".hk-s", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, Math.min(1.2, D * 0.4));
+        tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["accroche-pixel"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

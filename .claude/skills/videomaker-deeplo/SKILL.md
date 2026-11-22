@@ -176,6 +176,20 @@ fort dans une boîte d'accent) sur la jointure. Pour un rush face caméra vertic
 Inspiré des Reels « split screen » d'experts tech : on reprend les principes (panneau, jointure, typo mêlée, interfaces
 qui changent d'état), jamais leurs visuels ni leurs contenus.
 
+### Accroches animées par style (3 s d'ouverture)
+Dix styles pour le même titre : `papier` (couches de papier, lettres qui se posent), `plan` (blueprint : grille, titre au
+trait, cote), `pate` (pâte à modeler qui rebondit), `neon` (synthwave : soleil rayé, sol quadrillé, néon qui clignote),
+`aquarelle` (taches qui diffusent, titre au pinceau), `pixel` (à-coups, ombre en blocs), `isometrique` (blocs qui montent),
+`mosaique` (carreaux qui se retournent), `encre` (coup de pinceau, sceau rouge), `relief` (titre extrudé qui pivote).
+Blocs `library/block/accroche-<style>` (variables text, sub, accent, bg, ink, font ; générés par `_make_hook_blocks.py`).
+- Rush : `build_composition.py … --accroche neon --accroche-texte "…"` ou `"hook": {"style": "neon", "text": "…", "sub": "…"}`
+  dans la config ; remplace l'intro de marque, la vidéo démarre sous son volet de sortie.
+- Images sans paroles : `"hook": {…}` dans `work/<slug>_footage.json` (ou `--accroche`) ; le titre ne s'affiche pas deux fois.
+- Vidéo sans rush : une scène `{"kind": "block", "block": "accroche-plan", "vars": {"text": "…"}, "hold": 3}`.
+Choix du style selon le ton : chantier / artisan -> `plan`, enfant / food fun -> `pate`, tech / soirée -> `neon` ou
+`relief`, haut de gamme / bien-être -> `aquarelle` ou `encre`, jeu / rétro -> `pixel`, chiffres / immobilier ->
+`isometrique`. Pour un sujet précis (le plat signature, le bâtiment), dessine-le en SVG dans une copie du bloc.
+
 ### Maquettes d'interface, liste « 1 sur 5 », thème clair, cartes sur le visage
 Ce qui donne l'air « vrai » : l'écran montre l'outil ou le parcours du client en train de se faire. Types de temps forts
 en plus (détails et exemple JSON dans `scripts/panel.py`) :

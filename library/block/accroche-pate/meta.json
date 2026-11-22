@@ -1,0 +1,21 @@
+{
+ "name": "accroche-pate",
+ "type": "block",
+ "title": "Accroche : Pâte à modeler",
+ "description": "pâte à modeler : formes molles qui rebondissent, lettres épaisses qui s'écrasent en tombant",
+ "when_to_use": "Ouverture de 3 s (titre + petite ligne) avant n'importe quelle vidéo ; la vidéo démarre sous son volet de sortie.",
+ "tags": [
+  "accroche",
+  "ouverture",
+  "titre",
+  "pate"
+ ],
+ "files": [
+  "accroche-pate.html"
+ ],
+ "usage": "\"hook\": {\"style\": \"pate\", \"text\": \"…\", \"sub\": \"…\"} (config, plan de montage) ou build_composition.py --accroche pate",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

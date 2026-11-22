@@ -1,0 +1,21 @@
+{
+ "name": "accroche-isometrique",
+ "type": "block",
+ "title": "Accroche : Isométrique",
+ "description": "",
+ "when_to_use": "Ouverture de 3 s (titre + petite ligne) avant n'importe quelle vidéo ; la vidéo démarre sous son volet de sortie.",
+ "tags": [
+  "accroche",
+  "ouverture",
+  "titre",
+  "isometrique"
+ ],
+ "files": [
+  "accroche-isometrique.html"
+ ],
+ "usage": "\"hook\": {\"style\": \"isometrique\", \"text\": \"…\", \"sub\": \"…\"} (config, plan de montage) ou build_composition.py --accroche isometrique",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

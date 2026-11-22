@@ -1,0 +1,73 @@
+<!-- deeplo-library-block: accroche-plan · plan technique (blueprint) : grille qui se trace, titre au trait puis rempli, cote et repères d'angle -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="accroche-plan" data-composition-id="accroche-plan" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "text", "type": "string", "label": "Titre (2 à 6 mots)", "default": "Votre titre ici"}, {"id": "sub", "type": "string", "label": "Petite ligne", "default": ""}, {"id": "accent", "type": "color", "label": "Accent", "default": "#ffd166"}, {"id": "bg", "type": "color", "label": "Fond", "default": "#0f3b8c"}, {"id": "ink", "type": "color", "label": "Encre", "default": "#ffffff"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée (s, remplie automatiquement)", "default": 0, "min": 0, "max": 10}]'>
+      <div class="hk">
+        <i class="grid"></i><i class="cn c1"></i><i class="cn c2"></i><i class="cn c3"></i><i class="cn c4"></i>
+        <div class="cote"><i class="cl"></i><span>1 : 50</span></div>
+        <div class="hk-box"><div class="hk-t"></div><div class="hk-s" data-var-text="sub"></div></div>
+      </div>
+      <style>
+        #accroche-plan { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; }
+        #accroche-plan .hk { position: absolute; inset: 0; overflow: hidden; background: var(--bg); color: var(--ink); }
+        #accroche-plan .hk-box { position: absolute; left: 7vmin; right: 7vmin; top: 50%; transform: translateY(-50%); text-align: center; z-index: 5; }
+        #accroche-plan .hk-t { font-weight: 900; line-height: 1.02; letter-spacing: -0.02em; }
+        #accroche-plan .hk-t .wd { display: inline-block; white-space: nowrap; }
+        #accroche-plan .hk-t .ch { display: inline-block; }
+        #accroche-plan .hk-s { margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }
+        #accroche-plan .grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.14) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.14) 1px, transparent 1px), linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+                background-size: 12vmin 12vmin, 12vmin 12vmin, 3vmin 3vmin, 3vmin 3vmin; transform-origin: 0 0; }
+        #accroche-plan .cn { position: absolute; width: 8vmin; height: 8vmin; border: 0.5vmin solid var(--ink); opacity: 0; }
+        #accroche-plan .c1 { left: 5vmin; top: 5vmin; border-right: 0; border-bottom: 0; } #accroche-plan .c2 { right: 5vmin; top: 5vmin; border-left: 0; border-bottom: 0; }
+        #accroche-plan .c3 { left: 5vmin; bottom: 5vmin; border-right: 0; border-top: 0; } #accroche-plan .c4 { right: 5vmin; bottom: 5vmin; border-left: 0; border-top: 0; }
+        #accroche-plan .hk-t { color: transparent; -webkit-text-stroke: 0.35vmin var(--ink); font-family: monospace; text-transform: uppercase; letter-spacing: 0.04em; }
+        #accroche-plan .cote { position: absolute; left: 12vmin; right: 12vmin; top: 64%; text-align: center; font: 600 3.2vmin monospace; color: var(--accent); }
+        #accroche-plan .cote .cl { display: block; height: 0.4vmin; background: var(--accent); margin-bottom: 1.6vmin; transform-origin: 50% 50%; }
+        #accroche-plan .hk-s { color: var(--accent); font-family: monospace; text-transform: uppercase; letter-spacing: .12em; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("accroche-plan");
+        const r = '[data-composition-id="accroche-plan"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const T = String(v.text || ""), host = document.querySelector(r + ".hk-t");
+        T.split(" ").forEach(function (w, wi) {
+          const ws = document.createElement("span"); ws.className = "wd";
+          Array.from(w).forEach(function (c) { const s = document.createElement("span"); s.className = "ch"; s.textContent = c; ws.appendChild(s); });
+          host.appendChild(ws); if (wi < T.split(" ").length - 1) host.appendChild(document.createTextNode(" "));
+        });
+        host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
+        const CH = document.querySelectorAll(r + ".ch");
+        const EXIT = Math.max(1.2, D - 0.45);
+        tl.fromTo(r + ".grid", { scaleY: 0 }, { scaleY: 1, duration: 0.7, ease: "power2.inOut" }, 0);
+        tl.fromTo(r + ".cn", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.35, stagger: 0.06, ease: "power2.out" }, 0.3);
+        tl.fromTo(CH, { opacity: 0 }, { opacity: 1, duration: 0.05, stagger: 0.04 }, 0.4);
+        tl.to(r + ".hk-t", { color: "rgba(255,255,255,.95)", duration: 0.5, ease: "power1.in" }, 0.4 + CH.length * 0.04);
+        tl.fromTo(r + ".cote .cl", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power3.out" }, 0.9);
+        tl.fromTo(r + ".cote span", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.2);
+        tl.fromTo(r + ".hk-s", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, Math.min(1.2, D * 0.4));
+        tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["accroche-plan"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

@@ -68,6 +68,7 @@ def main():
     ap.add_argument("--style", default="boite")
     ap.add_argument("--fit", choices=["cover", "blur"])
     ap.add_argument("--no-outro", action="store_true")
+    ap.add_argument("--accroche", help="accroche animée de 3 s en ouverture (papier, plan, neon… ; ou plan.hook)")
     a = ap.parse_args()
     job = job_dir(a.job)
     c = config(job)
@@ -211,7 +212,26 @@ def main():
         audio.append(f'    <audio id="music" class="clip" src="{read_json(mu)["file"]}" data-start="0" data-duration="{round(dur, 3)}" '
                      f'data-track-index="9" data-volume="{0.35 if voice else 1}"></audio>')
 
-    total, outro = round(dur, 3), ""
+    # accroche animée par style en ouverture : tout le montage est décalé, il démarre sous son volet de sortie
+    hk = dict(plan.get("hook") or c.get("hook") or {})
+    if a.accroche:
+        hk["style"] = a.accroche
+    hook_html, T0 = "", 0.0
+    if hk.get("style"):
+        hname = f"accroche-{hk['style']}"
+        block_file(job, hname)
+        hdur = float(hk.get("dur", 3.0))
+        hv = {"text": hk.get("text") or plan.get("title", ""), "sub": hk.get("sub", ""), "accent": hk.get("accent") or acc, "font": fam}
+        hv.update({k: hk[k] for k in ("bg", "ink") if hk.get(k)})
+        hook_html = mount(hname, "hook-anim", 0, hdur, W, H, 26, hv, z=200)
+        T0 = round(hdur - 0.45, 3)
+        if hk.get("text"):  # le titre est dans l'accroche : pas deux fois
+            over = [o_ for o_ in over if 'id="ttl"' not in o_]
+            js = [j for j in js if '"#ttl' not in j]
+        import re as _re
+        sh = lambda n: _re.sub(r'data-start="([\d.]+)"', lambda mm: f'data-start="{round(float(mm.group(1)) + T0, 3)}"', n)
+        vids, labels, over, caps, audio = ([sh(n) for n in grp] for grp in (vids, labels, over, caps, audio))
+    total, outro = round(dur + T0, 3), ""
     br = c.get("branding", {})
     if br.get("outro") and not a.no_outro:
         block_file(job, br["outro"])
@@ -223,12 +243,15 @@ def main():
             (job / "assets" / "img").mkdir(parents=True, exist_ok=True)
             shutil.copy2(lp, job / "assets" / "img" / lp.name)
             logo = f"assets/img/{lp.name}"
-        outro = mount(br["outro"], "brand-outro", dur, od, W, H, 22,
+        outro = mount(br["outro"], "brand-outro", dur + T0, od, W, H, 22,
                       {"logo": logo, "bg": vis.get("bgColor", "#f6f4f0"), "ink": vis.get("inkColor", "#1a1a1a"), "accent": acc,
                        "font": fam, "blend": vis.get("logoBlend", "normal"), "tagline": brand.get("tagline", ""),
                        "info": (brand.get("contact") or {}).get("site", "")}, z=200)
-        total = round(dur + od, 3)
+        total = round(dur + T0 + od, 3)
 
+    content_js = "\n".join([caption_js(a.style)] + capjs + js)
+    if T0:  # le contenu dans sa propre timeline, décalée de la durée de l'accroche
+        content_js = "  const ct = gsap.timeline();\n" + content_js.replace("tl.", "ct.") + f"\n  tl.add(ct, {T0});"
     faces = []
     for f in vis.get("fonts", []):
         ff = ROOT / f["file"] if not Path(f["file"]).is_absolute() else Path(f["file"])
@@ -295,14 +318,13 @@ def main():
 {chr(10).join(caps)}
 {chr(10).join(audio)}
 {outro}
+{hook_html}
   </div>
 <script>
   window.__timelines = window.__timelines || {{}};
   const tl = gsap.timeline({{ paused: true }});
   const ACCENT = {json.dumps(acc)}, INK = "#ffffff", BOXINK = {json.dumps(on_acc)};
-{caption_js(a.style)}
-{chr(10).join(capjs)}
-{chr(10).join(js)}
+{content_js}
   window.__timelines["footage"] = tl;
 </script>
 </body>

@@ -1,0 +1,21 @@
+{
+ "name": "accroche-encre",
+ "type": "block",
+ "title": "Accroche : Encre de Chine",
+ "description": "encre de Chine : grand coup de pinceau qui se trace, titre qui se dépose, sceau rouge",
+ "when_to_use": "Ouverture de 3 s (titre + petite ligne) avant n'importe quelle vidéo ; la vidéo démarre sous son volet de sortie.",
+ "tags": [
+  "accroche",
+  "ouverture",
+  "titre",
+  "encre"
+ ],
+ "files": [
+  "accroche-encre.html"
+ ],
+ "usage": "\"hook\": {\"style\": \"encre\", \"text\": \"…\", \"sub\": \"…\"} (config, plan de montage) ou build_composition.py --accroche encre",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

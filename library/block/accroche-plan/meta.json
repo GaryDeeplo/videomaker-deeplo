@@ -1,0 +1,21 @@
+{
+ "name": "accroche-plan",
+ "type": "block",
+ "title": "Accroche : Plan technique",
+ "description": "plan technique (blueprint) : grille qui se trace, titre au trait puis rempli, cote et repères d'angle",
+ "when_to_use": "Ouverture de 3 s (titre + petite ligne) avant n'importe quelle vidéo ; la vidéo démarre sous son volet de sortie.",
+ "tags": [
+  "accroche",
+  "ouverture",
+  "titre",
+  "plan"
+ ],
+ "files": [
+  "accroche-plan.html"
+ ],
+ "usage": "\"hook\": {\"style\": \"plan\", \"text\": \"…\", \"sub\": \"…\"} (config, plan de montage) ou build_composition.py --accroche plan",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}
