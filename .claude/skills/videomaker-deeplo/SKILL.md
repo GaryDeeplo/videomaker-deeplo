@@ -183,6 +183,9 @@ en plus (détails et exemple JSON dans `scripts/panel.py`) :
   capture `image`) annotée de défauts en rouge (`notes`, `on`: title | sub | button | tile1-3, ou x / y sur une capture).
 - `funnel` : entonnoir du parcours client, l'étape qui perd du monde (`leak`) en rouge + étiquette ; `chart` : courbe dans
   une carte ; `feed` : flux « EN DIRECT » (commandes, avis, messages qui arrivent) ; `palette` : nuancier + « Aa » de la charte.
+- Contenu tech (tes propres vidéos aussi) : `repo` (carte de dépôt GitHub, étoiles lues en direct), `code` (avant / après,
+  lignes barrées puis nouvelles en vert), `paths` (lignes emmêlées, le chemin simple en accent). **Vrais logos d'outils** :
+  `"icon": "logo:claude"` (Simple Icons, CC0 ; usage informatif des marques, jamais pour faire croire à un partenariat).
 - Ces maquettes marchent aussi dans l'**infographie** (`build_data.py`) : même JSON dans `work/<slug>_data.json`.
 - **Format liste** : `"list": {"n": 1, "of": 5, "name": "Perplexity", "icon": "search"}` sur les temps forts d'un même élément ->
   en-tête fixe « 1 SUR 5 · Nom » relié par un trait (top conseils, erreurs, outils, étapes) ; `"style": "tabs"` -> rangée

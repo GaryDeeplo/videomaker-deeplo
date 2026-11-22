@@ -1,0 +1,21 @@
+{
+ "name": "maquette-depot-github",
+ "type": "component",
+ "title": "Carte de dépôt GitHub",
+ "description": "Avatar, propriétaire / dépôt, description, étoiles qui comptent (lues en direct sur GitHub), bouton Star qui s'allume.",
+ "when_to_use": "Présenter un outil open source, un skill, un plugin.",
+ "tags": [
+  "interface",
+  "github",
+  "dépôt",
+  "étoiles",
+  "tech",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"repo\", \"word\": \"<mot dit>\", \"name\": \"owner/repo\", \"badge\": \"Gratuit\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

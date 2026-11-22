@@ -1,0 +1,20 @@
+{
+ "name": "logos-outils",
+ "type": "component",
+ "title": "Logos d'outils (Simple Icons)",
+ "description": "Vrais logos d'outils (Claude, GitHub, Notion, Gmail, Figma…) dans l'étoile d'icônes, les listes ou les en-têtes, via « logo:<nom> ».",
+ "when_to_use": "Vidéos tech : outils connectés, comparatifs, top outils. Usage informatif des marques.",
+ "tags": [
+  "logos",
+  "outils",
+  "tech",
+  "hub",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "\"icon\": \"logo:claude\" (hub, listes, en-tête de liste, flux, titres)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

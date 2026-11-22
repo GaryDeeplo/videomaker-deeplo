@@ -30,6 +30,11 @@ Maquettes d'interface :
   {"type": "chart", "word": "…", "title": "Visites du site", "points": [5, 8, 20, 64, 208], "label": "208 / jour", "xlabels": ["janv.", "…"]}
   {"type": "feed", "word": "…", "title": "Commandes", "badge": "EN DIRECT", "items": [{"text": "…", "sub": "il y a 2 min", "icon": "shopping-bag"}]}
   {"type": "palette", "word": "…", "title": "Votre marque"}   (couleurs et police de la charte si "colors" / "font" absents)
+  {"type": "repo", "word": "…", "name": "owner/repo", "badge": "Gratuit"}   (étoiles, description, langage, avatar lus sur GitHub si absents)
+  {"type": "code", "word": "…", "file": "formatPrice.js", "before": ["…", "…"], "after": ["…"], "label": "-53 % de code"}
+  {"type": "paths", "word": "…", "count": 6, "label": "Le plus simple", "start": "Reels d'essai"}   (lignes emmêlées, une droite en accent)
+Logos de marques (Simple Icons, CC0) : "icon": "logo:claude" | "logo:github" | "logo:notion"… partout où un picto est accepté
+  (hub, listes, en-tête de liste, flux, titres) ; les marques restent à leurs propriétaires (usage informatif).
 Liste : "list": {"n": 1, "of": 5, "name": "…", "icon": "…"} sur les temps forts d'un élément -> en-tête « 1 SUR 5 » ;
   "style": "tabs" -> rangée d'onglets numérotés 1 2 3 4 (celui en cours en couleur).
 Thèmes : dark (écran partagé), light (écran partagé clair), cards (cartes sur la vidéo plein écran), paper (explainer).
@@ -51,10 +56,32 @@ from common import ROOT, job_dir, out, read_json, word_hit, write_json
 
 VENDOR = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "fonts"
 LUCIDE = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "lucide"
+SIMPLE = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "simple-icons"
+
+
+def logo(name):
+    """Logo de marque en SVG (Simple Icons, CC0 ; les marques restent à leurs propriétaires) : « logo:claude », « logo:github »."""
+    slug = re.sub(r"[^a-z0-9]", "", str(name).lower())
+    if not slug:
+        return ""
+    f = SIMPLE / f"{slug}.svg"
+    if not f.exists():
+        import urllib.request
+        try:
+            with urllib.request.urlopen(f"https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/{slug}.svg", timeout=20) as r:
+                SIMPLE.mkdir(parents=True, exist_ok=True)
+                f.write_bytes(r.read())
+        except Exception:  # noqa: BLE001 — logo inconnu : on s'en passe
+            return ""
+    svg = re.sub(r"<title>.*?</title>", "", f.read_text(encoding="utf-8"))
+    return svg.replace("<svg ", '<svg fill="currentColor" width="100%" height="100%" ', 1)
 
 
 def icon(name):
-    """Picto Lucide en SVG inline (téléchargé une fois depuis le paquet npm lucide-static, gardé dans vendor/lucide)."""
+    """Picto Lucide en SVG inline (téléchargé une fois depuis le paquet npm lucide-static, gardé dans vendor/lucide) ;
+    « logo:<marque> » -> logo Simple Icons."""
+    if str(name).lower().startswith("logo:"):
+        return logo(str(name)[5:])
     name = re.sub(r"[^a-z0-9-]", "", str(name).lower())
     if not name:
         return ""
@@ -370,7 +397,39 @@ def css_ui(W, ph, acc, on_acc):
   .sw i {{ flex: 1; height: {round(130*u)}px; border-radius: {round(16*u)}px; border: 1px solid var(--ui-line); opacity: 0; }}
   .swf {{ display: flex; align-items: baseline; gap: {round(24*u)}px; }}
   .swf .aa {{ font-size: {round(150*u)}px; line-height: .9; font-weight: 700; }}
-  .swf span {{ font: 500 {round(26*u)}px {mono}; color: var(--ui-mute); }}"""
+  .swf span {{ font: 500 {round(26*u)}px {mono}; color: var(--ui-mute); }}
+  .rhead {{ display: flex; align-items: center; gap: {round(18*u)}px; }}
+  .rav {{ flex: 0 0 auto; width: {round(72*u)}px; height: {round(72*u)}px; border-radius: 50%; background: var(--acc); color: var(--on-acc); overflow: hidden;
+         display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: {round(34*u)}px; }}
+  .rav img {{ width: 100%; height: 100%; object-fit: cover; }}
+  .rav svg {{ width: 56%; height: 56%; }}
+  .rname {{ flex: 1; font-size: {round(40*u)}px; line-height: 1.1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+  .rname small {{ font-size: .8em; color: var(--ui-mute); }}
+  .rstar {{ flex: 0 0 auto; display: inline-flex; align-items: center; gap: {round(10*u)}px; padding: {round(8*u)}px {round(18*u)}px; border-radius: {round(12*u)}px;
+           border: 1px solid var(--ui-line); background: var(--ui-soft); font: 600 {round(28*u)}px {mono}; }}
+  .rstar.on {{ background: var(--acc); color: var(--on-acc); border-color: var(--acc); }}
+  .rdesc {{ margin-top: {round(18*u)}px; font-size: {round(34*u)}px; color: var(--ui-mute); line-height: 1.25; }}
+  .rmeta {{ margin-top: {round(18*u)}px; display: flex; align-items: center; gap: {round(16*u)}px; font: 500 {round(26*u)}px {mono}; color: var(--ui-mute); }}
+  .rmeta .ld {{ width: {round(18*u)}px; height: {round(18*u)}px; border-radius: 50%; background: var(--acc); }}
+  .rmeta .rb {{ padding: {round(4*u)}px {round(14*u)}px; border-radius: 99px; background: #1f9d55; color: #fff; font-weight: 700; }}
+  .rbig {{ margin-top: {round(22*u)}px; font-size: {round(96*u)}px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }}
+  .rbig small {{ font-size: .34em; font-weight: 600; color: var(--ui-mute); margin-left: .3em; }}
+  .cbody {{ padding: {round(18*u)}px 0 {round(22*u)}px; font: 500 {round(28*u)}px {mono}; }}
+  .cl {{ height: {round(44*u)}px; line-height: {round(44*u)}px; padding: 0 {round(26*u)}px; white-space: pre; overflow: hidden; }}
+  .cl::before {{ content: attr(data-n); display: inline-block; width: 2.2em; color: var(--ui-mute); opacity: .6; }}
+  .cl.add {{ height: 0; background: rgba(31,157,85,.18); }}
+  .cl.add::before {{ content: "+"; color: #1f9d55; opacity: 1; }}
+  .cstat {{ display: inline-block; margin: 0 0 {round(22*u)}px {round(26*u)}px; padding: {round(10*u)}px {round(22*u)}px; border-radius: 99px; background: var(--acc);
+           color: var(--on-acc); font-weight: 800; font-size: {round(34*u)}px; opacity: 0; }}
+  .pathsv path {{ fill: none; stroke-linecap: round; }}
+  .pathsv .pg {{ stroke: var(--ui-mute); opacity: .45; }}
+  .pathsv .pk {{ stroke: var(--ui-ink); opacity: .85; }}
+  .pathsv .pa {{ stroke: var(--acc); }}
+  .pathsv .ps {{ fill: var(--ui-solid); stroke: var(--ui-ink); stroke-width: {max(2, round(4*u))}; }}
+  .plab {{ position: absolute; padding: {round(8*u)}px {round(18*u)}px; border-radius: {round(10*u)}px; font-weight: 800; font-size: {round(30*u)}px; white-space: nowrap;
+          opacity: 0; }}
+  .plab.e {{ background: var(--acc); color: var(--on-acc); text-transform: uppercase; }}
+  .plab.s {{ background: var(--ui-solid); color: var(--ui-ink); border: 2px solid var(--ui-ink); font-size: {round(24*u)}px; text-transform: uppercase; }}"""
 
 
 def title_words(text):
@@ -493,7 +552,8 @@ def css_light(W, ph, fam, vis, cards=False):
              border-radius: {round(26*u)}px; }}
   #panel.light .stp.on {{ border-color: {acc}; }}
   #panel.light .wbar {{ border-bottom: {line}; background: {ink}06; }}
-  #panel.light .field {{ border: 2px solid {acc}; }}"""
+  #panel.light .field {{ border: 2px solid {acc}; }}
+  #panel.light .bigico {{ top: {round(ph*0.56)}px; }}"""
     if cards:
         s += f"""
   #panel.paper.light.cards {{ background: transparent; overflow: visible; }}
@@ -709,7 +769,19 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
     return panel, js, rep, layers
 
 
-UI_TYPES = ("form", "chat", "rank", "progress", "hub", "browser", "funnel", "chart", "feed", "palette")
+UI_TYPES = ("form", "chat", "rank", "progress", "hub", "browser", "funnel", "chart", "feed", "palette", "repo", "code", "paths")
+
+
+def github_repo(name):
+    """Étoiles, description, langage et avatar d'un dépôt public (API GitHub, sans clé) ; {} hors ligne."""
+    import urllib.request
+    try:
+        with urllib.request.urlopen(f"https://api.github.com/repos/{name}", timeout=15) as r:
+            d = json.loads(r.read().decode("utf-8"))
+        return {"stars": d.get("stargazers_count"), "desc": d.get("description") or "", "lang": d.get("language") or "",
+                "avatar": (d.get("owner") or {}).get("avatar_url", "")}
+    except Exception:  # noqa: BLE001
+        return {}
 
 
 def _typing(sel, text, dur, at):
@@ -946,6 +1018,110 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
                   f'immediateRender: false }}, {s0 + 0.35});')
         bj.append(f'  tl.fromTo("#{sid} .swf", {{ opacity: 0, x: -30 }}, {{ opacity: 1, x: 0, duration: 0.45, ease: "power3.out", immediateRender: false }}, '
                   f'{round(s0 + 0.5 + 0.1 * len(cols), 3)});')
+    elif typ == "repo":
+        name = str(b.get("name", "owner/repo"))
+        info = {} if b.get("stars") is not None else github_repo(name)
+        stars = b.get("stars", info.get("stars") or 0)
+        desc = b.get("desc", info.get("desc", ""))
+        lang = b.get("lang", info.get("lang", ""))
+        owner, _, repo = name.partition("/")
+        av = icon(b["logo"]) if b.get("logo") else ""
+        if not av and info.get("avatar"):
+            import urllib.request
+            try:
+                (job / "assets" / "img").mkdir(parents=True, exist_ok=True)
+                fn = job / "assets" / "img" / f"av-{re.sub(r'[^a-z0-9]', '', owner.lower())}.png"
+                if not fn.exists():
+                    with urllib.request.urlopen(info["avatar"] + "&s=120", timeout=15) as r:
+                        fn.write_bytes(r.read())
+                av = f'<img src="assets/img/{fn.name}" alt="">'
+            except Exception:  # noqa: BLE001
+                av = ""
+        av = av or esc(owner[:1].upper())
+        inner = (f'<div class="card repo"><div class="rhead"><span class="rav">{av}</span><span class="rname"><small>{esc(owner)} /</small> '
+                 f'<b>{esc(repo or owner)}</b></span><span class="rstar">★ Star</span></div>'
+                 + (f'<div class="rdesc">{esc(glue(desc))}</div>' if desc else "")
+                 + f'<div class="rbig"><span class="sn">0</span><small>étoiles</small></div>'
+                 + '<div class="rmeta">' + (f'<i class="ld"></i><span>{esc(lang)}</span>' if lang else "")
+                 + (f'<span class="rb">{esc(b["badge"])}</span>' if b.get("badge") else "") + '</div></div>')
+        bj.append(card_in)
+        bj.append(f'  (function () {{ const el = document.querySelector("#{sid} .sn"), o = {{ v: 0 }};'
+                  f' tl.fromTo(o, {{ v: 0 }}, {{ v: {float(stars)}, duration: {round(min(1.6, d * 0.5), 2)}, ease: "power2.out", immediateRender: false,'
+                  f' onUpdate: function () {{ el.textContent = Math.round(o.v).toLocaleString("fr-FR"); }} }}, {s0 + 0.4}); }})();')
+        if b.get("star", True):
+            ts = round(s0 + 0.5 + min(1.6, d * 0.5), 3)
+            bj.append(_cls_at(f"#{sid} .rstar", "on", True, ts))
+            bj.append(f'  tl.fromTo("#{sid} .rstar", {{ scale: 1 }}, {{ scale: 1.2, duration: 0.12, yoyo: true, repeat: 1, immediateRender: false }}, {ts});')
+    elif typ == "code":
+        import difflib
+        before, after = [str(x) for x in b.get("before", [])][:14], [str(x) for x in b.get("after", [])][:14]
+        rows, dels, adds = [], [], []
+        k = 0
+        for op, a1, a2, b1, b2 in difflib.SequenceMatcher(None, before, after, autojunk=False).get_opcodes():
+            if op == "equal":
+                rows += [("eq", before[i]) for i in range(a1, a2)]
+            if op in ("delete", "replace"):
+                rows += [("del", before[i]) for i in range(a1, a2)]
+            if op in ("insert", "replace"):
+                rows += [("add", after[i]) for i in range(b1, b2)]
+        html_rows, n = [], 0
+        for j, (kind, line) in enumerate(rows):
+            if kind != "add":
+                n += 1
+            html_rows.append(f'<div class="cl {kind} c{j}" data-n="{n if kind != "add" else ""}">{esc(line) or " "}</div>')
+            (dels if kind == "del" else adds if kind == "add" else []).append(j)
+        stat = b.get("label") or (f"{len(before)} → {len(after)} lignes" if after else "")
+        bar = f'<div class="wbar"><b></b><b></b><b></b><span class="url">{esc(b.get("file", ""))}</span></div>'
+        inner = (f'<div class="card win code" style="position:absolute">{bar}<div class="cbody">{"".join(html_rows)}</div>'
+                 + (f'<span class="cstat">{esc(stat)}</span>' if stat else "") + '</div>')
+        bj.append(card_in)
+        lh = round(44 * u)
+        bj.append(f'  tl.fromTo("#{sid} .cl:not(.add)", {{ opacity: 0, x: -14 }}, {{ opacity: 1, x: 0, duration: 0.2, stagger: 0.04, immediateRender: false }}, {s0 + 0.3});')
+        tc = round(s0 + max(1.0, d * 0.4), 3)
+        for j in dels:
+            bj.append(f'  tl.to("#{sid} .c{j}", {{ backgroundColor: "rgba(214,47,51,.28)", color: "#d62f33", textDecoration: "line-through", duration: 0.15 }}, {tc});')
+            bj.append(f'  tl.to("#{sid} .c{j}", {{ height: 0, opacity: 0, duration: 0.35, ease: "power2.in" }}, {round(tc + 0.45, 3)});')
+        for i, j in enumerate(adds):
+            bj.append(f'  tl.fromTo("#{sid} .c{j}", {{ height: 0 }}, {{ height: {lh}, duration: 0.3, ease: "power2.out", immediateRender: false }}, {round(tc + 0.85 + i * 0.12, 3)});')
+        if stat:
+            bj.append(f'  tl.fromTo("#{sid} .cstat", {{ opacity: 0, scale: 0.6 }}, {{ opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.4)", immediateRender: false }}, '
+                      f'{round(tc + 1.0 + len(adds) * 0.12, 3)});')
+    elif typ == "paths":
+        import math
+        n = max(3, min(8, int(b.get("count", 6))))
+        hi = int(b.get("highlight", n // 2))
+        x0, x1 = round(90 * u), W - round(90 * u)
+        y_top, y_bot = ph * 0.22, ph * 0.78
+        sw_ = round(22 * u)
+        paths = []
+        for j in range(n):
+            ya = y_top + (y_bot - y_top) * j / (n - 1)
+            yb = y_top + (y_bot - y_top) * ((j * 5 + 2) % n) / (n - 1)
+            c1y = y_top + (y_bot - y_top) * ((j * 3 + 1) % n) / (n - 1)
+            c2y = y_top + (y_bot - y_top) * ((j * 7 + 3) % n) / (n - 1)
+            d_ = (f"M {x0} {ya:.0f} C {x0 + (x1 - x0) * .3:.0f} {c1y:.0f}, {x0 + (x1 - x0) * .45:.0f} {c2y:.0f}, {x0 + (x1 - x0) * .6:.0f} {(c1y + c2y) / 2:.0f} "
+                  f"S {x0 + (x1 - x0) * .85:.0f} {yb:.0f}, {x1} {yb:.0f}")
+            if j == hi:  # le chemin simple : presque droit
+                ye = y_top + (y_bot - y_top) * 0.12
+                d_ = f"M {x0} {ya:.0f} C {x0 + (x1 - x0) * .35:.0f} {ya:.0f}, {x0 + (x1 - x0) * .55:.0f} {ye:.0f}, {x1} {ye:.0f}"
+                end = (x1, ye)
+            paths.append((j, d_))
+        svg = "".join(f'<path class="{"pa" if j == hi else ("pk" if j % 2 else "pg")} pp{j}" d="{d_}" stroke-width="{sw_}" pathLength="1000" '
+                      f'stroke-dasharray="1000" />' for j, d_ in paths if j != hi)
+        svg += next(f'<path class="pa pp{j}" d="{d_}" stroke-width="{sw_}" pathLength="1000" stroke-dasharray="1000" />' for j, d_ in paths if j == hi)
+        svg += "".join(f'<circle class="ps" cx="{x0}" cy="{y_top + (y_bot - y_top) * j / (n - 1):.0f}" r="{round(16*u)}" />' for j in range(n))
+        inner = (f'<svg class="pathsv" width="{W}" height="{round(ph)}" viewBox="0 0 {W} {round(ph)}" style="position:absolute;left:0;top:0">{svg}</svg>'
+                 + (f'<span class="plab e" style="right:{round(40*u)}px;top:{round(end[1] - 70 * u)}px">{esc(b["label"])}</span>' if b.get("label") else "")
+                 + (f'<span class="plab s" style="left:{round(40*u)}px;top:{round(y_bot + 40 * u)}px">{esc(b["start"])}</span>' if b.get("start") else ""))
+        span = max(0.05, min(0.14, d * 0.25 / n))
+        for k_, (j, _) in enumerate([p_ for p_ in paths if p_[0] != hi]):
+            bj.append(f'  tl.fromTo("#{sid} .pp{j}", {{ attr: {{ "stroke-dashoffset": 1000 }} }}, {{ attr: {{ "stroke-dashoffset": 0 }}, duration: 0.8, ease: "power1.inOut", '
+                      f'immediateRender: true }}, {round(s0 + 0.1 + k_ * span, 3)});')
+        ta = round(s0 + min(0.9, 0.2 + n * span + 0.2), 3)
+        bj.append(f'  tl.fromTo("#{sid} .pp{hi}", {{ attr: {{ "stroke-dashoffset": 1000 }} }}, {{ attr: {{ "stroke-dashoffset": 0 }}, duration: 0.7, ease: "power2.inOut", '
+                  f'immediateRender: true }}, {ta});')
+        bj.append(f'  tl.fromTo("#{sid} .plab", {{ opacity: 0, scale: 0.6 }}, {{ opacity: 1, scale: 1, duration: 0.35, stagger: 0.15, ease: "back.out(2.4)", '
+                  f'immediateRender: false }}, {round(ta + 0.5, 3)});')
     else:  # browser : site maquette (ou capture) annoté
         notes = b.get("notes", [])[:4]
         on = {n_.get("on"): n_ for n_ in notes if n_.get("on")}

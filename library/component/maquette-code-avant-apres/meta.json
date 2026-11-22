@@ -1,0 +1,20 @@
+{
+ "name": "maquette-code-avant-apres",
+ "type": "component",
+ "title": "Code avant / après",
+ "description": "Fenêtre de code : les lignes en trop rougissent, se barrent et disparaissent, les nouvelles arrivent en vert, puis le gain en pastille.",
+ "when_to_use": "Refactorisation, « moins de code », démonstration d'un outil de dev.",
+ "tags": [
+  "interface",
+  "code",
+  "diff",
+  "tech",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"code\", \"word\": \"<mot dit>\", \"file\": \"x.js\", \"before\": [\"…\"], \"after\": [\"…\"], \"label\": \"-66 % de code\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

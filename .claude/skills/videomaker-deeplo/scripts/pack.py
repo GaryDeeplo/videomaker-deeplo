@@ -11,7 +11,8 @@ Le premier jet lit les phrases de text.json (donc après voice.py / build_text.p
 appel à l'action -> titre + picto, nom concret connu -> image ("query" anglais), sinon titre avec *mot fort*.
 Maquettes quand la phrase en parle : réserver / commander / devis -> formulaire, Google -> recherche, classement ->
 classement, messages -> chat, analyse / audit -> progression, site -> navigateur, parcours / clients perdus -> entonnoir,
-« en direct » / commandes qui arrivent -> flux, identité visuelle / logo -> nuancier, liste de 4 outils et plus -> étoile
+« en direct » / commandes qui arrivent -> flux, identité visuelle / logo -> nuancier, GitHub / dépôt -> carte de dépôt,
+code -> code avant / après, « le plus simple » -> lignes emmêlées ; un outil nommé (Claude, Notion…) -> son vrai logo, liste de 4 outils et plus -> étoile
 d'icônes ; « numéro 3 », « le deuxième conseil » -> en-tête de liste « 3 SUR 5 ». Infographie : work/<slug>_data.json
 (plusieurs % -> pourcentages, « passe de X à Y » -> courbe, plusieurs nombres -> barres, grand nombre -> compteur,
 « N fois » -> ×N, « N jours d'essai » -> cases, lien final -> carte de fin).
@@ -149,7 +150,20 @@ def accent(ws, max_words=7):
     return " ".join(t)
 
 
+TOOLS = {"claude": "claude", "anthropic": "anthropic", "chatgpt": "openai", "openai": "openai", "gemini": "googlegemini",
+         "notion": "notion", "slack": "slack", "gmail": "gmail", "github": "github", "figma": "figma", "canva": "canva",
+         "instagram": "instagram", "tiktok": "tiktok", "youtube": "youtube", "whatsapp": "whatsapp", "linkedin": "linkedin",
+         "google": "google", "shopify": "shopify", "wordpress": "wordpress", "stripe": "stripe", "zapier": "zapier", "make": "make",
+         "perplexity": "perplexity", "vercel": "vercel", "airtable": "airtable", "hubspot": "hubspot", "trello": "trello",
+         "asana": "asana", "discord": "discord", "telegram": "telegram", "pixabay": "pixabay", "firecrawl": "", "posthog": "posthog",
+         "playwright": "", "supabase": "supabase", "cursor": "cursor", "n8n": "n8n", "calendly": "calendly", "mailchimp": "mailchimp"}
+
+
 def icon_for(ws):
+    for w in ws:  # un outil nommé -> son vrai logo
+        t = TOOLS.get(key(w["w"]).split("'")[-1])
+        if t:
+            return f"logo:{t}"
     for w in ws:
         k = key(w["w"])
         for root, ic in ICONS:
@@ -180,6 +194,7 @@ def number(ws):
     Chiffres (« 1 800 », « 60 € »), lettres (« mille huit cents », « soixante-quatre pour cent »), jetons de plusieurs
     mots (« une heure, soixante euros »)."""
     flat = [(key(sw), ti) for ti, w in enumerate(ws) for sw in w["w"].split()]
+    stops = {j for j, (_, ti) in enumerate(flat) if ws[ti]["w"].rstrip()[-1:] in ",.;:!?…" and flat[min(j + 1, len(flat) - 1)][1] != ti}
     i = 0
     while i < len(flat):
         k, ti = flat[i]
@@ -200,6 +215,15 @@ def number(ws):
                     continue
                 v = _numword(kk)
                 if v is None:
+                    break
+                if j in stops:  # « Numéro deux, un dépôt » : la virgule arrête le nombre
+                    j += 1
+                    if v == 100:
+                        cur = (cur or 1) * 100
+                    elif v == 1000:
+                        total, cur = total + (cur or 1) * 1000, 0
+                    else:
+                        cur += v
                     break
                 if v == 100:
                     cur = (cur or 1) * 100
@@ -233,6 +257,8 @@ def items_of(ws):
     parts = [p.strip() for p in re.split(r",\s*|\s+(?:et|ni|ou)\s+(?=\S)", t) if p.strip()]
     parts = [re.sub(r"(?i)^(et|ou|puis|mais)\s+", "", p_) for p_ in parts]
     neg = re.search(r"\b(pas de|pas d'|ni|sans)\b", t, re.I)
+    if len(parts) >= 4 and len(parts[0].split()) > 4 and all(len(p.split()) <= 4 for p in parts[1:]):
+        parts[0] = parts[0].split()[-1]  # « On le connecte à Notion, Gmail, Slack et Figma » -> Notion, Gmail, Slack, Figma
     if len(parts) >= 3 and all(len(p.split()) <= 4 for p in parts):
         return parts
     if neg and len(parts) >= 2 and all(len(p.split()) <= 5 for p in parts):
@@ -300,6 +326,9 @@ UI_WORDS = [
     ("funnel", r"\b(parcours|abandonn\w*|perd\w* (des|vos|tes) clients|partent avant)"),
     ("feed", r"\b(en direct|commandes? qui (arrive|tombe)\w*|notifications?)\b"),
     ("palette", r"\b(identite visuelle|charte graphique|vos couleurs|ton logo|votre logo)\b"),
+    ("repo", r"\b(github|depot|repo|open source|etoiles)\b"),
+    ("code", r"\b(lignes de code|ton code|votre code|refactor\w*|du code)\b"),
+    ("paths", r"\b(le plus simple|la plus simple|plus simple que)\b"),
 ]
 FORM = [("reserv", "Réservation", "Créneau", "Réserver", "Réservé"), ("command", "Commande", "Produit", "Commander", "Commandé"),
         ("devis", "Demande de devis", "Projet", "Envoyer", "Envoyé"), ("inscri", "Inscription", "E-mail", "S'inscrire", "Inscrit"),
@@ -485,6 +514,12 @@ def draft_panels(sents, words, chapters, brand=None):
                         "items": [{"text": "TODO", "sub": "il y a 1 min", "icon": icon_for(ws) or "bell"}]}
             if typ == "palette":
                 return {"type": "palette", "word": w, "occurrence": n, "title": "La marque"}
+            if typ == "repo":
+                return {"type": "repo", "word": w, "occurrence": n, "name": "TODO : owner/repo", "badge": "Gratuit"}
+            if typ == "code":
+                return {"type": "code", "word": w, "occurrence": n, "file": "TODO", "before": ["TODO"], "after": ["TODO"]}
+            if typ == "paths":
+                return {"type": "paths", "word": w, "occurrence": n, "count": 6, "label": "Le plus simple", "start": "TODO"}
             return {"type": "browser", "word": w, "occurrence": n, "url": site,
                     "site": {"title": brand.get("tagline") or bname, "sub": "", "button": "TODO", "tiles": []}, "notes": []}
         return None
@@ -548,8 +583,16 @@ def draft_panels(sents, words, chapters, brand=None):
             continue
         flush()
         w, n = anchor(words, ws[0])
-        num = number(ws)
-        items = None if steps else items_of(ws)
+        body = ws
+        if o:
+            cut = next((i + 1 for i, x in enumerate(ws) if re.search(r"[,:]$", x["w"])), 0)
+            body = ws[cut:] or ws
+            m = ui(ws)
+            if m:  # l'élément de la liste montre ce dont il parle (dépôt, code, site…)
+                add(m, ws)
+                continue
+        num = number(body)
+        items = None if steps or o else items_of(body)
         if steps:
             add({"type": "steps", "word": w, "occurrence": n,
                  "items": [{"text": clean(it).capitalize(), "icon": icon_for(it) or "circle-check"} for it in steps[:5]]}, ws)
@@ -563,7 +606,9 @@ def draft_panels(sents, words, chapters, brand=None):
             add(b, ws)
         elif items and len(items) >= 4 and not re.search(r"\b(pas|ni|sans)\b", text_of(ws), re.I) and "hub" not in used:
             used.add("hub")
-            c = {"image": brand["_logo"]} if brand.get("_logo") else {"icon": icon_for(ws) or "sparkles"}
+            inames = {key(x) for it in items for x in it.split()}
+            c = ({"image": brand["_logo"]} if brand.get("_logo")
+                 else {"icon": icon_for([x for x in ws if key(x["w"]) not in inames]) or "sparkles"})  # pas un des outils autour
             add({"type": "hub", "word": w, "occurrence": n, "center": c,
                  "items": [{"icon": icon_for([{"w": x} for x in it.split()]) or "circle-check",
                             "label": " ".join(it.split()[-2:])[:1].upper() + " ".join(it.split()[-2:])[1:]} for it in items[:8]]}, ws)
@@ -576,6 +621,8 @@ def draft_panels(sents, words, chapters, brand=None):
                  "items": [{"text": neg_item(it) if neg else it[:1].upper() + it[1:],
                             "icon": "ban" if neg and re.match(r"(?i)(pas|ni|sans|de\s|d')", it) else (icon_for([{"w": x} for x in it.split()]) or "circle-check")}
                            for it in items[:4]]}, ws)
+        elif o:  # « Numéro 1, Perplexity, pour chercher… » : le titre vient du propos, posé sur « Numéro »
+            add({"type": "title", "word": w, "occurrence": n, "text": accent(body), **({"icon": icon_for(body)} if icon_for(body) else {})}, ws)
         else:
             plain(ws)
     flush()

@@ -1,0 +1,20 @@
+{
+ "name": "maquette-lignes-emmelees",
+ "type": "component",
+ "title": "Lignes emmêlées, une droite",
+ "description": "Chemins qui se croisent en gris et noir, le chemin simple se trace en accent avec son étiquette.",
+ "when_to_use": "« La façon la plus simple », comparer des méthodes compliquées à la vôtre.",
+ "tags": [
+  "interface",
+  "chemins",
+  "simple",
+  "comparaison",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"paths\", \"word\": \"<mot dit>\", \"count\": 6, \"label\": \"Le plus simple\", \"start\": \"Votre idée\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}
