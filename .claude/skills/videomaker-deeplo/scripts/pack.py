@@ -555,7 +555,7 @@ def draft_panels(sents, words, chapters, brand=None):
         else:
             b = {"type": "title", "word": w, "occurrence": n, "text": accent(ws)}
             ic = icon_for(ws)
-            if ic and len(beats) % 2 == 0:
+            if ic and (len(beats) % 2 == 0 or ic.startswith("logo:")):  # un outil cité garde toujours son logo
                 b["icon"] = ic
             if text_of(ws).endswith("?"):
                 b["flash"] = True

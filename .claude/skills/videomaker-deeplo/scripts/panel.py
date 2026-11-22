@@ -330,8 +330,7 @@ def css_ui(W, ph, acc, on_acc):
   .hc img {{ width: 72%; height: 72%; object-fit: contain; }}
   .hs {{ background: var(--ui-solid); border: 2px solid var(--ui-line); color: var(--acc); }}
   .hs svg {{ width: 50%; height: 50%; }}
-  .hs .hl {{ position: absolute; top: 108%; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: {round(30*u)}px; font-weight: 700;
-            color: var(--ui-ink); }}
+  .hlab {{ position: absolute; text-align: center; white-space: nowrap; font-size: {round(30*u)}px; font-weight: 700; color: var(--ui-ink); opacity: 0; }}
   .site .hero {{ margin: {round(24*u)}px; padding: {round(38*u)}px {round(34*u)}px; border-radius: {round(18*u)}px; background: var(--acc); color: var(--on-acc); }}
   .site .h1 {{ font-size: {round(62*u)}px; font-weight: 800; line-height: 1.05; position: relative; display: inline-block; }}
   .site .h2 {{ margin-top: {round(14*u)}px; font-size: {round(34*u)}px; opacity: .85; position: relative; display: inline-block; }}
@@ -553,12 +552,13 @@ def css_light(W, ph, fam, vis, cards=False):
   #panel.light .stp.on {{ border-color: {acc}; }}
   #panel.light .wbar {{ border-bottom: {line}; background: {ink}06; }}
   #panel.light .field {{ border: 2px solid {acc}; }}
-  #panel.light .bigico {{ top: {round(ph*0.56)}px; }}"""
+  #panel.light .bigico {{ top: {round(ph*0.6)}px; }}
+  #panel.light .ttl {{ top: {round(ph*0.13)}px; font-size: {round(108*u)}px; }}"""
     if cards:
         s += f"""
   #panel.paper.light.cards {{ background: transparent; overflow: visible; }}
   #panel.cards .beat .bi {{ transform: scale(.88); transform-origin: 50% 0; }}
-  #panel.cards .hs .hl {{ background: #fff; padding: {round(4*u)}px {round(14*u)}px; border-radius: 99px; box-shadow: {soft}; }}
+  #panel.cards .hlab {{ background: #fff; padding: {round(4*u)}px {round(14*u)}px; border-radius: 99px; box-shadow: {soft}; }}
   #panel.cards .ttl {{ left: {round(60*u)}px; right: auto; max-width: {round(W - 120*u)}px; top: {round(ph*0.14)}px; padding: {round(26*u)}px {round(34*u)}px;
              background: #fff; border-radius: {round(28*u)}px; box-shadow: {soft}; font-size: {round(74*u)}px; }}
   #panel.cards .big {{ left: 22%; right: 22%; top: {round(ph*0.12)}px; padding: {round(20*u)}px 0; background: #fff; border-radius: {round(30*u)}px;
@@ -919,8 +919,9 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
         pts = [(cx + R * math.cos(-math.pi / 2 + 2 * math.pi * j / max(1, len(items))),
                 cy + R * math.sin(-math.pi / 2 + 2 * math.pi * j / max(1, len(items)))) for j in range(len(items))]
         lines = "".join(f'<line class="h{j}" x1="{cx:.0f}" y1="{cy:.0f}" x2="{x:.0f}" y2="{y:.0f}" />' for j, (x, y) in enumerate(pts))
-        sats = "".join(f'<div class="hs s{j}" style="left:{x - ss / 2:.0f}px;top:{y - ss / 2:.0f}px;width:{ss}px;height:{ss}px">{item_icon(it)}'
-                       + (f'<span class="hl">{esc(item_text(it))}</span>' if item_text(it) else "") + '</div>'
+        sats = "".join(f'<div class="hs s{j}" style="left:{x - ss / 2:.0f}px;top:{y - ss / 2:.0f}px;width:{ss}px;height:{ss}px">{item_icon(it)}</div>'
+                       + (f'<span class="hlab s{j}" style="left:{x - ss:.0f}px;top:{y + ss / 2 + round(6*u):.0f}px;width:{2 * ss}px">{esc(item_text(it))}</span>'
+                          if item_text(it) else "")
                        for j, ((x, y), it) in enumerate(zip(pts, items)))
         inner = ((f'<div class="ihead">{esc(b["title"])}</div>' if b.get("title") else "")
                  + f'<svg class="hubl" width="{W}" height="{round(ph)}" viewBox="0 0 {W} {round(ph)}">{lines}</svg>'
