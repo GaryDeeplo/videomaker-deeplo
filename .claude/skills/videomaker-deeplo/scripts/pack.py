@@ -1,7 +1,7 @@
 """CHOIX DU PACK et PREMIER JET des temps forts, à partir de la demande, du brief et de ce qui est dit.
 
   python pack.py choose <job> [--slug s] [--demande "texte de la demande"]
-      -> pack conseillé (ecran-partage | explainer | punch | infographie | classique) + pourquoi + commandes à lancer
+      -> pack conseillé (ecran-partage | explainer | punch | infographie | montage | classique) + pourquoi + commandes à lancer
   python pack.py draft <job> <slug> [--pack auto|ecran-partage|explainer|punch|infographie]
       -> work/<slug>_panels.json (écran partagé, explainer) ou work/<slug>_punch.json (punch), posés sur les mots dits.
          Si le fichier existe déjà : work/<slug>_panels_draft.json / <slug>_punch_draft.json (rien n'est écrasé).
@@ -401,12 +401,16 @@ def media_files(job):
 
 
 def is_rush(p):
-    """Vidéo avec du son de plus de 8 s : sans doute une prise de parole filmée."""
+    """Prise de parole filmée : plus de 8 s et quelqu'un parle (détecteur de voix ; le bruit d'un chantier ne compte pas)."""
     try:
         info = probe(p)
     except SystemExit:
         return False
-    return info["duration"] > 8 and info["has_audio"]
+    if info["duration"] <= 8 or not info["has_audio"]:
+        return False
+    from footage import speech_ratio
+    r = speech_ratio(p, info["duration"])
+    return True if r is None else r > 0.25
 
 
 def choose(job_name, slug=None, demande=""):
@@ -428,7 +432,11 @@ def choose(job_name, slug=None, demande=""):
     explain = len(re.findall(r"\b(comment|etape|d'abord|ensuite|enfin|conseil|astuce|pourquoi|deroule|tuto|guide|expliqu)", txt))
     announce = len(re.findall(r"\b(ouvert|nouveau|nouvelle|promo|offre|lancement|annonce|reduction|soldes|evenement|"
                               r"date|inscription|reserv|disponible|€|euros)", txt))
-    if rushes:
+    silent = [] if (story or rushes) else [p for p in files if p.suffix.lower() in VIDEO]
+    if len(silent) >= 2:
+        pack, why = "montage", (f"{len(silent)} vidéos sans paroles (chantier, ambiance, plats, événement) : meilleurs passages "
+                                "mesurés, accélérés, étiquettes, avant / après, musique ou voix off")
+    elif rushes:
         if "sobre" in ton or "haut de gamme" in ton:
             pack, why = "classique", "rush filmé et ton sobre / haut de gamme : sous-titres minimal, peu d'habillage"
         else:
@@ -448,12 +456,13 @@ def choose(job_name, slug=None, demande=""):
         "ecran-partage": ["layout split (visual.layout ou --layout split)", "pack.py draft <job> <slug>", "panel.py fetch / pick",
                           "build_composition.py <job> <slug> --layout split"],
         "explainer": ["pack.py draft <job> <slug>", "panel.py fetch / pick", "build_explainer.py <job> <slug>"],
+        "montage": ["footage.py scan <job>", "footage.py plan <job> <slug>", "build_footage.py <job> <slug>"],
         "infographie": ["work/<slug>_data.json (un graphique par chiffre dit, voir build_data.py)", "build_data.py <job> <slug>"],
         "punch": ["pack.py draft <job> <slug>", "build_punch.py fetch / pick", "build_punch.py <job> <slug>"],
         "classique": ["parcours rush → reel ou sans rush (build_scenes.py)"],
     }[pack]
     out(ok=True, pack=pack, pourquoi=why, rushs=[p.name for p in rushes], medias=len(files), ensuite=cmds,
-        autres=[p for p in ("ecran-partage", "explainer", "punch", "infographie", "classique") if p != pack])
+        autres=[p for p in ("ecran-partage", "explainer", "punch", "infographie", "montage", "classique") if p != pack])
 
 
 def _assign_media(beats, files, rush_names):
@@ -794,7 +803,7 @@ def draft(job_name, slug, pack="auto"):
         with contextlib.redirect_stdout(buf):
             choose(job_name, slug)
         pack = json.loads(buf.getvalue())["pack"]
-        if pack == "classique":
+        if pack in ("classique", "montage"):
             fail(f"pack conseillé : {pack} (pas de brouillon automatique : écris les temps forts toi-même) ; force --pack si tu veux quand même un pack")
     sents = [p for s_ in sentences(words) for p in split_long(s_)]
     files = media_files(job)

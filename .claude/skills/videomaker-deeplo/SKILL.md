@@ -1,12 +1,14 @@
 ---
 name: videomaker-deeplo
 description: >-
-  VideoMakerDeeplo (Deeplo Video Maker) : monte une vidéo prête à poster pour une petite entreprise à partir de rushs, photos, textes
-  ou idées, dans HyperFrames. Dérush par le texte (meilleure prise de chaque phrase, blancs et ratés supprimés),
+  VideoMakerDeeplo (Deeplo Video Maker) : monte une vidéo prête à poster pour une entreprise, un indépendant ou un créateur
+  (contenu tech compris) à partir de rushs face caméra, d'images sans paroles (chantier, ambiance, plats, événement),
+  de photos, de chiffres, de textes ou d'idées, dans HyperFrames. Dérush par le texte (meilleure prise de chaque phrase, blancs et ratés supprimés),
   sous-titres mot à mot (pop, karaoké, minimal) ou phrases fortes, zooms caméra, SFX réels, voix off Fish Audio,
   musique libre de droits, charte du client, formats 9:16 / 1:1 / 16:9. Utiliser dès que l'utilisateur veut
   « monter une vidéo », « faire un reel », « dérusher », « mettre des sous-titres », « couper les blancs »,
-  « faire une vidéo pour <client> », ou dépose un rush, ou tape /videomaker-deeplo.
+  « faire une vidéo pour <client> », « journal de chantier », « montage de mes clips », ou dépose un rush, ou tape
+  /videomaker-deeplo.
 ---
 
 # VideoMakerDeeplo (Deeplo Video Maker)
@@ -82,7 +84,7 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
    ligne (voix locale de test) avant de lancer.
 7. **Le pack (rendu), choisi tout seul** : dès que les fichiers et le brief sont là,
    `python scripts/pack.py choose <job> [--slug s] --demande "<la demande>"` conseille un pack d'après les fichiers
-   (rush avec du son = écran partagé), des chiffres dans le propos (= infographie), le brief (informer / conseiller = explainer ; vendre, annoncer, ≤ 20 s = punch ;
+   (rush où l'on parle = écran partagé ; clips sans paroles = montage), des chiffres dans le propos (= infographie), le brief (informer / conseiller = explainer ; vendre, annoncer, ≤ 20 s = punch ;
    ton sobre ou haut de gamme = classique) et ce qui est dit. Annonce-le en une ligne dans le récap du point 5
    (« écran partagé : animation en haut, visage en bas ») ; tu ne poses la question que si deux packs se valent
    vraiment. L'utilisateur peut toujours dire « plutôt en punch ».
@@ -104,6 +106,7 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
 |---|---|---|
 | Le client va filmer lui-même | « guide de tournage » | `guide.py` (à lui envoyer AVANT) |
 | Rush face caméra, interview courte | « rush → reel » | `transcribe.py` |
+| Clips sans paroles (chantier, ambiance, plats, événement, produit, voyage) | « montage » | `footage.py scan` |
 | Plusieurs petits clips (téléphone) | « plusieurs rushs » puis « rush → reel » | `multi.py list` |
 | Expliquer un service / un déroulé, sans rush | « explainer papier » | `build_explainer.py` |
 | Photos + idée / texte, pas de rush | « sans rush » | un modèle de `templates/` (promo, boutique, recrutement, témoignage, produit) |
@@ -246,6 +249,25 @@ frise des jours avec drapeau. Pour un bilan, une étude de cas, une méthode « 
    plus fort entouré), `days` (cases cochées + tampon), `title`, `end` (nom + lien). `head` et `day` restent acquis.
 3. `python scripts/build_data.py <job> <slug>` puis check + snapshot. Accent : `visual.dataAccent`.
    **Uniquement des chiffres réels du client.** Un scénario d'exemple doit être dit comme tel à l'oral et à l'écran.
+
+### Images sans paroles → montage (journal de chantier, ambiance, événement, produit)
+Le montage par le texte ne s'applique pas : il n'y a pas de mots. Le où vient alors des **mesures** de `footage.py`
+(netteté par zone, mouvement, tremblement, luminosité, voix détectée, date de tournage) ; le quoi garder reste ton choix.
+```bash
+python scripts/footage.py scan <job>                 # work/footage.json + planche work/footage/planche.jpg (REGARDE-LA)
+python scripts/footage.py plan <job> <slug> --duree 30   # premier jet work/<slug>_footage.json, ordre chronologique
+#   TU relis : keep (écarte les clips hors sujet ou ratés), ordre, seg (0 = meilleur passage mesuré, 1, 2), timelapse,
+#   label (« JOUR 12 » automatique si les dates s'étalent), caption (« La cuisine »), title, series, compare (avant / après).
+python scripts/add_music.py <job> <slug> --mood upbeat   # ou une voix off : storyboard + voice.py + build_text.py (même slug)
+python scripts/build_footage.py <job> <slug> [--fit blur] [--style boite]   # puis check + snapshot
+```
+- **Accéléré** : proposé pour un clip long filmé caméra posée (`timelapse: true`, vitesse calculée pour la durée).
+- **Avant / après** : `compare` avec deux clips filmés du même endroit -> volet qui découvre l'après.
+- **Série** : `series` (« Journal de chantier · Semaine 4 sur 12 ») en haut, barre de progression ; un job par épisode.
+- **Voix off** : les plans changent sur les débuts de phrases (ou sur `word`), sous-titres au style choisi. Sinon musique.
+- Un clip où quelqu'un parle (`parole` dans le scan, voix détectée) : `transcribe.py` pour en faire une prise de parole
+  ou un repère (« jour 12, on casse le mur »). Le son des clips n'est pas gardé (machines, vent).
+- Avant que le client filme : `guide.py --metier chantier` (points fixes, plans de 10 s, accéléré posé, phrase repère).
 
 ### Plusieurs rushs → une vidéo
 Le client a filmé 5 ou 6 clips, dans le désordre, avec des reprises : mets-les tous dans `inbox/` (`new_job.py --rush a b c`).

@@ -1,7 +1,7 @@
 """GUIDE DE TOURNAGE à envoyer au client avant qu'il filme -> guide-tournage.html (une page, lisible sur téléphone,
 imprimable, cases à cocher)
 
-  python guide.py [--job <job>] [--client "Boulangerie Martin"] [--metier boutique|artisan|restaurant|service|recrutement]
+  python guide.py [--job <job>] [--client "Boulangerie Martin"] [--metier boutique|artisan|restaurant|chantier|service|recrutement]
                   [--brand <dossier brands/>] [--envoi "lien WeTransfer / Drive…"] [--contact "Prénom, 04…"] [--format vertical|horizontal]
 
 Contenu : matériel, cadrage, lumière, son, comment parler (et se tromper sans stress), script type du métier
@@ -40,6 +40,14 @@ SCRIPTS = {
         ("Appel à l'action", "« Réservez au [numéro / lien], on est ouverts [jours]. »")],
         ["un plat qu'on dresse (vue du dessus et de côté)", "la cuisine en action", "la salle ou la terrasse",
          "un verre qu'on sert", "la devanture"]),
+    "chantier": ("Chantier / rénovation / journal de travaux", [
+        ("À chaque visite", "Dites en filmant : « Jour [n], aujourd'hui on [ce qui se fait]. » (cette phrase sert de repère au montage)"),
+        ("Points fixes", "Choisissez 3 endroits (entrée, salle, cuisine) et filmez-les à chaque visite, du même endroit et à la même hauteur : ce sont vos avant / après."),
+        ("Accéléré", "Une fois par semaine, posez le téléphone (trépied ou appui) 1 à 5 minutes sans le toucher sur une action longue : elle deviendra un accéléré."),
+        ("Les gestes", "Plans de 10 secondes, sans bouger : une main qui perce, peint, pose ; pas besoin de parler."),
+        ("La fin", "Le jour J : les mêmes points fixes, la lumière allumée, et une phrase « Ça y est, [ce qui est fini]. »")],
+        ["les 3 points fixes à chaque visite", "un geste d'ouvrier de près (10 s sans bouger)", "un accéléré posé (1 à 5 min)",
+         "l'avant et l'après d'un même mur", "l'équipe au travail (avec leur accord)"]),
     "service": ("Service / indépendant / conseil", [
         ("Accroche (3 s)", "« L'erreur que je vois le plus souvent chez [vos clients] : [l'erreur]. »"),
         ("Qui vous êtes", "« Je suis [prénom], j'aide [type de clients] à [résultat]. »"),

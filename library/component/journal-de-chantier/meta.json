@@ -1,0 +1,20 @@
+{
+ "name": "journal-de-chantier",
+ "type": "component",
+ "title": "Journal de chantier (montage sans paroles)",
+ "description": "Meilleurs passages mesurés de chaque clip, étiquettes « JOUR 7 · Le gros œuvre », accéléré, série « Semaine 4 sur 12 », volet avant / après, voix off et sous-titres ou musique.",
+ "when_to_use": "Rénovation, ouverture d'un lieu, fabrication, événement, ambiance, produit : tout montage de clips sans paroles.",
+ "tags": [
+  "montage",
+  "chantier",
+  "sans paroles",
+  "accéléré",
+  "avant après"
+ ],
+ "files": [],
+ "usage": "footage.py scan + plan, puis build_footage.py <job> <slug> (work/<slug>_footage.json)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}
