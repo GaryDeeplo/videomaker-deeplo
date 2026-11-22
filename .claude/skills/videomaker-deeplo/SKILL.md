@@ -132,6 +132,27 @@ npx --yes hyperframes@0.9.71 render -q delivery -w 8 -o renders/<slug>.mp4      
 python scripts/finalize.py <job> <slug>.mp4                    # master -14 LUFS -> renders/<slug>_final.mp4 + verdict
 ```
 
+### Pack « écran partagé » (layout split) : animation en haut, visage en bas
+Le rendu « pro » des Reels d'experts : la moitié haute est un panneau animé (fond presque noir avec une lueur de
+l'accent, grain, sol en perspective qui avance, reflet), la moitié basse le visage, les sous-titres (2-3 mots, mot
+fort dans une boîte d'accent) sur la jointure. Pour un rush face caméra vertical.
+1. `jobs/<job>/config.json` : `{"visual": {"layout": "split"}, "text": {"captionMaxWords": 3}}` (ou `--layout split`),
+   AVANT `build_text.py`.
+2. Écris `work/<slug>_panels.json` (`python scripts/panel.py suggest <job> <slug>` donne un squelette, une entrée par
+   phrase) : un temps fort par idée, posé sur le MOT qui l'introduit, visible jusqu'au suivant. Types : `title`
+   (texte court avec le *mot fort* en italique serif, `mark` : étincelle, `flash` : éclair), `check` (liste qui se
+   coche + tampon), `stat` (chiffre qui défile + libellé), `search` (fenêtre, frappe, résultats), `image` (photo du
+   client ou de banque dans un cadre lumineux), `steps` (étapes 1-2-3 qui s'allument). `tag` : étiquette de chapitre
+   en haut à droite (2-3 mots en capitales : « LE PROBLÈME », « ÉTAPE 2 »). Détails dans `scripts/panel.py`.
+   Règles : une idée toutes les 2 à 6 s (rien de statique plus longtemps), textes de 2 à 6 mots, la même chose que
+   ce qui est dit (jamais une info en plus), chiffres / avis / résultats uniquement réels.
+   Sans `panels.json` : un titre par phrase forte (overlays de text.json), correct mais moins riche.
+3. `build_composition.py` (style de sous-titres `seam` automatique). Les blocs posés par-dessus (`motions.json`) sont
+   ignorés en écran partagé : leur idée va dans un temps fort. Les plans de coupe s'affichent dans le panneau.
+   Formats 1:1 et 16:9 : retour à la mise en page classique.
+Inspiré des Reels « split screen » d'experts tech : on reprend les principes (panneau, jointure, typo mêlée, interfaces
+qui changent d'état), jamais leurs visuels ni leurs contenus.
+
 ### Plusieurs rushs → une vidéo
 Le client a filmé 5 ou 6 clips, dans le désordre, avec des reprises : mets-les tous dans `inbox/` (`new_job.py --rush a b c`).
 ```bash

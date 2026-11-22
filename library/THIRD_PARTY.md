@@ -10,3 +10,7 @@
 ## YuNet (détection de visage, recadrage qui suit la personne)
 `.claude/skills/videomaker-deeplo/vendor/yunet/face_detection_yunet_2023mar.onnx` — OpenCV Zoo, © 2020 Shiqi Yu, licence MIT
 (`vendor/yunet/LICENSE`). Utilisé localement par `scripts/reframe.py` ; aucune image ne quitte la machine.
+
+## Polices du panneau « écran partagé »
+`.claude/skills/videomaker-deeplo/vendor/fonts/` : Instrument Serif Italic (© The Instrument Serif Project Authors) et
+IBM Plex Mono Medium (© IBM Corp.), licence SIL Open Font License 1.1 (fichiers OFL-*.txt à côté).

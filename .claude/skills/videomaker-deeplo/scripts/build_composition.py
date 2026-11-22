@@ -145,7 +145,7 @@ EMOJI_CHAR = {"valide": "✅", "coeur": "❤️", "etoile": "⭐", "pouce": "�
               "regard": "👀", "waouh": "🤩", "adore": "😍", "cent": "💯", "bravo": "🙌", "applaudir": "👏", "eclat": "✨",
               "cloche": "🔔", "alarme": "🚨", "trophee": "🏆", "force": "💪", "reflexion": "🤔", "rire": "😂", "doigt": "👉",
               "cible": "🎯", "feu": "🔥", "fete": "🎉"}
-STYLES = ["pop", "karaoke", "minimal", "boite", "impact", "duo"]
+STYLES = ["pop", "karaoke", "minimal", "boite", "impact", "duo", "seam"]
 
 
 def emoji_for(word):
@@ -168,7 +168,7 @@ def key_word(words):
 
 def caption_spans(words, style, use_emoji, st, last_emo):
     """HTML des mots d'un groupe selon le style (+ emoji collé à son mot). -> (html, instant de l'emoji ou None, last_emo)"""
-    keyw = key_word(words) if style == "duo" else set()
+    keyw = key_word(words) if style in ("duo", "seam") else set()
     parts, emo = [], None
     for j, w in enumerate(words):
         inner = ('<i class="bx"></i>' if style == "boite" else "") + esc(w["w"])
@@ -272,6 +272,7 @@ def main():
     ap.add_argument("--no-cam", action="store_true")
     ap.add_argument("--no-sfx", action="store_true")
     ap.add_argument("--size", help="9:16 | 1:1 | 4:5 | 16:9 | LxH (défaut : config)")
+    ap.add_argument("--layout", choices=["full", "split"], help="split : animation en haut, visage en bas (visual.layout)")
     ap.add_argument("--mode", choices=["captions", "overlays", "both", "none"])
     ap.add_argument("--no-captions", action="store_true", help="= --mode none (couverture)")
     ap.add_argument("--style", choices=STYLES)
@@ -309,6 +310,12 @@ def main():
         else:
             track["start"], track["moves"] = camera_path([tuple(x) for x in track["samples"]], cw, track.get("zone", 0.18))
     fill = not track and (fit == "fill" or (fit == "auto" and (ratio < 0.75 or ratio > 1.33)))
+    split = (a.layout or vis.get("layout", "full")) == "split" and H > W  # écran partagé : vertical seulement
+    PH = round(H * 0.5)
+    if split:
+        track, fill = None, False
+        style = "seam" if style in ("pop", "duo", "seam") else style
+        mode = "captions" if mode != "none" else mode
     cap_top = (txt["captionTopPct"] if not fill else 70) if H > W else 82  # fond flouté : sous l'image
 
     font_face = ""
@@ -327,7 +334,7 @@ def main():
     r = W / 1920.0
     k = float(vis.get("sizeScale") or (1.5 if H > W else 1.0))
     SZ = {"side": round(88 * r * k), "center": round(97 * r * k), "topline": round(110 * r * k)}
-    cap_size = round({"minimal": 58, "impact": 96}.get(style, 84) * (W / 1080 if H > W else H / 1080))
+    cap_size = round({"minimal": 58, "impact": 96, "seam": 62}.get(style, 84) * (W / 1080 if H > W else H / 1080))
     use_emoji = a.emoji or txt.get("captionEmoji", False)
 
     nodes, tw = [], []
@@ -340,7 +347,7 @@ def main():
         for i, g in enumerate(caps):
             st = round(max(0.1, g["words"][0]["start"] - 0.05), 3)
             nxt = caps[i + 1]["words"][0]["start"] - 0.05 if i + 1 < len(caps) else dur
-            en = round(min(dur, max(g["end"] + 0.25, st + 0.4), max(nxt, g["end"])), 3)
+            en = round(min(dur, max(g["end"] + 0.25, st + 0.4), nxt if split else max(nxt, g["end"])), 3)  # écran partagé : une ligne, jamais deux groupes à la fois
             if en - st <= 0.1:
                 continue
             gid = f"cap-{g['id']}"
@@ -407,7 +414,7 @@ def main():
 
     rgb = [int(accent.lstrip("#")[k:k + 2], 16) for k in (0, 2, 4)] if len(accent.lstrip("#")) == 6 else [0, 0, 0]
     hook_ink = "#111111" if (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) > 160 else "#ffffff"
-    if hook.exists():  # accroche en titre les 3 premières secondes (shorts)
+    if hook.exists() and not split:  # accroche en titre les 3 premières secondes (shorts) ; en écran partagé : dans le panneau
         hd = round(min(3.2, dur - 0.3), 3)
         nodes.append(f'      <div class="clip hook" id="hook" data-start="0.15" data-duration="{hd}" data-track-index="7">'
                      f'<div class="hk">{esc(read_json(hook)["text"])}</div></div>')
@@ -480,7 +487,9 @@ def main():
         nodes += bn
         tw += bjs
         sfx_nodes += bsfx
-    if mj_.exists():  # blocs de motion design calés sur des mots prononcés
+    if mj_.exists() and split:  # écran partagé : pas de bloc par-dessus le panneau, ce qu'ils disent va dans les temps forts
+        motion_rep = [{"block": m_.get("block"), "pose": False, "raison": "écran partagé : à mettre dans le panneau"} for m_ in read_json(mj_)]
+    elif mj_.exists():  # blocs de motion design calés sur des mots prononcés
         mvals = {"accent": accent, "font": family, "top": (12 if fill else 22) if H > W else 18,  # fond flouté : bande du haut
                  "icon": logo_rel, "avatar": logo_rel}
         mn, motion_rep = motion_nodes(job, read_json(mj_), cap_words, W, H, offset=T0, base_vals=mvals)
@@ -499,6 +508,27 @@ def main():
     if track:
         track_js = f'  gsap.set("#a-roll", {{ x: {off(track["start"])} }});\n' + "".join(
             f'  tl.to("#a-roll", {{ x: {off(cx)}, duration: {d}, ease: "power2.inOut" }}, {t});\n' for t, cx, d in track["moves"])
+    panel_html, panel_rep, split_css = "", [], ""
+    if split:  # panneau d'animation (panel.py) : temps forts posés sur des mots dits
+        import panel as pn
+        pj = job / "work" / f"{a.slug}_panels.json"
+        beats = read_json(pj) if pj.exists() else pn.default_beats(t)
+        if not pj.exists() and hook.exists():
+            beats = [{"type": "title", "_t": 0.0, "text": read_json(hook)["text"], "mark": True}] + beats
+        cw = [w for g in t.get("captions", []) for w in g["words"]] or cap_words
+        panel_html, pjs, panel_rep = pn.nodes(job, beats, cw, dur, T0, W, PH, vis)
+        tw += pjs
+        font_face += " " + pn.fonts(job)
+        seam_h = round(cap_size * 2.1)
+        split_css = pn.css(W, PH, family, vis) + f"""
+  .zw {{ inset: auto; left: 0; top: {PH}px; width: {W}px; height: {H - PH}px; }}
+  #a-roll {{ height: {H - PH}px; object-fit: cover; object-position: {vis["focusX"]}% 32%; }}
+  .seam {{ position: absolute; left: 0; right: 0; top: {PH - seam_h // 2}px; height: {seam_h}px; z-index: 40;
+          background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.9) 28%, rgba(0,0,0,.9) 72%, transparent 100%); }}
+  .cap {{ top: {PH - round(cap_size * 0.62)}px; }}
+  .cap .in {{ text-transform: none; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 10px rgba(0,0,0,.6); white-space: nowrap; }}
+  .cap .w.k {{ background: {accent}; color: {hook_ink}; padding: 0 .2em; border-radius: .14em; font-size: 1em; }}
+  .broll {{ inset: auto; left: 0; top: 0; width: {W}px; height: {PH}px; }}"""
     doc = f"""<!doctype html>
 <html lang="fr">
 <head>
@@ -540,6 +570,7 @@ def main():
               text-wrap: balance; opacity: 0; box-shadow: 0 10px 30px rgba(0,0,0,.35); }}
   .topline {{ left: {round(70 * r)}px; right: {round(70 * r)}px; text-align: center; top: {round(H * 0.16)}px;
               font-size: {SZ['topline']}px; text-transform: uppercase; color: {accent}; }}
+{split_css}
 </style>
 </head>
 <body>
@@ -552,6 +583,8 @@ def main():
                data-track-index="0" playsinline data-has-audio="true" data-volume="1"{' style="width: ' + str(VW) + 'px; max-width: none; object-fit: fill;"' if track else ''}></video>
       </div>
     </div>
+{panel_html}
+{'    <div class="seam"></div>' if split else ''}
 {chr(10).join(sfx_nodes)}
 {chr(10).join(nodes)}
 {chr(10).join(blocks)}
@@ -601,7 +634,8 @@ def main():
     drifts = sum(1 for x in cam if x[4] == "power1.inOut")
     out(ok=True, format=f"{W}x{H}", duree=total, contenu=dur, intro=T0, outro=outro_d, bandeau=bool(lt.get("name")),
         motions=motion_rep, plans_de_coupe=broll_rep, mode=mode, style=style,
-        cadrage="suit le visage" if track else ("image entière, fond flouté" if fill else "recadré"),
+        cadrage="écran partagé" if split else ("suit le visage" if track else ("image entière, fond flouté" if fill else "recadré")),
+        panneau=panel_rep or None,
         captions=sum(1 for n in nodes if 'class="clip cap"' in n), overlays=sum(1 for n in nodes if "note" in n),
         drifts=drifts, punchs=len(cam) - drifts, sfx_whoosh=n_whoosh, sfx_tick=n_tick,
         suite="npx hyperframes check, puis snapshot / preview")
