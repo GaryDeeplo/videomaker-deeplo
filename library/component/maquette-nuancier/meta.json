@@ -1,0 +1,20 @@
+{
+ "name": "maquette-nuancier",
+ "type": "component",
+ "title": "Nuancier de marque",
+ "description": "Couleurs de la charte qui montent, « Aa » dans la police de la marque.",
+ "when_to_use": "Identité visuelle, création de logo ou de site, avant / après.",
+ "tags": [
+  "interface",
+  "marque",
+  "couleurs",
+  "police",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"palette\", \"word\": \"<mot dit>\", \"title\": \"Votre marque\"} (couleurs et police de la charte par défaut)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

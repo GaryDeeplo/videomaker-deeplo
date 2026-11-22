@@ -25,7 +25,13 @@ Maquettes d'interface :
    "items": [{"icon": "mail", "label": "Mails"}, …]}   (8 au plus)
   {"type": "browser", "word": "…", "url": "…", "site": {"title": "…", "sub": "…", "button": "…", "tiles": ["…", "…", "…"]},
    "notes": [{"on": "title", "text": "Titre trop long"}]}   (ou "image": capture + notes {"text", "x", "y", "w", "h"} en %)
-Liste : "list": {"n": 1, "of": 5, "name": "…", "icon": "…"} sur les temps forts d'un élément -> en-tête « 1 SUR 5 ».
+  {"type": "funnel", "word": "…", "title": "…", "steps": [{"label": "Accueil", "value": 100}, {"label": "Offre", "value": 70},
+   {"label": "Formulaire", "value": 25}, {"label": "Paiement", "value": 12}], "leak": 2, "note": "Vos clients partent ici"}
+  {"type": "chart", "word": "…", "title": "Visites du site", "points": [5, 8, 20, 64, 208], "label": "208 / jour", "xlabels": ["janv.", "…"]}
+  {"type": "feed", "word": "…", "title": "Commandes", "badge": "EN DIRECT", "items": [{"text": "…", "sub": "il y a 2 min", "icon": "shopping-bag"}]}
+  {"type": "palette", "word": "…", "title": "Votre marque"}   (couleurs et police de la charte si "colors" / "font" absents)
+Liste : "list": {"n": 1, "of": 5, "name": "…", "icon": "…"} sur les temps forts d'un élément -> en-tête « 1 SUR 5 » ;
+  "style": "tabs" -> rangée d'onglets numérotés 1 2 3 4 (celui en cours en couleur).
 Thèmes : dark (écran partagé), light (écran partagé clair), cards (cartes sur la vidéo plein écran), paper (explainer).
 *mot* = mot fort en italique serif. Chiffres, avis, résultats : uniquement des données réelles du client.
 Sans fichier : un temps fort « title » par phrase forte (overlays gardés de text.json).
@@ -325,7 +331,46 @@ def css_ui(W, ph, acc, on_acc):
   .lhead .lp {{ position: absolute; left: 50%; top: 0; transform: translateX(-50%); padding: {round(8*u)}px {round(30*u)}px {round(10*u)}px;
                border-radius: {round(16*u)}px; border: 2px solid var(--acc); background: var(--ui-solid); text-align: center; white-space: nowrap; opacity: 0; }}
   .lhead .lp small {{ display: block; font: 500 {round(20*u)}px {mono}; letter-spacing: .14em; color: var(--ui-mute); }}
-  .lhead .lp b {{ display: block; font-size: {round(42*u)}px; font-weight: 800; line-height: 1.1; color: var(--ui-ink); }}"""
+  .lhead .lp b {{ display: block; font-size: {round(42*u)}px; font-weight: 800; line-height: 1.1; color: var(--ui-ink); }}
+  .ltabs {{ position: absolute; left: 50%; top: {round(10*u)}px; transform: translateX(-50%); display: flex; align-items: center; gap: {round(10*u)}px;
+           padding: {round(10*u)}px {round(14*u)}px; border-radius: {round(18*u)}px; background: var(--ui-solid); border: 1px solid var(--ui-line);
+           box-shadow: 0 {round(10*u)}px {round(30*u)}px rgba(0,0,0,.18); white-space: nowrap; opacity: 0; }}
+  .ltabs i {{ font: 600 {round(30*u)}px {mono}; font-style: normal; width: {round(56*u)}px; height: {round(56*u)}px; border-radius: {round(12*u)}px;
+             display: flex; align-items: center; justify-content: center; color: var(--ui-mute); }}
+  .ltabs i.on {{ background: var(--acc); color: var(--on-acc); }}
+  .ltabs b {{ margin: 0 {round(10*u)}px 0 {round(6*u)}px; font-size: {round(36*u)}px; font-weight: 800; color: var(--ui-ink); }}
+  .fun {{ position: absolute; left: {round(70*u)}px; right: {round(70*u)}px; top: {round(ph*0.2)}px; height: {round(ph*0.56)}px; }}
+  .fbar {{ position: absolute; bottom: {round(60*u)}px; border-radius: {round(12*u)}px {round(12*u)}px 0 0; background: var(--acc); transform-origin: 50% 100%; }}
+  .fbar.leak {{ background: #d62f33; }}
+  .flab {{ position: absolute; bottom: 0; height: {round(48*u)}px; text-align: center; font-size: {round(30*u)}px; font-weight: 700; color: var(--ui-ink);
+          white-space: nowrap; }}
+  .fval {{ position: absolute; text-align: center; font: 600 {round(28*u)}px {mono}; color: var(--ui-mute); }}
+  .fdot {{ position: absolute; width: {round(12*u)}px; height: {round(12*u)}px; border-radius: 50%; background: var(--ui-mute); opacity: 0; }}
+  .fnote {{ position: absolute; padding: {round(10*u)}px {round(20*u)}px; border-radius: {round(12*u)}px; background: #d62f33; color: #fff; font-size: {round(32*u)}px;
+           font-weight: 800; white-space: nowrap; transform: rotate(-3deg); opacity: 0; }}
+  .chartc svg {{ display: block; overflow: visible; }}
+  .chartc .gl {{ stroke: var(--ui-line); stroke-width: {max(1, round(2*u))}; }}
+  .chartc .gt {{ font: 500 {round(22*u)}px {mono}; fill: var(--ui-mute); }}
+  .chartc .ln {{ fill: none; stroke: var(--acc); stroke-width: {round(6*u)}; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1000; }}
+  .chartc .dot {{ fill: var(--acc); }}
+  .chartc .cval {{ position: absolute; padding: {round(6*u)}px {round(16*u)}px; border-radius: 99px; border: 2px solid var(--acc); background: var(--ui-solid);
+                  font-size: {round(34*u)}px; font-weight: 800; color: var(--ui-ink); white-space: nowrap; opacity: 0; }}
+  .live {{ position: absolute; right: {round(34*u)}px; top: {round(30*u)}px; display: inline-flex; align-items: center; gap: {round(10*u)}px;
+          padding: {round(6*u)}px {round(16*u)}px; border-radius: 99px; background: #d62f33; color: #fff; font: 700 {round(22*u)}px {mono}; letter-spacing: .08em; }}
+  .live::before {{ content: ""; width: {round(12*u)}px; height: {round(12*u)}px; border-radius: 50%; background: #fff; }}
+  .feed {{ position: relative; overflow: hidden; }}
+  .fi {{ position: absolute; left: 0; right: 0; display: flex; align-items: center; gap: {round(18*u)}px; padding: {round(16*u)}px {round(20*u)}px;
+        border-radius: {round(16*u)}px; background: var(--ui-soft); border: 1px solid var(--ui-line); opacity: 0; }}
+  .fi .fic {{ flex: 0 0 auto; width: {round(64*u)}px; height: {round(64*u)}px; border-radius: 50%; background: var(--acc); color: var(--on-acc);
+             display: flex; align-items: center; justify-content: center; }}
+  .fi .fic svg {{ width: 52%; height: 52%; }}
+  .fi b {{ display: block; font-size: {round(36*u)}px; font-weight: 700; line-height: 1.15; }}
+  .fi small {{ display: block; font: 500 {round(22*u)}px {mono}; color: var(--ui-mute); margin-top: {round(4*u)}px; }}
+  .sw {{ display: flex; gap: {round(16*u)}px; margin: {round(10*u)}px 0 {round(26*u)}px; }}
+  .sw i {{ flex: 1; height: {round(130*u)}px; border-radius: {round(16*u)}px; border: 1px solid var(--ui-line); opacity: 0; }}
+  .swf {{ display: flex; align-items: baseline; gap: {round(24*u)}px; }}
+  .swf .aa {{ font-size: {round(150*u)}px; line-height: .9; font-weight: 700; }}
+  .swf span {{ font: 500 {round(26*u)}px {mono}; color: var(--ui-mute); }}"""
 
 
 def title_words(text):
@@ -613,6 +658,9 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
                 bj.append(f'  tl.fromTo("#{sid} .c{j}", {{ opacity: 0, y: -{round(120*u)}, rotation: {(-12, 10, -6, 8, -10, 6)[j]} }}, {{ opacity: 1, y: 0, rotation: 0, '
                           f'duration: 0.7, ease: "bounce.out", immediateRender: false }}, {tj});')
         elif typ in UI_TYPES:
+            if typ == "palette" and not b.get("colors"):
+                b = {**b, "colors": [c for c in (vis.get("bgColor"), vis.get("inkColor"), vis.get("accentColor"), vis.get("panelAccent"))
+                                     if c][:5], "font": b.get("font") or vis.get("fontFamily", "")}
             inner, bj = ui_beat(job, typ, b, sid, s0, d, W, ph - (round(128 * u) if has_list else 0))
         else:
             rep.append({"type": typ, "pose": False, "raison": "type inconnu"})
@@ -661,7 +709,7 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
     return panel, js, rep, layers
 
 
-UI_TYPES = ("form", "chat", "rank", "progress", "hub", "browser")
+UI_TYPES = ("form", "chat", "rank", "progress", "hub", "browser", "funnel", "chart", "feed", "palette")
 
 
 def _typing(sel, text, dur, at):
@@ -814,6 +862,90 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
                       f'{{ attr: {{ "stroke-dashoffset": {round(cs / 2)} }}, duration: 0.4, ease: "power2.out", immediateRender: true }}, {tj});')
             bj.append(f'  tl.fromTo("#{sid} .s{j}", {{ opacity: 0, scale: 0.4 }}, {{ opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.6)", '
                       f'immediateRender: false }}, {round(tj + 0.28, 3)});')
+    elif typ == "funnel":
+        steps = b.get("steps", [])[:6]
+        n = max(1, len(steps))
+        fw, fh = W - round(140 * u), round(ph * 0.56)
+        mx = max([float(x.get("value", 1)) for x in steps] or [1]) or 1
+        gap = round(24 * u)
+        bw = (fw - gap * (n - 1)) / n
+        leak = b.get("leak")
+        hmax = fh - round(150 * u)
+        parts = []
+        for j, st_ in enumerate(steps):
+            h = max(round(12 * u), round(hmax * float(st_.get("value", 0)) / mx))
+            x = round(j * (bw + gap))
+            parts.append(f'<i class="fbar f{j}{" leak" if j == leak else ""}" style="left:{x}px;width:{round(bw)}px;height:{h}px"></i>'
+                         f'<span class="flab" style="left:{x}px;width:{round(bw)}px">{esc(glue(st_.get("label", "")))}</span>'
+                         + (f'<span class="fval v{j}" style="left:{x}px;width:{round(bw)}px;bottom:{h + round(70*u)}px">{esc(st_["show"])}</span>'
+                            if st_.get("show") else ""))
+        dots = "".join(f'<i class="fdot d{k}" style="left:{round(fw * (k + .5) / 14)}px;top:{round(10*u)}px"></i>' for k in range(14))
+        note = ""
+        if leak is not None and 0 <= int(leak) < n and b.get("note"):
+            lx = round(int(leak) * (bw + gap) + bw / 2)
+            note = f'<span class="fnote" style="left:{max(0, lx - round(160*u))}px;top:{round(46*u)}px">{esc(glue(b["note"]))}</span>'
+        inner = ((f'<div class="ihead">{esc(b["title"])}</div>' if b.get("title") else "")
+                 + f'<div class="fun">{dots}{"".join(parts)}{note}</div>')
+        bj.append(f'  tl.fromTo("#{sid} .fbar", {{ scaleY: 0 }}, {{ scaleY: 1, duration: 0.55, stagger: 0.12, ease: "power3.out", immediateRender: false }}, {s0 + 0.15});')
+        bj.append(f'  tl.fromTo("#{sid} .fdot", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.15, stagger: {round(min(0.08, d * 0.3 / 14), 3)}, immediateRender: false }}, {s0 + 0.3});')
+        if note:
+            tn = round(s0 + min(d * 0.5, 1.6), 3)
+            bj.append(f'  tl.fromTo("#{sid} .fnote", {{ opacity: 0, y: 16, scale: 0.6 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(2.6)", '
+                      f'immediateRender: false }}, {tn});')
+            bj.append(f'  tl.fromTo("#{sid} .fbar.leak", {{ x: 0 }}, {{ x: {round(6*u)}, duration: 0.06, yoyo: true, repeat: 5, immediateRender: false }}, {tn});')
+    elif typ == "chart":
+        pts = [float(x) for x in b.get("points", [])][:14] or [0, 1]
+        cw, chh = W - round(140 * u) - round(76 * u), round(ph * 0.34)
+        top_v = max(pts) * 1.15 or 1
+        x0 = round(80 * u)
+        X = lambda i: x0 + (cw - x0) * i / max(1, len(pts) - 1)
+        Y = lambda v: chh - chh * v / top_v
+        path = "M " + " L ".join(f"{X(i):.0f} {Y(v):.0f}" for i, v in enumerate(pts))
+        grid = "".join(f'<line class="gl" x1="{x0}" x2="{cw}" y1="{Y(top_v * k / 3):.0f}" y2="{Y(top_v * k / 3):.0f}" />'
+                       f'<text class="gt" x="{x0 - round(12*u)}" y="{Y(top_v * k / 3) + round(8*u):.0f}" text-anchor="end">'
+                       f'{esc(b.get("ylabels", [""] * 4)[k] if b.get("ylabels") else "")}</text>' for k in range(4))
+        xl = "".join(f'<text class="gt" x="{X(i * (len(pts) - 1) / max(1, len(b["xlabels"]) - 1)):.0f}" y="{chh + round(40*u)}" text-anchor="middle">{esc(t)}</text>'
+                     for i, t in enumerate(b.get("xlabels", [])))
+        ex, ey = X(len(pts) - 1), Y(pts[-1])
+        inner = (f'<div class="card chartc">' + (f'<div class="chead">{esc(b["title"])}</div>' if b.get("title") else "")
+                 + f'<div style="position:relative"><svg width="{cw}" height="{chh + round(50*u)}" viewBox="0 0 {cw} {chh + round(50*u)}">{grid}{xl}'
+                 f'<path class="ln" d="{path}" pathLength="1000" /><circle class="dot" cx="{ex:.0f}" cy="{ey:.0f}" r="{round(12*u)}" /></svg>'
+                 + (f'<span class="cval" style="right:{round(10*u)}px;top:{max(0, round(ey - 70 * u))}px">{esc(b["label"])}</span>' if b.get("label") else "")
+                 + '</div></div>')
+        bj.append(card_in)
+        tl_ = round(max(0.9, min(2.2, d * 0.55)), 2)
+        bj.append(f'  tl.fromTo("#{sid} .ln", {{ attr: {{ "stroke-dashoffset": 1000 }} }}, {{ attr: {{ "stroke-dashoffset": 0 }}, duration: {tl_}, ease: "power1.inOut", '
+                  f'immediateRender: true }}, {s0 + 0.35});')
+        bj.append(f'  tl.fromTo("#{sid} .dot", {{ opacity: 0, scale: 0 }}, {{ opacity: 1, scale: 1, transformOrigin: "50% 50%", duration: 0.3, ease: "back.out(3)", '
+                  f'immediateRender: false }}, {s0 + 0.35 + tl_});')
+        if b.get("label"):
+            bj.append(f'  tl.fromTo("#{sid} .cval", {{ opacity: 0, y: 12, scale: 0.7 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(2.4)", '
+                      f'immediateRender: false }}, {s0 + 0.45 + tl_});')
+    elif typ == "feed":
+        items = b.get("items", [])[:4]
+        rh = round(118 * u)
+        rows = "".join(f'<div class="fi q{j}" style="top:{j * rh}px"><span class="fic">{icon(it.get("icon", "bell")) if isinstance(it, dict) else icon("bell")}</span>'
+                       f'<span><b>{esc(item_text(it))}</b>' + (f'<small>{esc(it["sub"])}</small>' if isinstance(it, dict) and it.get("sub") else "")
+                       + '</span></div>' for j, it in enumerate(items))
+        inner = (f'<div class="card">' + (f'<div class="chead">{esc(b["title"])}</div>' if b.get("title") else "")
+                 + (f'<span class="live">{esc(b.get("badge", "EN DIRECT"))}</span>' if b.get("badge", "EN DIRECT") else "")
+                 + f'<div class="feed" style="height:{len(items) * rh}px">{rows}</div></div>')
+        bj.append(card_in)
+        bj.append(f'  tl.fromTo("#{sid} .live", {{ opacity: 1 }}, {{ opacity: 0.35, duration: 0.5, yoyo: true, repeat: {max(1, int(d / 0.5))}, immediateRender: false }}, {s0 + 0.3});')
+        span = max(0.35, min(0.8, (d * 0.7 - 0.5) / max(1, len(items))))
+        for j in range(len(items)):  # le plus récent arrive en haut et pousse les autres
+            bj.append(f'  tl.fromTo("#{sid} .q{j}", {{ opacity: 0, y: -{rh}, scale: 0.95 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.8)", '
+                      f'immediateRender: false }}, {round(s0 + 0.4 + (len(items) - 1 - j) * span, 3)});')
+    elif typ == "palette":
+        cols = b.get("colors", [])[:6]
+        sw = "".join(f'<i class="c{j}" style="background:{esc(c)}"></i>' for j, c in enumerate(cols))
+        inner = (f'<div class="card">' + (f'<div class="chead">{esc(b.get("title", "La marque"))}</div>')
+                 + f'<div class="sw">{sw}</div><div class="swf"><span class="aa">Aa</span><span>{esc(b.get("font", ""))}</span></div></div>')
+        bj.append(card_in)
+        bj.append(f'  tl.fromTo("#{sid} .sw i", {{ opacity: 0, y: 30, scaleY: 0.4 }}, {{ opacity: 1, y: 0, scaleY: 1, duration: 0.4, stagger: 0.1, ease: "back.out(2)", '
+                  f'immediateRender: false }}, {s0 + 0.35});')
+        bj.append(f'  tl.fromTo("#{sid} .swf", {{ opacity: 0, x: -30 }}, {{ opacity: 1, x: 0, duration: 0.45, ease: "power3.out", immediateRender: false }}, '
+                  f'{round(s0 + 0.5 + 0.1 * len(cols), 3)});')
     else:  # browser : site maquette (ou capture) annoté
         notes = b.get("notes", [])[:4]
         on = {n_.get("on"): n_ for n_ in notes if n_.get("on")}
@@ -877,6 +1009,15 @@ def list_heads(placed, dur, T0, W):
         hid = f"lh{i}"
         of = L.get("of")
         top = f'{L.get("n")} SUR {of}' if of else str(L.get("n", ""))
+        if L.get("style") == "tabs":
+            tabs = "".join(f'<i class="{"on" if k + 1 == L.get("n") else ""}">{k + 1}</i>' for k in range(int(of or L.get("n", 1))))
+            html_.append(f'      <div class="clip lhead" id="{hid}" data-start="{round(s0 + T0, 3)}" data-duration="{d}" data-track-index="{66 + i % 2}">'
+                         f'<div class="ltabs">{tabs}' + (f'<b>{esc(L["name"])}</b>' if L.get("name") else "") + '</div></div>')
+            js.append(f'  tl.fromTo("#{hid} .ltabs", {{ opacity: 0, y: -14 }}, {{ opacity: 1, y: 0, duration: 0.35, ease: "back.out(2)", immediateRender: false }}, {s0 + 0.05});')
+            js.append(f'  tl.fromTo("#{hid} .ltabs i.on", {{ scale: 0.5 }}, {{ scale: 1, duration: 0.35, ease: "back.out(3)", immediateRender: false }}, {s0 + 0.2});')
+            if i + 1 < len(segs):
+                js.append(f'  tl.to("#{hid} > *", {{ opacity: 0, duration: 0.2 }}, {round(s["t1"] - 0.2, 3)});')
+            continue
         html_.append(f'      <div class="clip lhead" id="{hid}" data-start="{round(s0 + T0, 3)}" data-duration="{d}" data-track-index="{66 + i % 2}">'
                      f'<i class="ll"></i><span class="le l">{icon(L.get("left", "sparkles"))}</span>'
                      + (f'<span class="le r">{icon(L["icon"])}</span>' if L.get("icon") else "")

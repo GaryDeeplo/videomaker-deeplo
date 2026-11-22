@@ -143,7 +143,7 @@ python scripts/build_text.py <job> <slug>                      # captions + over
 #   TU vérifies : orthographe des captions, keep / punch / reason des overlays
 python scripts/add_music.py <job> <slug> --mood upbeat         # ou --id <piste>, --file <fichier client>, --url <YouTube/SoundCloud>
 python scripts/broll.py moments <job> <slug>                  # plans de coupe : moments candidats (facultatif, voir plus bas)
-python scripts/build_composition.py <job> <slug> [--style pop|karaoke|minimal|boite|impact|duo] [--emoji] [--mode captions|overlays|both]
+python scripts/build_composition.py <job> <slug> [--style pop|karaoke|minimal|boite|impact|duo|mono] [--emoji] [--mode captions|overlays|both]
 cd <job> && npx --yes hyperframes@0.9.71 check                 # 0 erreur exigée
 npx --yes hyperframes@0.9.71 snapshot --at T1,T2,T3            # REGARDE la planche avant de montrer quoi que ce soit
 npx --yes hyperframes@0.9.71 preview                           # Studio pour l'utilisateur
@@ -181,8 +181,12 @@ en plus (détails et exemple JSON dans `scripts/panel.py`) :
 - `rank` : classement, la ligne du client (`highlight`) monte à la place `to` ; `progress` : commande + barre + compteur ;
 - `hub` : logo ou picto au centre, outils / services autour, reliés par des traits ; `browser` : maquette de site (ou
   capture `image`) annotée de défauts en rouge (`notes`, `on`: title | sub | button | tile1-3, ou x / y sur une capture).
+- `funnel` : entonnoir du parcours client, l'étape qui perd du monde (`leak`) en rouge + étiquette ; `chart` : courbe dans
+  une carte ; `feed` : flux « EN DIRECT » (commandes, avis, messages qui arrivent) ; `palette` : nuancier + « Aa » de la charte.
+- Ces maquettes marchent aussi dans l'**infographie** (`build_data.py`) : même JSON dans `work/<slug>_data.json`.
 - **Format liste** : `"list": {"n": 1, "of": 5, "name": "Perplexity", "icon": "search"}` sur les temps forts d'un même élément ->
-  en-tête fixe « 1 SUR 5 · Nom » relié par un trait (top conseils, erreurs, outils, étapes).
+  en-tête fixe « 1 SUR 5 · Nom » relié par un trait (top conseils, erreurs, outils, étapes) ; `"style": "tabs"` -> rangée
+  d'onglets numérotés 1 2 3 4.
 - **Thème clair** de l'écran partagé : `visual.panelTheme: "light"` ou `--panel-theme light` (fond blanc cassé, cartes à
   ombre douce). **Cartes sur le visage** : `visual.layout: "cards"` ou `--layout cards` (vidéo plein écran, temps forts en
   cartes blanches en haut) — seulement si le visage est au centre ou plus bas dans l'image (regarde le snapshot : si les
@@ -453,6 +457,7 @@ toujours à 30 i/s. Ne lance pas plusieurs rendus en parallèle : ça ne va pas 
 - `punch` : max 2 par minute, sur l'affirmation clé, le chiffre fort, le nom du produit ou l'appel à l'action.
   Chaque punch reçoit un whoosh calé sur son pic.
 
+- `mono` : majuscules machine à écrire, chaque mot dans sa boîte noire, le mot dit en couleur d'accent (ton tech / expert).
 - Styles en plus : `boite` (le mot dit passe dans une boîte couleur d'accent, style CapCut), `impact` (gros, contour
   noir, le mot dit grossit en couleur d'accent, style Hormozi ; mettre `text.captionMaxWords` à 2 ou 3), `duo` (les
   nombres ou le mot fort du groupe en couleur d'accent). `--emoji` (ou `text.captionEmoji: true`) : un emoji après les

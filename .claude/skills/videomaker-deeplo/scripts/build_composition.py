@@ -145,7 +145,7 @@ EMOJI_CHAR = {"valide": "✅", "coeur": "❤️", "etoile": "⭐", "pouce": "�
               "regard": "👀", "waouh": "🤩", "adore": "😍", "cent": "💯", "bravo": "🙌", "applaudir": "👏", "eclat": "✨",
               "cloche": "🔔", "alarme": "🚨", "trophee": "🏆", "force": "💪", "reflexion": "🤔", "rire": "😂", "doigt": "👉",
               "cible": "🎯", "feu": "🔥", "fete": "🎉"}
-STYLES = ["pop", "karaoke", "minimal", "boite", "impact", "duo", "seam"]
+STYLES = ["pop", "karaoke", "minimal", "boite", "impact", "duo", "seam", "mono"]
 
 
 def emoji_for(word):
@@ -197,6 +197,10 @@ def caption_css(style, accent, shadow=SHADOW):
     if style == "impact":
         css += f"""
   .cap .in {{ -webkit-text-stroke: 0.09em #000; paint-order: stroke fill; text-shadow: 0 0.07em 0 #000, {shadow}; }}"""
+    if style == "mono":  # majuscules machine à écrire, chaque mot dans sa boîte noire, le mot dit en couleur d'accent
+        css += """
+  .cap .in { font-family: 'IBM Plex Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0; text-shadow: none; }
+  .cap .w { background: #111; color: #fff; padding: 0.02em 0.26em; margin: 0 0.02em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }"""
     return css
 
 
@@ -243,6 +247,20 @@ def caption_js(style):
       tl.to(spans[i], { color: INK, scale: 1, duration: 0.12, ease: "power2.in" }, Math.max(t[0] + 0.08, t[1]));
     });
     tl.to(g + " .in", { opacity: 0, duration: 0.1, ease: "power2.in" }, en - 0.1);
+    tl.set(g + " .in", { opacity: 0 }, en);
+  }"""
+    if style == "mono":
+        return """
+  function cap(id, st, en, ws) {
+    const g = "#" + id, spans = document.querySelectorAll(g + " .w");
+    tl.set(g + " .in", { opacity: 1 }, st);
+    ws.forEach(function (t, i) {
+      const on = Math.max(st, t[0] - 0.03);
+      tl.fromTo(spans[i], { opacity: 0 }, { opacity: 1, duration: 0.04, immediateRender: false }, on);
+      tl.fromTo(spans[i], { backgroundColor: "#111111", color: "#ffffff" }, { backgroundColor: ACCENT, color: BOXINK, duration: 0.05, immediateRender: false }, on);
+      if (i + 1 < ws.length) tl.to(spans[i], { backgroundColor: "#111111", color: "#ffffff", duration: 0.05 }, Math.max(on + 0.06, ws[i + 1][0] - 0.03));
+    });
+    tl.to(g + " .in", { opacity: 0, duration: 0.08 }, en - 0.08);
     tl.set(g + " .in", { opacity: 0 }, en);
   }"""
     if style == "minimal":
@@ -339,7 +357,7 @@ def main():
     r = W / 1920.0
     k = float(vis.get("sizeScale") or (1.5 if H > W else 1.0))
     SZ = {"side": round(88 * r * k), "center": round(97 * r * k), "topline": round(110 * r * k)}
-    cap_size = round({"minimal": 58, "impact": 96, "seam": 62}.get(style, 84) * (W / 1080 if H > W else H / 1080))
+    cap_size = round({"minimal": 58, "impact": 96, "seam": 62, "mono": 52}.get(style, 84) * (W / 1080 if H > W else H / 1080))
     use_emoji = a.emoji or txt.get("captionEmoji", False)
 
     nodes, tw = [], []
@@ -534,9 +552,12 @@ def main():
   .seam {{ position: absolute; left: 0; right: 0; top: {PH - seam_h // 2}px; height: {seam_h}px; z-index: 40;
           background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.9) 28%, rgba(0,0,0,.9) 72%, transparent 100%); }}
   .cap {{ top: {PH - round(cap_size * 0.62)}px; }}
-  .cap .in {{ text-transform: none; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 2px 10px rgba(0,0,0,.6); white-space: nowrap; }}
+  .cap .in {{ {"" if style == "mono" else "text-transform: none; font-weight: 800; letter-spacing: -0.01em; "}text-shadow: 0 2px 10px rgba(0,0,0,.6); white-space: nowrap; }}
   .cap .w.k {{ background: {accent}; color: {hook_ink}; padding: 0 .2em; border-radius: .14em; font-size: 1em; }}
   .broll {{ inset: auto; left: 0; top: 0; width: {W}px; height: {PH}px; }}"""
+    if style == "mono" and not (split or cards):  # police machine à écrire du style « mono »
+        import panel as pn
+        font_face += " " + pn.fonts(job)
     doc = f"""<!doctype html>
 <html lang="fr">
 <head>
@@ -559,7 +580,7 @@ def main():
   .cap .in {{ margin: 0 {round(W * 0.08)}px; text-align: center; font-family: '{family}'; font-weight: 900;
              font-size: {cap_size}px; line-height: 1.08; color: {ink}; text-shadow: {SHADOW}; text-wrap: balance;
              {"text-transform: uppercase; letter-spacing: -0.01em;" if style != "minimal" else "font-weight: 700;"} }}
-  .cap .w {{ display: inline-block; margin: 0 0.07em; transform-origin: 50% 70%; {"opacity: 0;" if style in ("pop", "duo") else ""} }}
+  .cap .w {{ display: inline-block; margin: 0 0.07em; transform-origin: 50% 70%; {"opacity: 0;" if style in ("pop", "duo", "mono") else ""} }}
 {caption_css(style, accent)}
   .broll {{ position: absolute; inset: 0; z-index: 30; overflow: hidden; }}
   .broll .bw {{ position: absolute; inset: 0; overflow: hidden; opacity: 0; }}

@@ -1,0 +1,20 @@
+{
+ "name": "maquette-flux-en-direct",
+ "type": "component",
+ "title": "Flux « EN DIRECT »",
+ "description": "Carte où les nouvelles lignes (commandes, avis, messages) arrivent en haut, badge EN DIRECT qui clignote.",
+ "when_to_use": "Activité réelle : commandes, réservations, avis qui tombent.",
+ "tags": [
+  "interface",
+  "flux",
+  "direct",
+  "commandes",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"feed\", \"word\": \"<mot dit>\", \"title\": \"Commandes\", \"items\": [{\"text\": \"…\", \"sub\": \"il y a 2 min\", \"icon\": \"shopping-bag\"}]}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

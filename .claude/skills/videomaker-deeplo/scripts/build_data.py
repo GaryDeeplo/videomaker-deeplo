@@ -19,6 +19,7 @@ Avant : storyboard (voix off) -> voice.py -> build_text.py -> add_music.py ; pui
      {"type": "days",   "count": 7, "stamp": "7 jours d'essai gratuit"}
      {"type": "title",  "text": "Ce que ça *change* vraiment"}
      {"type": "end",    "name": "Martin", "url": "boulangerie-martin.be", "sub": "Voici le lien :", "logo": true}
+     + les maquettes du panneau (form, chat, rank, progress, hub, browser, funnel, chart, feed, palette : voir panel.py)
    ]}
 Chiffres, pourcentages, courbes : uniquement des données réelles du client (ou présentées comme un exemple, dit à
 l'oral). Accent : visual.dataAccent (sinon l'accent de la charte s'il est vif, sinon rouge).
@@ -35,7 +36,7 @@ from build_punch import vivid
 from common import ROOT, block_file, brand_info, config, fail, job_dir, mount, out, read_json, size_of, word_hit
 
 esc = lambda s: html.escape(str(s), quote=True)
-TYPES = ("bars", "grid", "people", "flip", "line", "pct", "days", "title", "end")
+TYPES = ("bars", "grid", "people", "flip", "line", "pct", "days", "title", "end") + pn.UI_TYPES  # + maquettes d'interface du panneau
 
 
 def fmt(v):
@@ -49,6 +50,11 @@ def beat_html(job, b, sid, s0, d, sw, sh, u, C, vis):
     typ = b.get("type", "title")
     js = []
     T = lambda x: round(s0 + x, 3)
+    if typ in pn.UI_TYPES:  # formulaire, chat, classement, site annoté, entonnoir… dans la page du journal
+        if typ == "palette" and not b.get("colors"):
+            b = {**b, "colors": [c for c in (vis.get("bgColor"), vis.get("inkColor"), vis.get("accentColor")) if c], "font": vis.get("fontFamily", "")}
+        inner, bj = pn.ui_beat(job, typ, b, sid, s0, d, sw, sh)
+        return inner, bj
     if typ == "bars":
         items = b.get("items", [])[:5]
         hi = b.get("highlight")
@@ -77,7 +83,7 @@ def beat_html(job, b, sid, s0, d, sw, sh, u, C, vis):
         ic = pn.icon(b.get("icon", "smartphone"))
         tiles = "".join(f'<i class="tile t{j}">{ic}</i>' for j in range(n))
         h = (f'<div class="gbig"><span>{esc(b.get("value", ""))}</span>' + (f'<small>{esc(b["sub"])}</small>' if b.get("sub") else "") + '</div>'
-             f'<div class="tiles" style="grid-template-columns:repeat({cols},1fr)">{tiles}</div>')
+             f'<div class="gtiles" style="grid-template-columns:repeat({cols},1fr)">{tiles}</div>')
         js.append(f'  tl.fromTo("#{sid} .gbig", {{ opacity: 0, scale: 0.6 }}, {{ opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)", immediateRender: false }}, {T(0.05)});')
         js.append(f'  tl.fromTo("#{sid} .tile", {{ opacity: 0, y: -40, scale: 0.6 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(2.4)", '
                   f'stagger: {round(min(0.12, (d * 0.5) / n), 3)}, immediateRender: false }}, {T(0.35)});')
@@ -405,6 +411,7 @@ def main():
   .hd {{ position: absolute; left: {mx}px; right: {mx}px; top: {head_y + G(14)}px; display: flex; justify-content: space-between;
         font: 700 {G(28)}px {mono}; letter-spacing: .1em; text-transform: uppercase; }}
   .hd .hl {{ color: {acc}; }}
+{pn.css_paper(sw, st_h, fam, {**vis, "paperAccent": acc, "bgColor": bg, "inkColor": ink})}
   .stage {{ position: absolute; left: {mx}px; top: {st_y}px; width: {sw}px; height: {st_h}px; }}
   .beat {{ position: absolute; inset: 0; opacity: 0; }}
   .brow {{ position: absolute; left: 0; right: 0; display: flex; align-items: center; gap: {G(20)}px; }}
@@ -420,7 +427,7 @@ def main():
   .gbig {{ text-align: left; margin-top: {G(10)}px; color: {acc}; font-weight: 800; font-size: {G(170)}px; line-height: 1; }}
   .gbig small {{ display: inline-block; margin-left: {G(16)}px; vertical-align: middle; font-size: {G(40)}px; color: {ink}; padding: {G(6)}px {G(16)}px;
                border: {G(3)}px solid {ink}; border-radius: {G(10)}px; background: #fff; }}
-  .tiles {{ display: grid; gap: {G(26)}px {G(30)}px; margin-top: {G(50)}px; }}
+  .gtiles {{ display: grid; gap: {G(26)}px {G(30)}px; margin-top: {G(50)}px; }}
   .tile {{ display: flex; align-items: center; justify-content: center; height: {G(150)}px; border-radius: {G(16)}px; background: {ink}; color: {bg};
           box-shadow: 0 {G(6)}px 0 {acc}; }}
   .tile svg {{ width: 46%; height: 46%; }}
@@ -494,9 +501,9 @@ def main():
     <div class="grain"></div>
     <div class="rule"></div>
 {chr(10).join(hh)}
-    <div class="stage">
+    <div class="stage"><div id="panel" class="paper">
 {chr(10).join(stage)}
-    </div>
+    </div></div>
 {chr(10).join(caps)}
     {frise}
 {chr(10).join(audio)}

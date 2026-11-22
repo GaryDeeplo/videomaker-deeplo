@@ -1,0 +1,20 @@
+{
+ "name": "maquette-entonnoir",
+ "type": "component",
+ "title": "Entonnoir : où partent les clients",
+ "description": "Barres du parcours client qui baissent, l'étape qui perd du monde en rouge avec étiquette.",
+ "when_to_use": "Parcours d'achat, site qui ne convertit pas, avant / après.",
+ "tags": [
+  "interface",
+  "entonnoir",
+  "parcours",
+  "conversion",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"funnel\", \"word\": \"<mot dit>\", \"steps\": [{\"label\": \"Accueil\", \"value\": 100}, {\"label\": \"Formulaire\", \"value\": 24}], \"leak\": 1, \"note\": \"Vos clients partent ici\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

@@ -1,0 +1,19 @@
+{
+ "name": "mono-boites",
+ "type": "caption",
+ "title": "Mono en boîtes noires",
+ "description": "Majuscules machine à écrire, chaque mot dans sa boîte noire, le mot dit passe en couleur d'accent ; les mots s'écrivent au fil de la voix.",
+ "when_to_use": "Ton tech / expert, écran partagé clair ou sombre.",
+ "tags": [
+  "sous-titres",
+  "mono",
+  "majuscules",
+  "boîte"
+ ],
+ "files": [],
+ "usage": "build_composition.py --style mono (ou text.style: mono)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

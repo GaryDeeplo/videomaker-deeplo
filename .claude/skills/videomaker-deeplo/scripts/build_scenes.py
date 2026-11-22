@@ -506,8 +506,11 @@ def main():
   .cap .in {{ display: inline-block; max-width: 84%; padding: .16em .5em; border-radius: .25em;
               background: rgba(20,18,16,.80); color: #fff; font-family: '{fam}', 'Inter', sans-serif; font-weight: 700;
               font-size: {round(50*u)}px; line-height: 1.2; }}
-  .cap .w {{ display: inline-block; margin: 0 .06em; {"opacity: 0;" if style in ("pop", "duo") else ""} }}"""
-    css += caption_css(style, accent, "0 2px 6px rgba(0,0,0,.5)")  # styles boîte / impact / duo dans le bandeau
+  .cap .w {{ display: inline-block; margin: 0 .06em; {"opacity: 0;" if style in ("pop", "duo", "mono") else ""} }}"""
+    css += caption_css(style, accent, "0 2px 6px rgba(0,0,0,.5)")
+    if style == "mono":  # police machine à écrire
+        import panel as pn
+        css += " " + pn.fonts(job)  # styles boîte / impact / duo dans le bandeau
     css += f"""
   .sxbox, .tmbox, .adbox {{ position: absolute; left: {round(90*u)}px; right: {round(90*u)}px; top: {round(H*0.16)}px; }}
   .sxbox, .tmbox {{ top: {round(H*0.22)}px; }}

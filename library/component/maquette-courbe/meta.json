@@ -1,0 +1,19 @@
+{
+ "name": "maquette-courbe",
+ "type": "component",
+ "title": "Courbe dans une carte",
+ "description": "Carte avec une courbe qui se dessine, point final et valeur en pastille.",
+ "when_to_use": "Croissance réelle : visites, abonnés, ventes.",
+ "tags": [
+  "interface",
+  "courbe",
+  "croissance",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"chart\", \"word\": \"<mot dit>\", \"title\": \"Visites du site\", \"points\": [5, 20, 64, 208], \"label\": \"208 / jour\", \"xlabels\": [\"janv.\", \"juil.\"]}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

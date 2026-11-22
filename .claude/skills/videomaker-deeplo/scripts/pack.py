@@ -10,7 +10,8 @@ Le premier jet lit les phrases de text.json (donc après voice.py / build_text.p
 énumération -> check / steps avec pictos, « pas de / ni » -> picto interdit, d'abord / puis / enfin -> étapes,
 appel à l'action -> titre + picto, nom concret connu -> image ("query" anglais), sinon titre avec *mot fort*.
 Maquettes quand la phrase en parle : réserver / commander / devis -> formulaire, Google -> recherche, classement ->
-classement, messages -> chat, analyse / audit -> progression, site -> navigateur, liste de 4 outils et plus -> étoile
+classement, messages -> chat, analyse / audit -> progression, site -> navigateur, parcours / clients perdus -> entonnoir,
+« en direct » / commandes qui arrivent -> flux, identité visuelle / logo -> nuancier, liste de 4 outils et plus -> étoile
 d'icônes ; « numéro 3 », « le deuxième conseil » -> en-tête de liste « 3 SUR 5 ». Infographie : work/<slug>_data.json
 (plusieurs % -> pourcentages, « passe de X à Y » -> courbe, plusieurs nombres -> barres, grand nombre -> compteur,
 « N fois » -> ×N, « N jours d'essai » -> cases, lien final -> carte de fin).
@@ -296,6 +297,9 @@ UI_WORDS = [
     ("chat", r"\b(messages?|whatsapp|ecrivez|ecris|repond\w*|messenger)\b"),
     ("progress", r"\b(analyse\w*|audit\w*|scanne\w*|passe en revue)\b"),
     ("browser", r"\b(votre site|ton site|site web|site internet|page d'accueil)\b"),
+    ("funnel", r"\b(parcours|abandonn\w*|perd\w* (des|vos|tes) clients|partent avant)"),
+    ("feed", r"\b(en direct|commandes? qui (arrive|tombe)\w*|notifications?)\b"),
+    ("palette", r"\b(identite visuelle|charte graphique|vos couleurs|ton logo|votre logo)\b"),
 ]
 FORM = [("reserv", "Réservation", "Créneau", "Réserver", "Réservé"), ("command", "Commande", "Produit", "Commander", "Commandé"),
         ("devis", "Demande de devis", "Projet", "Envoyer", "Envoyé"), ("inscri", "Inscription", "E-mail", "S'inscrire", "Inscrit"),
@@ -472,6 +476,15 @@ def draft_panels(sents, words, chapters, brand=None):
             if typ == "progress":
                 return {"type": "progress", "word": w, "occurrence": n, "label": "TODO : ce qui est analysé", "to": 100, "unit": "%",
                         "done": clean(short(ws, 4)) or "Terminé"}
+            if typ == "funnel":
+                return {"type": "funnel", "word": w, "occurrence": n, "title": "Parcours client",
+                        "steps": [{"label": "Accueil", "value": 100}, {"label": "Offre", "value": 70}, {"label": "Formulaire", "value": 25},
+                                  {"label": "Paiement", "value": 12}], "leak": 2, "note": "TODO : où ils partent (chiffres réels ou dits comme exemple)"}
+            if typ == "feed":
+                return {"type": "feed", "word": w, "occurrence": n, "title": "TODO", "badge": "EN DIRECT",
+                        "items": [{"text": "TODO", "sub": "il y a 1 min", "icon": icon_for(ws) or "bell"}]}
+            if typ == "palette":
+                return {"type": "palette", "word": w, "occurrence": n, "title": "La marque"}
             return {"type": "browser", "word": w, "occurrence": n, "url": site,
                     "site": {"title": brand.get("tagline") or bname, "sub": "", "button": "TODO", "tiles": []}, "notes": []}
         return None
