@@ -1,14 +1,16 @@
 ---
 name: videomaker-deeplo
 description: >-
-  VideoMakerDeeplo (Deeplo Video Maker) : monte une vidéo prête à poster pour une entreprise, un indépendant ou un créateur
-  (contenu tech compris) à partir de rushs face caméra, d'images sans paroles (chantier, ambiance, plats, événement),
-  de photos, de chiffres, de textes ou d'idées, dans HyperFrames. Dérush par le texte (meilleure prise de chaque phrase, blancs et ratés supprimés),
-  sous-titres mot à mot (pop, karaoké, minimal) ou phrases fortes, zooms caméra, SFX réels, voix off Fish Audio,
-  musique libre de droits, charte du client, formats 9:16 / 1:1 / 16:9. Utiliser dès que l'utilisateur veut
-  « monter une vidéo », « faire un reel », « dérusher », « mettre des sous-titres », « couper les blancs »,
-  « faire une vidéo pour <client> », « journal de chantier », « montage de mes clips », ou dépose un rush, ou tape
-  /videomaker-deeplo.
+  VideoMakerDeeplo (Deeplo Video Maker) : monte une vidéo prête à poster pour une entreprise, un indépendant ou un
+  créateur (contenu tech compris), dans HyperFrames, à partir de rushs face caméra, de clips sans paroles (chantier,
+  ambiance, plats, événement), de photos, de chiffres, de textes ou d'idées. Accueil en questions-réponses, dérush par
+  le texte (meilleures prises, blancs et « euh » coupés), rendu choisi tout seul (écran partagé, explainer papier,
+  actu / punch, infographie chiffrée, journal de chantier) avec animations calées sur les mots dits (maquettes
+  d'interface, listes « 1 sur 5 », vrais logos d'outils, chiffres), accroches animées en 10 styles, sous-titres mot à
+  mot (7 styles), voix off Gemini gratuite ou enregistrement, musique libre de droits, charte du client, formats
+  9:16 / 1:1 / 16:9, shorts, traductions, mises à jour. Utiliser dès que l'utilisateur veut « monter une vidéo »,
+  « faire un reel », « dérusher », « mettre des sous-titres », « couper les blancs », « faire une vidéo pour <client> »,
+  « journal de chantier », « montage de mes clips », « une infographie », ou dépose un rush, ou tape /videomaker-deeplo.
 ---
 
 # VideoMakerDeeplo (Deeplo Video Maker)

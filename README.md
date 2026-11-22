@@ -1,7 +1,8 @@
 # 🎬 Deeplo Video Maker
 
-Des vidéos prêtes à poster pour votre entreprise, montées par Claude à partir de vos rushs, photos et idées.
-Tout se passe dans Claude Code, en français : vous décrivez, Claude monte, vous validez.
+Des vidéos prêtes à poster pour votre entreprise ou vos propres réseaux, montées par Claude à partir de vos rushs,
+clips, photos, chiffres et idées. Tout se passe dans Claude Code, en français : vous décrivez, Claude monte, vous validez.
+Tapez `/videomaker-deeplo` : quelques questions à choix, puis un aperçu.
 
 ## Ce que ça fait
 
@@ -13,12 +14,21 @@ Tout se passe dans Claude Code, en français : vous décrivez, Claude monte, vou
 | Une **longue vidéo** (interview, webinaire, live) | 3 à 5 shorts qui se comprennent seuls, avec un titre d'accroche |
 | Une vidéo déjà faite | Sa version **sous-titrée en néerlandais ou en anglais** (accroche et post traduits aussi) |
 | Un **lien de musique** ou votre propre fichier | La musique calée sous la voix (droits à vérifier pour un lien) |
+| Des **clips sans paroles** (chantier, ambiance, plats, événement) | Un montage rythmé : meilleurs passages repérés tout seuls, accélérés, « JOUR 12 · La cuisine », avant / après, série « Semaine 4 sur 12 » |
+| Des **chiffres** (résultats, étude de cas) | Une infographie animée façon journal : barres, compteur, courbe, pourcentages, frise des jours |
+| Un **texte ou mémo vocal** | La voix off : voix de synthèse naturelle (Gemini, gratuite) ou votre propre enregistrement |
 
 À chaque livraison : les formats **9:16** (Reels, TikTok, Stories), **1:1** et **16:9**, une **couverture** (avec titre
 au choix parmi 3 maquettes), le
 **texte du post** avec hashtags, les **crédits** musique, et une page récap `livraison.html`. Plusieurs vidéos et
 langues d'un coup : une seule page pour tout le lot, et un **planning de publication** (jours, heures par réseau,
 texte à copier, rappels dans votre agenda).
+
+**Le rendu est choisi pour vous** selon ce que vous donnez : écran partagé (animation en haut, visage en bas),
+explainer façon fiche papier, actu rythmée, infographie, journal de chantier. Les animations suivent ce qui est dit :
+formulaire de réservation qui se remplit, recherche Google, classement, chat, liste « 1 sur 5 », vrais logos des outils
+cités, carte de dépôt GitHub, code avant / après. Ouverture possible par une **accroche animée de 3 s en 10 styles**
+(papier découpé, plan technique, pâte à modeler, néon, aquarelle, pixel, isométrique, mosaïque, encre, relief 3D).
 
 Toutes les vidéos d'une marque peuvent recevoir le même **habillage** : logo animé en ouverture, bandeau
 « Prénom, fonction », fin avec logo et accroche, dans les couleurs et la police de la marque.
@@ -46,6 +56,8 @@ lui-même où les placer à partir de ce qui est dit ; vous gardez ou retirez. T
    - « Fais une annonce de recrutement avec ces photos de l'équipe » (modèles prêts dans `.claude/skills/videomaker-deeplo/templates/`)
    - « Ajoute des motions sur les chiffres » · « Mets un compteur sur 1 200 clients et des confettis à la fin »
    - « Fais les 3 vidéos du lot en FR et NL, en 9:16 et 1:1 » (`templates/lot-exemple.json`)
+   - « Fais le journal de chantier de cette semaine avec ces clips » · « Ouvre avec une accroche style plan technique »
+   - « Fais une infographie avec ces chiffres : … » · « Monte mon rush tech en écran partagé, avec les logos des outils »
 3. Claude montre ce qu'il compte faire (coupes, storyboard), puis un aperçu. Vous corrigez en français.
 4. « Livre-la » : les fichiers arrivent dans `jobs/<date>-<client>-<sujet>/renders/livraison/`.
 
