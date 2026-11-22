@@ -1,0 +1,19 @@
+{
+ "name": "infographie-jours",
+ "type": "component",
+ "title": "Cases des jours cochées",
+ "description": "Une case par jour qui se coche en vert, puis un tampon (« 7 jours d'essai gratuit »).",
+ "when_to_use": "Essai gratuit, programme sur N jours, délai.",
+ "tags": [
+  "infographie",
+  "jours",
+  "essai",
+  "data"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"days\", \"count\": 7, \"stamp\": \"7 jours d'essai gratuit\"} dans work/<slug>_data.json (build_data.py)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

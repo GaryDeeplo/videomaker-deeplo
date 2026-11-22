@@ -1,0 +1,19 @@
+{
+ "name": "infographie-multiplicateur",
+ "type": "component",
+ "title": "×10 + tuiles",
+ "description": "Grand « ×10 » en accent et une grille de tuiles qui tombent une à une.",
+ "when_to_use": "Fréquence, volume, « 10 fois plus ».",
+ "tags": [
+  "infographie",
+  "multiplicateur",
+  "chiffres",
+  "data"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"grid\", \"value\": \"×10\", \"sub\": \"par jour\", \"count\": 10, \"icon\": \"smartphone\"} dans work/<slug>_data.json (build_data.py)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

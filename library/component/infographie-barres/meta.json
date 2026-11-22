@@ -1,0 +1,19 @@
+{
+ "name": "infographie-barres",
+ "type": "component",
+ "title": "Barres qui poussent",
+ "description": "Barres horizontales avec pictos, compteurs qui montent, la meilleure en couleur d'accent.",
+ "when_to_use": "Comparer 2 à 5 résultats réels (vues, ventes, avis).",
+ "tags": [
+  "infographie",
+  "barres",
+  "chiffres",
+  "data"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"bars\", \"unit\": \"vues\", \"items\": [{\"label\": \"…\", \"value\": 1612, \"icon\": \"…\"}], \"highlight\": 0} dans work/<slug>_data.json (build_data.py)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

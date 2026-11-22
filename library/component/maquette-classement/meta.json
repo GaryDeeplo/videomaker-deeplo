@@ -1,0 +1,20 @@
+{
+ "name": "maquette-classement",
+ "type": "component",
+ "title": "Classement : le client passe premier",
+ "description": "Liste classée, la ligne du client (accent) monte à la première place, les autres descendent.",
+ "when_to_use": "Visibilité Google, comparatif, avant / après.",
+ "tags": [
+  "interface",
+  "classement",
+  "google",
+  "seo",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"rank\", \"word\": \"<mot dit>\", \"title\": \"Google · …\", \"items\": [{\"text\": \"Concurrent A\"}, {\"text\": \"Concurrent B\"}, {\"text\": \"Vous\"}], \"highlight\": 2, \"to\": 0}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

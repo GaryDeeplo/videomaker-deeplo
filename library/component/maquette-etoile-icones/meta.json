@@ -1,0 +1,20 @@
+{
+ "name": "maquette-etoile-icones",
+ "type": "component",
+ "title": "Étoile d'icônes",
+ "description": "Logo ou picto au centre, services / outils autour reliés par des traits qui se dessinent.",
+ "when_to_use": "Tout-en-un, offre complète, outils connectés.",
+ "tags": [
+  "interface",
+  "hub",
+  "icônes",
+  "services",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"hub\", \"word\": \"<mot dit>\", \"title\": \"…\", \"center\": {\"icon\": \"store\"}, \"items\": [{\"icon\": \"mail\", \"label\": \"Mails\"}]}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

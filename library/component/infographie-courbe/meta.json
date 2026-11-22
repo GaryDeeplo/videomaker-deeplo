@@ -1,0 +1,19 @@
+{
+ "name": "infographie-courbe",
+ "type": "component",
+ "title": "Courbe en escalier annotée",
+ "description": "Courbe qui se dessine (en marches si steps), notes « version 2 », point final et valeur en accent.",
+ "when_to_use": "Progression dans le temps, effet de chaque amélioration.",
+ "tags": [
+  "infographie",
+  "courbe",
+  "progression",
+  "data"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"line\", \"points\": [120, 480, 900, 1818], \"steps\": true, \"label\": \"1 818 vues / jour\", \"notes\": [[1, \"version 2\"]]} dans work/<slug>_data.json (build_data.py)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

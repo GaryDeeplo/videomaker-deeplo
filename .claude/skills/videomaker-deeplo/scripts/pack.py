@@ -2,13 +2,18 @@
 
   python pack.py choose <job> [--slug s] [--demande "texte de la demande"]
       -> pack conseillé (ecran-partage | explainer | punch | infographie | classique) + pourquoi + commandes à lancer
-  python pack.py draft <job> <slug> [--pack auto|ecran-partage|explainer|punch]
+  python pack.py draft <job> <slug> [--pack auto|ecran-partage|explainer|punch|infographie]
       -> work/<slug>_panels.json (écran partagé, explainer) ou work/<slug>_punch.json (punch), posés sur les mots dits.
          Si le fichier existe déjà : work/<slug>_panels_draft.json / <slug>_punch_draft.json (rien n'est écrasé).
 
 Le premier jet lit les phrases de text.json (donc après voice.py / build_text.py) : chiffre -> stat (ou prix),
 énumération -> check / steps avec pictos, « pas de / ni » -> picto interdit, d'abord / puis / enfin -> étapes,
 appel à l'action -> titre + picto, nom concret connu -> image ("query" anglais), sinon titre avec *mot fort*.
+Maquettes quand la phrase en parle : réserver / commander / devis -> formulaire, Google -> recherche, classement ->
+classement, messages -> chat, analyse / audit -> progression, site -> navigateur, liste de 4 outils et plus -> étoile
+d'icônes ; « numéro 3 », « le deuxième conseil » -> en-tête de liste « 3 SUR 5 ». Infographie : work/<slug>_data.json
+(plusieurs % -> pourcentages, « passe de X à Y » -> courbe, plusieurs nombres -> barres, grand nombre -> compteur,
+« N fois » -> ×N, « N jours d'essai » -> cases, lien final -> carte de fin).
 Médias du client (inbox/) placés avant toute banque. C'est un brouillon : relis chaque temps fort (textes courts,
 vrais chiffres, chapitres, requêtes), puis fetch / pick pour les images et build.
 """
@@ -160,27 +165,63 @@ def query_for(ws):
     return None
 
 
+def _numword(k):
+    """« soixante-quatre » -> 64, « quatre-vingt-dix » -> 90, « cents » -> 100 ; None si ce n'est pas un nombre en lettres."""
+    k = k.replace("quatre-vingts", "quatre-vingt").replace("quatre-vingt", "octante")
+    parts = [x for x in k.split("-") if x != "et"]
+    if not parts or not all(x.rstrip("s") in NUMW or x == "octante" for x in parts):
+        return None
+    return sum(80 if x == "octante" else NUMW[x.rstrip("s")] for x in parts)
+
+
 def number(ws):
     """Premier nombre dit : (valeur, suffixe, index du jeton, index du dernier jeton) ou None.
-    « vingt-quatre », « 1 800 », « 60 € », et les jetons de plusieurs mots (« une heure, soixante euros »)."""
+    Chiffres (« 1 800 », « 60 € »), lettres (« mille huit cents », « soixante-quatre pour cent »), jetons de plusieurs
+    mots (« une heure, soixante euros »)."""
     flat = [(key(sw), ti) for ti, w in enumerate(ws) for sw in w["w"].split()]
-    for i, (k, ti) in enumerate(flat):
-        val = None
+    i = 0
+    while i < len(flat):
+        k, ti = flat[i]
+        val, j = None, i
         if re.fullmatch(r"\d+([.,]\d+)?", k):
             val = float(k.replace(",", "."))
-            if i + 1 < len(flat) and re.fullmatch(r"\d{3}", flat[i + 1][0]):
-                val, i = val * 1000 + int(flat[i + 1][0]), i + 1
-        elif k in ("un", "une") and i + 1 < len(flat) and UNIT.get(flat[i + 1][0], "").strip():
-            val = 1
-        elif k in NUMW and k not in ("un", "une") or "-" in k and all(p in NUMW or p == "et" for p in k.split("-")):
-            val = sum(NUMW.get(p, 0) for p in k.split("-"))
+            while j + 1 < len(flat) and re.fullmatch(r"\d{3}", flat[j + 1][0]):
+                val, j = val * 1000 + int(flat[j + 1][0]), j + 1
+        elif k in ("un", "une"):
+            if i + 1 < len(flat) and UNIT.get(flat[i + 1][0], "").strip():
+                val = 1
+        elif _numword(k) is not None:
+            total, cur = 0, 0
+            while j < len(flat):
+                kk = flat[j][0]
+                if kk == "et" and j + 1 < len(flat) and _numword(flat[j + 1][0]) is not None:
+                    j += 1
+                    continue
+                v = _numword(kk)
+                if v is None:
+                    break
+                if v == 100:
+                    cur = (cur or 1) * 100
+                elif v == 1000:
+                    total, cur = total + (cur or 1) * 1000, 0
+                else:
+                    cur += v
+                j += 1
+            j -= 1
+            val = total + cur
         if val is None:
+            i += 1
             continue
-        nxt = flat[i + 1][0] if i + 1 < len(flat) else ""
-        suf = UNIT.get(nxt, "")
+        nxt = flat[j + 1][0] if j + 1 < len(flat) else ""
+        nxt2 = flat[j + 2][0] if j + 2 < len(flat) else ""
+        if nxt == "pour" and nxt2 in ("cent", "cents"):
+            suf, last = " %", flat[j + 2][1]
+        else:
+            suf = UNIT.get(nxt, "")
+            last = flat[j + 1][1] if suf and j + 1 < len(flat) else flat[j][1]
         if not suf and nxt not in UNIT and len(flat) > 3 and val < 3:
+            i = j + 1
             continue  # « deux fois », « 1 seul » : pas un chiffre à mettre en avant
-        last = flat[i + 1][1] if suf and i + 1 < len(flat) else flat[i][1]
         return (int(val) if val == int(val) else val), suf, ti, last
     return None
 
@@ -245,6 +286,77 @@ def split_long(ws, max_dur=5.5):
 
 CHAP = {"avant": "AVANT", "d'abord": "PENDANT", "pendant": "PENDANT", "apres": "APRÈS", "ensuite": "APRÈS",
         "enfin": "ENFIN", "pourquoi": "POURQUOI", "comment": "COMMENT", "resultat": "RÉSULTAT"}
+
+
+# idée dite -> maquette d'interface (une de chaque au plus par vidéo)
+UI_WORDS = [
+    ("rank", r"\b(classement|premiere? place|en tete des|devant (vos|tes|les) concurrents|premiers? sur google)"),
+    ("search", r"\b(google|moteur de recherche|recherchent|cherchent|tapent)\b"),
+    ("form", r"\b(reserv\w*|command\w*|devis|inscri\w*|formulaire|prendre rendez-vous|prenez rendez-vous)\b"),
+    ("chat", r"\b(messages?|whatsapp|ecrivez|ecris|repond\w*|messenger)\b"),
+    ("progress", r"\b(analyse\w*|audit\w*|scanne\w*|passe en revue)\b"),
+    ("browser", r"\b(votre site|ton site|site web|site internet|page d'accueil)\b"),
+]
+FORM = [("reserv", "Réservation", "Créneau", "Réserver", "Réservé"), ("command", "Commande", "Produit", "Commander", "Commandé"),
+        ("devis", "Demande de devis", "Projet", "Envoyer", "Envoyé"), ("inscri", "Inscription", "E-mail", "S'inscrire", "Inscrit"),
+        ("", "Prise de rendez-vous", "Créneau", "Envoyer", "Envoyé")]
+ORD = {"premier": 1, "premiere": 1, "deuxieme": 2, "second": 2, "seconde": 2, "troisieme": 3, "quatrieme": 4, "cinquieme": 5,
+       "sixieme": 6, "septieme": 7, "huitieme": 8, "neuvieme": 9, "dixieme": 10}
+LIST_NOUNS = {"conseil", "astuce", "erreur", "outil", "etape", "raison", "secret", "regle", "point", "idee", "piege", "signe",
+              "question", "avantage", "bonus", "methode", "habitude", "connecteur", "plugin", "skill", "application", "appli"}
+
+
+def ordinal(ws):
+    """« Numéro 3, PostHog », « Le deuxième conseil : … », « Erreur numéro 2 » (en tête de phrase) -> (n, nom) ou None."""
+    ks = [key(w["w"]) for w in ws[:6]]
+    for i, k in enumerate(ks):
+        n = None
+        if k in ("numero", "n°", "no") and i + 1 < len(ks):
+            nk = ks[i + 1]
+            n = int(nk) if nk.isdigit() else (NUMW.get(nk) or ORD.get(nk))
+            rest = ws[i + 2:]
+        elif k in ORD and i + 1 < len(ks) and ks[i + 1].rstrip("s") in LIST_NOUNS:
+            n, rest = ORD[k], ws[i + 2:]
+        if n:
+            name = phrase(rest, 4) if rest else ""
+            noun = next((x for x in ks[:i + 2] if x.rstrip("s") in LIST_NOUNS), "")
+            return n, (name[:1].upper() + name[1:]) if name else f"{noun.capitalize()} {n}".strip()
+        if i >= 3:
+            break
+    return None
+
+
+def numbers(ws):
+    """Tous les nombres dits : [(valeur, suffixe, index du jeton, dernier jeton)]."""
+    res, pos = [], 0
+    while pos < len(ws):
+        n = number(ws[pos:])
+        if not n:
+            break
+        v, suf, i, last = n
+        res.append((v, suf, pos + i, pos + last))
+        pos += last + 1
+    for j in range(len(res) - 2, -1, -1):  # « 1 800 et 3 150 euros » : l'unité vaut pour les deux
+        between = [key(w["w"]) for w in ws[res[j][3] + 1:res[j + 1][2]]]
+        if not res[j][1] and res[j + 1][1] and all(x in ("et", "a", "ou", "-") for x in between):
+            res[j] = (res[j][0], res[j + 1][1], res[j][2], res[j][3])
+    return res
+
+
+def phrase(ws, n=4):
+    """Libellé court : jusqu'à la première ponctuation, au plus n mots, sans petit mot ni connecteur aux bords."""
+    out_ = []
+    for w in lead_strip(ws) if ws else []:
+        out_.append(w)
+        if re.search(r"[,.;:!?…]$", w["w"]) or len(out_) >= n:
+            break
+    while len(out_) > 1 and key(out_[-1]["w"]) in WEAK:
+        out_ = out_[:-1]
+    return text_of(out_).strip(" ,.:;!?…")
+
+
+def fmt_num(v):
+    return f"{v:,}".replace(",", "\u202f") if isinstance(v, int) else str(v).replace(".", ",")
 
 
 def media_files(job):
@@ -323,8 +435,46 @@ def _assign_media(beats, files, rush_names):
     return beats
 
 
-def draft_panels(sents, words, chapters):
+def draft_panels(sents, words, chapters, brand=None):
     beats = []
+    brand = brand or {}
+    bname = brand.get("name") or "Vous"
+    site = (brand.get("contact") or {}).get("site") or "TODO-site.be"
+    used = set()
+    ords = {}  # index de phrase -> (n, nom)
+
+    def ui(ws):
+        """Une maquette d'interface si la phrase en parle (une de chaque au plus), sinon None."""
+        t = deac(text_of(ws))
+        if ws[-1]["end"] - ws[0]["start"] < 1.6:
+            return None
+        w, n = anchor(words, ws[0])
+        if ordinal(ws):  # « Erreur numéro trois, vous ne répondez pas » : le propos est après la virgule
+            cut = next((i + 1 for i, x in enumerate(ws) if re.search(r"[,:]$", x["w"])), 0)
+            ws = ws[cut:] or ws
+        for typ, rx in UI_WORDS:
+            if typ in used or not re.search(rx, t):
+                continue
+            used.add(typ)
+            if typ == "form":
+                k, title, f2, btn, done = next(f for f in FORM if f[0] in t)
+                return {"type": "form", "word": w, "occurrence": n, "url": site, "title": title,
+                        "fields": [{"label": "Prénom", "value": "Camille"}, {"label": f2, "value": "TODO"}], "button": btn, "done": done}
+            if typ == "search":
+                return {"type": "search", "word": w, "occurrence": n, "query": "TODO : ce que tape le client",
+                        "results": ["Concurrent A", "Concurrent B", bname], "highlight": 2}
+            if typ == "rank":
+                return {"type": "rank", "word": w, "occurrence": n, "title": "Google · TODO",
+                        "items": [{"text": "Concurrent A"}, {"text": "Concurrent B"}, {"text": bname}], "highlight": 2, "to": 0}
+            if typ == "chat":
+                return {"type": "chat", "word": w, "occurrence": n, "title": "Messages",
+                        "messages": [{"from": "them", "text": "TODO : question du client"}, {"from": "me", "text": clean(ws)}]}
+            if typ == "progress":
+                return {"type": "progress", "word": w, "occurrence": n, "label": "TODO : ce qui est analysé", "to": 100, "unit": "%",
+                        "done": clean(short(ws, 4)) or "Terminé"}
+            return {"type": "browser", "word": w, "occurrence": n, "url": site,
+                    "site": {"title": brand.get("tagline") or bname, "sub": "", "button": "TODO", "tiles": []}, "notes": []}
+        return None
 
     def add(b, ws):
         b["_k0"], b["_t"] = key(ws[0]["w"]), ws[0]["start"]
@@ -338,7 +488,10 @@ def draft_panels(sents, words, chapters):
         w, n = anchor(words, ws[0])
         q = query_for(ws)
         k0 = key(ws[0]["w"])
-        if k0 in CTA:
+        m = ui(ws)
+        if m:
+            add(m, ws)
+        elif k0 in CTA:
             add({"type": "title", "word": w, "occurrence": n, "text": accent(ws, 5), "icon": CTA[k0], "flash": True}, ws)
         elif q and not (beats and beats[-1]["type"] == "image"):
             add({"type": "image", "word": w, "occurrence": n, "query": q, "caption": clean(ws)}, ws)
@@ -368,8 +521,11 @@ def draft_panels(sents, words, chapters):
         if len(ws) < 2:
             continue
         k0 = key(ws[0]["w"])
+        o = ordinal(ws)
+        if o:
+            ords[ws[0]["start"]] = o
         steps = step_split(ws)
-        rich = bool(steps or number(ws) or items_of(ws) or k0 in CTA or k0 in STEP or k0.startswith("d'abord"))
+        rich = bool(o or steps or number(ws) or items_of(ws) or k0 in CTA or k0 in STEP or k0.startswith("d'abord"))
         if not rich and beats and not run and ws[0]["start"] - beats[-1]["_t"] < 1.8:
             continue  # un temps fort toutes les 1,8 s au plus
         if not rich and len(short(lead_strip(ws), 6)) < 3:
@@ -392,6 +548,12 @@ def draft_panels(sents, words, chapters):
             if suf.strip():
                 b["suffix"] = suf
             add(b, ws)
+        elif items and len(items) >= 4 and not re.search(r"\b(pas|ni|sans)\b", text_of(ws), re.I) and "hub" not in used:
+            used.add("hub")
+            c = {"image": brand["_logo"]} if brand.get("_logo") else {"icon": icon_for(ws) or "sparkles"}
+            add({"type": "hub", "word": w, "occurrence": n, "center": c,
+                 "items": [{"icon": icon_for([{"w": x} for x in it.split()]) or "circle-check",
+                            "label": " ".join(it.split()[-2:])[:1].upper() + " ".join(it.split()[-2:])[1:]} for it in items[:8]]}, ws)
         elif items:
             neg = bool(re.search(r"\b(pas|ni|sans)\b", text_of(ws), re.I))
             head = []
@@ -423,10 +585,92 @@ def draft_panels(sents, words, chapters):
                 b["chapter"] = "INTRO" if first else ""
             if b["chapter"] == "INTRO" and b is beats[0]:
                 b.pop("chapter")  # l'accroche n'a pas de chapitre
+    if len(ords) >= 2:  # format liste : en-tête « 2 SUR 5 » du n-ième élément jusqu'au suivant (pas sur l'appel final)
+        total = max(n for n, _ in ords.values())
+        cur = None
+        for b in beats:
+            hit = next((v for t, v in ords.items() if abs(t - b["_t"]) < 0.05), None)
+            if hit:
+                cur = {"n": hit[0], "of": total, "name": hit[1], "icon": icon_for([{"w": x} for x in hit[1].split()]) or "sparkles"}
+            if b["_k0"] in CTA or b.get("type") == "form" and b is beats[-1]:
+                cur = None
+            if cur:
+                b["list"] = dict(cur)
     for b in beats:
         b.pop("_k0", None)
         b.pop("_t", None)
     return beats
+
+
+def draft_data(sents, words, brand=None):
+    """Premier jet de l'infographie : un graphique par chiffre dit (barres, pourcentages, courbe, compteur, ×N, jours)."""
+    brand = brand or {}
+    beats, days = [], 0
+    last_t = -9.0
+    for ws in sents:
+        if len(ws) < 2:
+            continue
+        t = deac(text_of(ws))
+        w, n = anchor(words, ws[0])
+        nums = numbers(ws)
+        k0 = key(lead_strip(ws)[0]["w"])
+        day = None
+        for rx in (r"\b(\w+) jour\b", r"\bjour (\d+)\b", r"\bau bout de (\S+) jours\b"):
+            for g in re.findall(rx, t):
+                day = int(g) if g.isdigit() else (ORD.get(g) or _numword(g))
+                if day:
+                    break
+            if day:
+                days = max(days, day)
+                break
+        head = text_of(short(lead_strip(ws), 4)).strip(" ,.:;!?…").upper()
+
+        def label(a, b_):
+            return phrase(ws[a:b_], 4) or "TODO"
+        b = None
+        if nums:  # on compare des nombres de même unité (pas « 1 800 vues » et « 12 jours »)
+            nums = [x for x in nums if x[1] == nums[0][1]]
+        pct = [x for x in nums if "%" in x[1]]
+        if len(pct) >= 2:
+            b = {"type": "pct", "items": [{"label": label((pct[j - 1][3] + 1) if j else 0, x[2]), "value": x[0]} for j, x in enumerate(pct[:5])],
+                 "highlight": max(range(len(pct[:5])), key=lambda j: pct[j][0])}
+        elif len(nums) >= 2 and re.search(r"\b(passe|passent|monte|montent|grimpe|augmente|progresse|double|triple|de \S+ a)\b", t):
+            a_, z = nums[0], nums[-1]
+            b = {"type": "line", "steps": True, "points": [a_[0], z[0]], "label": f"{fmt_num(z[0])}{z[1]}".strip()}
+        elif len(nums) >= 2:
+            b = {"type": "bars", "unit": nums[0][1].strip(),
+                 "items": [{"label": label(x[3] + 1, (nums[j + 1][2] if j + 1 < len(nums) else len(ws))), "value": x[0]} for j, x in enumerate(nums[:5])],
+                 "highlight": max(range(len(nums[:5])), key=lambda j: nums[j][0])}
+        elif nums:
+            v, suf, i, last = nums[0]
+            rest = phrase(ws[last + 1:], 4)
+            if "%" in suf:
+                b = {"type": "pct", "items": [{"label": label(0, i), "value": v}], "highlight": 0}
+            elif re.search(r"\b(fois|x)\b", t) and isinstance(v, int) and v <= 15:
+                b = {"type": "grid", "value": f"×{v}", "sub": rest[:20], "count": v, "icon": icon_for(ws) or "sparkles"}
+            elif "jour" in suf and isinstance(v, int) and v <= 7 and re.search(r"\b(gratuit|essa[iy]|offert)", t):
+                b = {"type": "days", "count": v, "stamp": f"{v} jours " + ("d'essai gratuit" if re.search(r"essa[iy]", t) else "offerts")}
+            elif isinstance(v, (int, float)) and v >= 100:
+                b = {"type": "flip", "to": int(v), "label": (suf.strip() + " " + rest).strip()}
+            else:
+                b = {"type": "title", "text": accent(ws)}
+        elif k0 in CTA or re.search(r"\b(lien|bio|site)\b", t) and ws is sents[-1]:
+            b = {"type": "end", "name": brand.get("name") or "TODO", "sub": "Le lien :", "url": (brand.get("contact") or {}).get("site") or "TODO",
+                 "logo": bool(brand.get("_logo"))}
+        elif ws[0]["start"] - last_t >= 2.2 and len(short(lead_strip(ws), 6)) >= 3:
+            b = {"type": "title", "text": accent(ws)}
+        if not b:
+            continue
+        b = {"word": w, "occurrence": n, **({"head": head} if b["type"] not in ("title", "end") else {}),
+             **({"day": day} if day else {}), **b}
+        beats.append(b)
+        last_t = ws[0]["start"]
+    if beats and "head" not in beats[0]:
+        beats[0]["head"] = text_of(short(lead_strip(sents[0]), 4)).strip(" ,.:;!?…").upper()
+    data = {"beats": beats}
+    if days >= 2:
+        data["days"] = {"count": days, "label": "TODO : ce que comptent les jours", "word": "Jour"}
+    return data
 
 
 def punch_lines(ws):
@@ -490,19 +734,36 @@ def draft(job_name, slug, pack="auto"):
         with contextlib.redirect_stdout(buf):
             choose(job_name, slug)
         pack = json.loads(buf.getvalue())["pack"]
-        if pack in ("classique", "infographie"):
+        if pack == "classique":
             fail(f"pack conseillé : {pack} (pas de brouillon automatique : écris les temps forts toi-même) ; force --pack si tu veux quand même un pack")
     sents = [p for s_ in sentences(words) for p in split_long(s_)]
     files = media_files(job)
     story = (job / "work" / f"{slug}_storyboard.json").exists()
     rush_names = set() if story else {p.name for p in files if p.suffix.lower() in VIDEO and is_rush(p)}
+    from common import brand_info, config
+    brand = dict(brand_info(job))
+    logo = config(job)["visual"].get("logo")
+    if logo:
+        brand["_logo"] = logo
+    if pack == "infographie":
+        data = draft_data(sents, words, brand)
+        dst = job / "work" / f"{slug}_data.json"
+        if dst.exists():
+            dst = job / "work" / f"{slug}_data_draft.json"
+        write_json(dst, data)
+        kinds = {}
+        for b in data["beats"]:
+            kinds[b["type"]] = kinds.get(b["type"], 0) + 1
+        return out(ok=True, pack=pack, fichier=str(dst), temps_forts=len(data["beats"]), types=kinds,
+                   a_completer=sum(1 for b in data["beats"] if "TODO" in str(b)) + ("TODO" in str(data.get("days", ""))),
+                   suite="relis : vrais chiffres seulement, libellés courts, rubriques (head), jours ; puis build_data.py")
     if pack == "punch":
         beats = _assign_media(draft_punch(sents, words), files, rush_names)
         for b in beats:
             b.pop("_visual", None)
         name = f"{slug}_punch"
     else:
-        beats = _assign_media(draft_panels(sents, words, chapters=(pack == "explainer")), files, rush_names)
+        beats = _assign_media(draft_panels(sents, words, chapters=(pack == "explainer"), brand=brand), files, rush_names)
         name = f"{slug}_panels"
     dst = job / "work" / f"{name}.json"
     if dst.exists():
@@ -524,7 +785,7 @@ def main():
     ap.add_argument("slug", nargs="?")
     ap.add_argument("--slug", dest="slug_opt")
     ap.add_argument("--demande", default="")
-    ap.add_argument("--pack", default="auto", choices=["auto", "ecran-partage", "explainer", "punch"])
+    ap.add_argument("--pack", default="auto", choices=["auto", "ecran-partage", "explainer", "punch", "infographie"])
     a = ap.parse_args()
     slug = a.slug or a.slug_opt
     if a.cmd == "choose":

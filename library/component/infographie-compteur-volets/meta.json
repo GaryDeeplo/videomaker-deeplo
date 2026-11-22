@@ -1,0 +1,19 @@
+{
+ "name": "infographie-compteur-volets",
+ "type": "component",
+ "title": "Compteur à volets",
+ "description": "Cases sombres qui défilent jusqu'au nombre, puis passent en accent ; tampon facultatif.",
+ "when_to_use": "Grand chiffre symbolique (100 000 vues, 1 000 clients).",
+ "tags": [
+  "infographie",
+  "compteur",
+  "chiffre",
+  "data"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"flip\", \"to\": 100000, \"label\": \"vues\", \"stamp\": \"Conseil de pro\"} dans work/<slug>_data.json (build_data.py)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

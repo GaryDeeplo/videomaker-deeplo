@@ -1,0 +1,19 @@
+{
+ "name": "infographie-pourcentages",
+ "type": "component",
+ "title": "Pourcentages, le plus fort entouré",
+ "description": "Lignes libellé + barre + pourcentage qui compte ; le plus fort entouré à la main en accent.",
+ "when_to_use": "Taux, parts, répartition réelle.",
+ "tags": [
+  "infographie",
+  "pourcentage",
+  "chiffres",
+  "data"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"pct\", \"items\": [{\"label\": \"…\", \"value\": 64}], \"highlight\": 0} dans work/<slug>_data.json (build_data.py)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

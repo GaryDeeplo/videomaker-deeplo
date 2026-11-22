@@ -1,0 +1,19 @@
+{
+ "name": "maquette-progression",
+ "type": "component",
+ "title": "Commande + barre de progression",
+ "description": "Commande qui se tape, barre qui se remplit, compteur et pourcentage, badge « terminé ».",
+ "when_to_use": "Analyse, audit, traitement automatique, « en 5 minutes ».",
+ "tags": [
+  "interface",
+  "progression",
+  "audit",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"progress\", \"word\": \"<mot dit>\", \"label\": \"/seo audit monsite.be\", \"to\": 128, \"unit\": \"pages\", \"done\": \"Audit terminé\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

@@ -1,0 +1,19 @@
+{
+ "name": "cartes-sur-le-visage",
+ "type": "component",
+ "title": "Cartes sur le visage",
+ "description": "Vidéo plein écran, temps forts en cartes blanches à ombre douce en haut de l'image.",
+ "when_to_use": "Face caméra cadré avec de l'air au-dessus de la tête (visage au centre ou plus bas).",
+ "tags": [
+  "layout",
+  "cartes",
+  "face caméra",
+  "interface"
+ ],
+ "files": [],
+ "usage": "visual.layout: \"cards\" (ou build_composition.py --layout cards) + work/<slug>_panels.json",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

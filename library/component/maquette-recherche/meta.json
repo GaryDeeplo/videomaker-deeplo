@@ -1,0 +1,19 @@
+{
+ "name": "maquette-recherche",
+ "type": "component",
+ "title": "Recherche qui se tape",
+ "description": "Champ de recherche qui se tape, résultats qui arrivent, la ligne du client surlignée.",
+ "when_to_use": "Être trouvé sur Google, recherche locale.",
+ "tags": [
+  "interface",
+  "recherche",
+  "google",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"search\", \"word\": \"<mot dit>\", \"query\": \"coiffeur lyon\", \"results\": [\"Concurrent A\", \"Concurrent B\", \"Vous\"], \"highlight\": 2}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

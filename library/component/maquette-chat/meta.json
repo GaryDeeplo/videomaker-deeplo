@@ -1,0 +1,20 @@
+{
+ "name": "maquette-chat",
+ "type": "component",
+ "title": "Chat qui s'écrit",
+ "description": "Bulles qui arrivent, « … » le temps d'écrire, réponse de la marque en couleur d'accent.",
+ "when_to_use": "Réactivité, service client, question fréquente.",
+ "tags": [
+  "interface",
+  "chat",
+  "messages",
+  "whatsapp",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"chat\", \"word\": \"<mot dit>\", \"title\": \"Messages\", \"messages\": [{\"from\": \"them\", \"text\": \"…\"}, {\"from\": \"me\", \"text\": \"…\"}]}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

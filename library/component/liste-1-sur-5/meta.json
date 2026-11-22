@@ -1,0 +1,20 @@
+{
+ "name": "liste-1-sur-5",
+ "type": "component",
+ "title": "En-tête de liste « 1 SUR 5 »",
+ "description": "Pastille « 1 SUR 5 · Nom » reliée par un trait, fixe pendant l'élément, change au suivant.",
+ "when_to_use": "Top conseils, erreurs, outils, étapes numérotées.",
+ "tags": [
+  "liste",
+  "top",
+  "numéro",
+  "en-tête",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "\"list\": {\"n\": 1, \"of\": 5, \"name\": \"…\", \"icon\": \"…\"} sur les temps forts de l élément",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

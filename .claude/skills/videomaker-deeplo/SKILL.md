@@ -90,7 +90,11 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
    premier jet des temps forts (`<slug>_panels.json` ou `<slug>_punch.json`, ou `_draft.json` s'il en existe déjà
    un) : chiffre -> stat ou prix, « pas de / ni » -> liste avec picto interdit, d'abord / puis / enfin -> étapes,
    appel à l'action -> titre + picto, nom concret -> image (requête anglaise), médias de `inbox/` placés avant toute
-   banque, chapitres (avant / pendant / après / à vous) pour l'explainer. **C'est un brouillon : relis-le** —
+   banque, chapitres (avant / pendant / après / à vous) pour l'explainer ; maquettes quand la phrase en parle
+   (réserver -> formulaire, Google -> recherche, classement, messages -> chat, audit -> progression, site ->
+   navigateur, 4 outils et plus -> étoile d'icônes) ; « numéro 3 », « le deuxième conseil » -> en-tête « 3 SUR 5 ».
+   Infographie : `pack.py draft <job> <slug> --pack infographie` écrit `<slug>_data.json` (nombres en chiffres ou en
+   lettres : « mille huit cents », « soixante-quatre pour cent »). **C'est un brouillon : relis-le** —
    textes courts et naturels, vrais chiffres, un visuel un temps fort sur deux, `TODO` remplacés (requêtes, horaires
    réels) — puis fetch / pick et le build du pack.
 

@@ -1,0 +1,20 @@
+{
+ "name": "maquette-formulaire",
+ "type": "component",
+ "title": "Formulaire qui se remplit",
+ "description": "Navigateur avec formulaire : la main clique chaque champ, le texte se tape, le bouton passe à « Réservé ✓ ».",
+ "when_to_use": "Appel à l'action réserver / commander / devis ; montrer que c'est simple.",
+ "tags": [
+  "interface",
+  "formulaire",
+  "réservation",
+  "cta",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"form\", \"word\": \"<mot dit>\", \"url\": \"site.be/contact\", \"title\": \"Réservation\", \"fields\": [{\"label\": \"Prénom\", \"value\": \"Camille\"}], \"button\": \"Réserver\", \"done\": \"Réservé\"} dans work/<slug>_panels.json",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}

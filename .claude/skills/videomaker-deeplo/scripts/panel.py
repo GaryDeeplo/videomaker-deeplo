@@ -786,6 +786,14 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
         c = b.get("center", {})
         if isinstance(c, str):
             c = {"text": c}
+        if c.get("image"):  # logo de la charte ou du client : copié dans le job
+            ip = Path(c["image"])
+            for base in (job, job / "inbox", ROOT):
+                if (base / ip).exists() and base != job:
+                    (job / "assets" / "img").mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(base / ip, job / "assets" / "img" / ip.name)
+                    c = {**c, "image": f"assets/img/{ip.name}"}
+                    break
         cin = icon(c["icon"]) if c.get("icon") else (f'<img src="{esc(c["image"])}" alt="">' if c.get("image")
                                                     else f'<span style="font-size:{round(38*u)}px;padding:0 .3em">{esc(c.get("text", ""))}</span>')
         pts = [(cx + R * math.cos(-math.pi / 2 + 2 * math.pi * j / max(1, len(items))),

@@ -1,0 +1,19 @@
+{
+ "name": "infographie-foule",
+ "type": "component",
+ "title": "Foule de pictos",
+ "description": "Grille de petits personnages, certains s'assombrissent, étiquette au centre.",
+ "when_to_use": "Audience, part de clients, « remarqué par tout le quartier ».",
+ "tags": [
+  "infographie",
+  "foule",
+  "audience",
+  "data"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"people\", \"count\": 72, \"dark\": 18, \"pill\": \"votre boutique\", \"icon\": \"store\"} dans work/<slug>_data.json (build_data.py)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-22",
+ "uses": 0
+}
