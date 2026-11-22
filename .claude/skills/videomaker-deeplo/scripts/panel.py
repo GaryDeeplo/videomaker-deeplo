@@ -90,6 +90,15 @@ def _lum(c):
     return 0.299 * r + 0.587 * g + 0.114 * b
 
 
+def _contrast(a, b):
+    def rl(c):
+        v = [x / 255 for x in _hex(c)]
+        v = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in v]
+        return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]
+    la, lb = sorted((rl(a), rl(b)), reverse=True)
+    return (la + 0.05) / (lb + 0.05)
+
+
 def colors(vis):
     """Fond sombre teinté par la charte ; accent assez lumineux pour se lire sur ce fond."""
     acc = vis.get("panelAccent") or vis.get("accentColor", "#7CE3A1")
@@ -211,6 +220,18 @@ def title_words(text):
             out_ += [f'<span class="w it">{esc(w)}</span>' for w in m.group(1).split()]
         else:
             out_.append(f'<span class="w">{esc(m.group(2))}</span>')
+    # un petit mot (de, le, à, ça…) ne finit jamais une ligne : il reste collé au mot suivant
+    from build_text import WEAK, deac
+    raw = re.findall(r"\*[^*]+\*|\S+", text)
+    flat = [w for tok in raw for w in (tok.strip("*").split() if tok.startswith("*") else [tok])]
+    glued, k = [], 0
+    while k < len(out_):
+        j = k
+        while j + 1 < len(out_) and deac(re.sub(r"[^\w'’]", "", flat[j] if j < len(flat) else "").lower()) in WEAK:
+            j += 1
+        glued.append(out_[k] if j == k else '<span class="u" style="white-space:nowrap">' + " ".join(out_[k:j + 1]) + "</span>")
+        k = j + 1
+    out_ = glued
     h = " ".join(out_)
     # ponctuation jamais seule en début de ligne : collée au mot d'avant (espace insécable devant ? ! : ; à la française)
     h = re.sub(r'</span> <span class="w">([?!:;»]+)</span>', lambda m_: "&nbsp;" + m_.group(1) + "</span>", h)
@@ -233,6 +254,11 @@ def paper_colors(vis):
     acc = vis.get("paperAccent") or vis.get("accentColor", "#9b1b30")
     if _lum(acc) > 165:
         acc = _mix(acc, ink, 0.45)
+    base = acc
+    for t in (0.1, 0.2, 0.3, 0.4, 0.5, 0.6):  # texte blanc lisible (WCAG 4,5:1) sur l'accent
+        if _contrast(acc, "#ffffff") >= 4.6:
+            break
+        acc = _mix(base, ink if _lum(ink) < 90 else "#000000", t)
     return bg, ink, acc, _mix(bg, "#ffffff", 0.65)
 
 

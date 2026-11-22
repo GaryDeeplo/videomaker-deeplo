@@ -55,19 +55,104 @@ def score(ph, text):
     return round(s, 2)
 
 
+# mots qui ne finissent jamais un groupe (ils appellent le mot suivant) : articles, prépositions, liaisons, pronoms
+WEAK = set("""le la les l un une des du de d à a au aux en et ou mais que qu qui ce cet cette ces se s sa son ses mon ma mes ton
+ta tes notre nos votre vos leur leurs sur pour par dans avec sans chez sous vers ne n y on il ils elle elles je j tu nous vous
+me m te t lui très plus moins tout tous toute toutes chaque dont où si comme puis aussi c ça ni est sont c'est n'est qu'il
+qu'elle qu'on s'il j'ai the a an of to in on at for and or with is are de het een en van op te voor met is""".split())
+HARD = set("""le la les l un une des du de d à au aux en sur pour par dans avec sans chez sous vers ma ta sa mon ton son mes tes ses
+notre nos votre vos leur leurs ce cet cette ces se ne n me m te t y ça on je j tu il ils elle elles the a an of to in on at for
+with het een van op voor met""".split())  # interdits en fin (articles, prépositions, pronoms avant le verbe)
+NUMW = set("un une deux trois quatre cinq six sept huit neuf dix onze douze quinze vingt trente quarante cinquante soixante cent mille".split())
+QSTART = set("comment pourquoi quand combien quel quelle quels quelles".split())  # ouvrent un groupe
+UNITS = set("€ euros euro % cent ans an heures heure h min minutes jours jour semaines mois km kg m² ml g".split())
+
+
+def _split_clause(cl, max_words):
+    """Groupes équilibrés dans un morceau de phrase : jamais de fin sur un petit mot, jamais un mot seul,
+    jamais un nombre séparé de son unité (programmation dynamique sur les points de coupe)."""
+    n = len(cl)
+    # « 1 800 » compte pour un mot : un bloc de 3 chiffres après un nombre prolonge ce nombre
+    wt = [0 if t and re.fullmatch(r"\d{3}\D*", cl[t]["w"]) and NUM.search(cl[t - 1]["w"]) else 1 for t in range(n)]
+    eff = sum(wt)
+    if eff <= max_words:
+        return [cl]
+    k = -(-eff // max_words)
+    target = eff / k
+    INF = 1e9
+    best, prev = [0.0] + [INF] * n, [0] * (n + 1)
+
+    def numeric(t):
+        return 0 <= t < n and (NUM.search(cl[t]["w"]) or deac(STRIP_END.sub("", cl[t]["w"]).lower()) in NUMW)
+
+    for i in range(1, n + 1):
+        for j in range(i - 1, -1, -1):
+            L = sum(wt[j:i])
+            if L > max_words + 1:
+                break
+            cost = 0.5 * (L - target) ** 2 + (3 if L > max_words else 0)  # un 4e mot plutôt qu'une mauvaise coupe
+            if L == 1:
+                cost += 12
+            last = cl[i - 1]
+            if i < n:
+                kl = deac(STRIP_END.sub("", last["w"]).lower())
+                kl_core = re.split(r"[’']", kl)[0] if re.search(r"[’']$", kl) else kl
+                if kl_core in HARD or re.search(r"[’']$", kl):
+                    cost += 20
+                elif kl_core in WEAK:
+                    cost += 8
+                elif kl_core in QSTART:
+                    cost += 10
+                nxt = deac(STRIP_END.sub("", cl[i]["w"]).lower())
+                is_num = bool(NUM.search(last["w"])) or kl in NUMW
+                if is_num and re.fullmatch(r"\d{3}\D*", cl[i]["w"]) and not re.search(r"[.,;:]$", last["w"]):
+                    cost += 30  # « 3 150 » : milliers jamais séparés
+                elif is_num and (nxt in UNITS or nxt.startswith("€")):
+                    cost += 15
+                elif is_num and not re.search(r"[.,;:!?]$", last["w"]):
+                    cost += 9  # un nombre reste avec ce qui le suit (« deux livraisons », « de 4 à 7 »)
+                after = deac(STRIP_END.sub("", cl[i + 1]["w"]).lower()) if i + 1 < n else ""
+                if nxt == "pour" and after == "cent" and is_num:
+                    cost += 15  # « 20 pour cent »
+                if is_num and nxt in ("a", "et", "ou") and numeric(i + 1):
+                    cost += 20
+                if kl in ("a", "et", "ou") and numeric(i - 2) and numeric(i):
+                    cost += 20  # fourchette « 4 à 7 », « 1 800 et 3 150 »
+                if re.fullmatch(r"[?!:;»…]+", cl[i]["w"]):
+                    cost += 30
+            if best[j] + cost < best[i]:
+                best[i], prev[i] = best[j] + cost, j
+    out_, i = [], n
+    while i > 0:
+        out_.append(cl[prev[i]:i])
+        i = prev[i]
+    return out_[::-1]
+
+
 def chunks(ws, max_words, gap):
-    res, cur = [], []
+    """Groupes de sous-titres : on coupe d'abord aux fins de phrase, aux virgules et aux pauses, puis chaque morceau
+    est réparti en groupes équilibrés (le moins de coupures en plein milieu d'une idée)."""
+    clauses, cur = [], []
     for w in ws:
-        if cur and (w["start"] - cur[-1]["end"] > gap or len(cur) >= max_words
-                    or (SOFT.search(cur[-1]["w"]) and len(cur) >= 2)):
-            res.append(cur)
+        if cur and w["start"] - cur[-1]["end"] > gap:
+            clauses.append(cur)
             cur = []
         cur.append(w)
-        if STRONG.search(w["w"]):
-            res.append(cur)
+        if STRONG.search(w["w"]) or (SOFT.search(w["w"]) and len(cur) >= 2):
+            clauses.append(cur)
             cur = []
     if cur:
-        res.append(cur)
+        clauses.append(cur)
+    # un morceau d'un seul mot rejoint son voisin s'il reste de la place (« Ensuite, » + « rien à faire »)
+    merged = []
+    for cl in clauses:
+        if merged and (len(cl) == 1 or len(merged[-1]) == 1) and len(merged[-1]) + len(cl) <= max_words                 and not STRONG.search(merged[-1][-1]["w"]) and cl[0]["start"] - merged[-1][-1]["end"] <= gap:
+            merged[-1] = merged[-1] + cl
+        else:
+            merged.append(cl)
+    res = []
+    for cl in merged:
+        res += _split_clause(cl, max_words)
     return res
 
 

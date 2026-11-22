@@ -80,6 +80,19 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
    naturelle (recommandé) » (Gemini, gratuit) · « j'ai un enregistrement » (mémo vocal, micro, ou une vidéo dont on garde
    le son : chemin via « Autre ») · « pas de voix, musique et textes seulement ». Ni clé Gemini ni Fish -> dis-le en une
    ligne (voix locale de test) avant de lancer.
+7. **Le pack (rendu), choisi tout seul** : dès que les fichiers et le brief sont là,
+   `python scripts/pack.py choose <job> [--slug s] --demande "<la demande>"` conseille un pack d'après les fichiers
+   (rush avec du son = écran partagé), le brief (informer / conseiller = explainer ; vendre, annoncer, ≤ 20 s = punch ;
+   ton sobre ou haut de gamme = classique) et ce qui est dit. Annonce-le en une ligne dans le récap du point 5
+   (« écran partagé : animation en haut, visage en bas ») ; tu ne poses la question que si deux packs se valent
+   vraiment. L'utilisateur peut toujours dire « plutôt en punch ».
+   Une fois la voix ou le dérush faits (`build_text.py`) : `python scripts/pack.py draft <job> <slug>` écrit le
+   premier jet des temps forts (`<slug>_panels.json` ou `<slug>_punch.json`, ou `_draft.json` s'il en existe déjà
+   un) : chiffre -> stat ou prix, « pas de / ni » -> liste avec picto interdit, d'abord / puis / enfin -> étapes,
+   appel à l'action -> titre + picto, nom concret -> image (requête anglaise), médias de `inbox/` placés avant toute
+   banque, chapitres (avant / pendant / après / à vous) pour l'explainer. **C'est un brouillon : relis-le** —
+   textes courts et naturels, vrais chiffres, un visuel un temps fort sur deux, `TODO` remplacés (requêtes, horaires
+   réels) — puis fetch / pick et le build du pack.
 
 ## Quel parcours ?
 

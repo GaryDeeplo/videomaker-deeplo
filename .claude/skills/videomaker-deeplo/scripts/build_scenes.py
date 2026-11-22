@@ -18,6 +18,7 @@ import shutil
 import unicodedata
 from pathlib import Path
 
+from build_text import HARD
 from build_composition import SHADOW, STYLES, caption_css, caption_js, caption_spans, emoji_tween, sfx_asset
 from common import (ROOT, add_credit, block_file, brand_info, config, fail, job_dir, motion_nodes, mount, out, read_json,
                     size_of)
@@ -62,8 +63,27 @@ def spoken_at(words, text, lo, hi, after=0.0):
     return None
 
 
+def _units(text):
+    """Mots à garder ensemble à l'écran : un petit mot (« de », « la », « l' ») reste avec le suivant, la ponctuation
+    haute (« ? », « ! », « : ») reste avec le mot d'avant."""
+    out_ = []
+    for t in str(text).split():
+        if out_ and re.fullmatch(r"[?!:;»…]+", t):
+            out_[-1] += " " + t
+        elif out_ and (out_[-1].split(" ")[-1].lower().strip("«“\"(") in HARD or out_[-1].endswith("«")):
+            out_[-1] += " " + t
+        else:
+            out_.append(t)
+    return out_
+
+
+def tx(text):
+    """Texte à l'écran : échappé, sans coupure de ligne après un petit mot ni avant un « ? »."""
+    return " ".join(esc(u).replace(" ", "&nbsp;") for u in _units(text))
+
+
 def split_words(text, cls="w"):
-    return " ".join(f'<span class="{cls}">{esc(t)}</span>' for t in str(text).split())
+    return " ".join(f'<span class="{cls}">{tx(u)}</span>' for u in _units(text))
 
 
 def main():
@@ -156,14 +176,14 @@ def main():
 
         if kind == "hook":
             if sc.get("kicker"):
-                body += f'<div class="kicker a">{esc(sc["kicker"])}</div>'
+                body += f'<div class="kicker a">{tx(sc["kicker"])}</div>'
                 js.append(f'  rise("#{sid} .kicker", {k0});')
             body += f'<h1 class="hl">{split_words(sc["text"])}</h1><div class="rule a"></div>'
             js.append(f'  words("#{sid} .hl .w", {round(k0 + 0.1, 3)}, 0.07);')
             js.append(f'  draw("#{sid} .rule", {round(k0 + 0.5, 3)});')
         elif kind == "photo":
             if sc.get("kicker"):
-                body += f'<div class="kicker on a">{esc(sc["kicker"])}</div>'
+                body += f'<div class="kicker on a">{tx(sc["kicker"])}</div>'
                 js.append(f'  rise("#{sid} .kicker", {k0});')
             if sc.get("text"):
                 body += f'<h2 class="ptitle">{split_words(sc["text"])}</h2>'
@@ -173,7 +193,7 @@ def main():
                 img = asset(job, sc["image"], "img")
                 body += f'<div class="strip"><img class="kb" src="{img}" alt=""></div>'
                 js.append(f'  tl.fromTo("#{sid} .strip .kb", {{ scale: 1.04 }}, {{ scale: 1.14, duration: {d}, ease: "none", immediateRender: false }}, {s});')
-            body += f'<div class="pbox"><h2 class="ttl a">{esc(sc.get("title", ""))}</h2><ul>'
+            body += f'<div class="pbox"><h2 class="ttl a">{tx(sc.get("title", ""))}</h2><ul>'
             js.append(f'  rise("#{sid} .ttl", {k0});')
             items, prev = sc.get("items", []), k0
             span = max(0.6, (e - k0 - 0.8) / max(1, len(items)))
@@ -181,17 +201,17 @@ def main():
                 at = spoken_at(words, it, k0, e, prev) or (k0 + 0.5 + j * span)
                 at = round(max(at - 0.1, prev + 0.25 if j else k0 + 0.3), 3)
                 prev = at
-                body += f'<li class="it it{j}"><span class="dot"></span><span>{esc(it)}</span></li>'
+                body += f'<li class="it it{j}"><span class="dot"></span><span>{tx(it)}</span></li>'
                 js.append(f'  rise("#{sid} .it{j}", {at}, 30);')
                 pops.append(at)
             body += "</ul></div>"
         elif kind == "stat":
             val = str(sc["value"])
             num = re.sub(r"[^\d]", "", val)
-            body += (f'<div class="sbox"><div class="kicker a">{esc(sc.get("kicker", ""))}</div>'
-                     f'<div class="big a"><span class="pre">{esc(sc.get("prefix", ""))}</span><span class="num" '
-                     f'data-to="{num}">{esc(val)}</span><span class="suf">{esc(sc.get("suffix", ""))}</span></div>'
-                     f'<div class="rule a"></div><div class="lbl a">{esc(sc.get("label", ""))}</div></div>')
+            body += (f'<div class="sbox"><div class="kicker a">{tx(sc.get("kicker", ""))}</div>'
+                     f'<div class="big a"><span class="pre">{tx(sc.get("prefix", ""))}</span><span class="num" '
+                     f'data-to="{num}">{tx(val)}</span><span class="suf">{tx(sc.get("suffix", ""))}</span></div>'
+                     f'<div class="rule a"></div><div class="lbl a">{tx(sc.get("label", ""))}</div></div>')
             at = spoken_at(words, val, s, e) or k0
             js.append(f'  rise("#{sid} .kicker", {k0});')
             js.append(f'  rise("#{sid} .big", {round(at - 0.2, 3)}, 40);')
@@ -201,10 +221,10 @@ def main():
             js.append(f'  rise("#{sid} .lbl", {round(at + 0.5, 3)});')
             pops.append(round(at - 0.2, 3))
         elif kind == "offer":
-            body += (f'<div class="obox"><h2 class="ttl a">{esc(sc.get("title", ""))}</h2>'
-                     f'<div class="old a">{esc(sc.get("old", ""))}<i class="strike"></i></div>'
-                     f'<div class="new a">{esc(sc.get("new", ""))}</div>'
-                     + (f'<div class="badge a">{esc(sc["badge"])}</div>' if sc.get("badge") else "") + "</div>")
+            body += (f'<div class="obox"><h2 class="ttl a">{tx(sc.get("title", ""))}</h2>'
+                     f'<div class="old a">{tx(sc.get("old", ""))}<i class="strike"></i></div>'
+                     f'<div class="new a">{tx(sc.get("new", ""))}</div>'
+                     + (f'<div class="badge a">{tx(sc["badge"])}</div>' if sc.get("badge") else "") + "</div>")
             at = spoken_at(words, sc.get("new", ""), s, e) or (k0 + 1.2)
             js.append(f'  rise("#{sid} .ttl", {k0});')
             js.append(f'  rise("#{sid} .old", {round(k0 + 0.35, 3)});')
@@ -215,7 +235,7 @@ def main():
             pops.append(round(at - 0.1, 3))
         elif kind == "quote":
             body += (f'<div class="qbox"><div class="qm a">“</div><blockquote>{split_words(sc["text"])}</blockquote>'
-                     f'<div class="who a">{esc(sc.get("author", ""))}</div></div>')
+                     f'<div class="who a">{tx(sc.get("author", ""))}</div></div>')
             js.append(f'  rise("#{sid} .qm", {k0});')
             js.append(f'  words("#{sid} blockquote .w", {round(k0 + 0.15, 3)}, 0.04);')
             js.append(f'  rise("#{sid} .who", {round(min(e - 1.2, k0 + 1.4), 3)});')
@@ -232,12 +252,12 @@ def main():
                 body += f'<img class="logo a" src="{logo}" alt="">'
                 js.append(f'  rise("#{sid} .logo", {k0}, 20);')
             body += (f'<h2 class="ctat">{split_words(sc.get("text", ""))}</h2><div class="rule a"></div>'
-                     f'<div class="sub a">{esc(sc.get("sub", ""))}</div>')
+                     f'<div class="sub a">{tx(sc.get("sub", ""))}</div>')
             js.append(f'  words("#{sid} .ctat .w", {round(k0 + 0.35, 3)}, 0.06);')
             js.append(f'  draw("#{sid} .rule", {round(k0 + 0.8, 3)});')
             js.append(f'  rise("#{sid} .sub", {round(k0 + 1.0, 3)});')
         elif kind == "steps":  # étapes numérotées, chacune quand elle est dite
-            body += f'<div class="sxbox"><h2 class="ttl a">{esc(sc.get("title", ""))}</h2><div class="sx"><i class="sxline"></i>'
+            body += f'<div class="sxbox"><h2 class="ttl a">{tx(sc.get("title", ""))}</h2><div class="sx"><i class="sxline"></i>'
             js.append(f'  rise("#{sid} .ttl", {k0});')
             stp, prev = sc.get("steps", []), k0
             span = max(0.7, (e - k0 - 0.8) / max(1, len(stp)))
@@ -246,7 +266,7 @@ def main():
                 at = round(max(at - 0.1, prev + 0.3 if j else k0 + 0.35), 3)
                 prev = at
                 body += (f'<div class="st st{j}"><span class="num">{j + 1}</span>'
-                         f'<span class="stt">{esc(it)}</span></div>')
+                         f'<span class="stt">{tx(it)}</span></div>')
                 js.append(f'  pop("#{sid} .st{j} .num", {at});')
                 js.append(f'  rise("#{sid} .st{j} .stt", {round(at + 0.08, 3)}, 18);')
                 pops.append(at)
@@ -257,7 +277,7 @@ def main():
             lb, la = (sc.get("labels") or ["Avant", "Après"])[:2]
             body += (f'<div class="ph"><img class="kb" src="{ib}" alt=""></div>'
                      f'<div class="ph after"><img class="kb2" src="{ia}" alt=""></div><i class="divider"></i>'
-                     f'<span class="lab lb a">{esc(lb)}</span><span class="lab la a">{esc(la)}</span>')
+                     f'<span class="lab lb a">{tx(lb)}</span><span class="lab la a">{tx(la)}</span>')
             if sc.get("text"):
                 body += f'<h2 class="ptitle">{split_words(sc["text"])}</h2><div class="shade"></div>'
                 js.append(f'  words("#{sid} .ptitle .w", {round(k0 + 0.1, 3)}, 0.06);')
@@ -275,19 +295,19 @@ def main():
                 body += f'<div class="strip"><img class="kb" src="{img}" alt=""></div>'
                 js.append(f'  tl.fromTo("#{sid} .strip .kb", {{ scale: 1.04 }}, {{ scale: 1.14, duration: {d}, ease: "none", immediateRender: false }}, {s});')
             body += (f'<div class="adbox"><svg class="pin a" viewBox="0 0 48 64" aria-hidden="true"><path d="M24 0C10.7 0 0 10.7 0 24c0 18 24 40 24 40s24-22 24-40C48 10.7 37.3 0 24 0z" fill="{accent}"/>'
-                     f'<circle cx="24" cy="23" r="9" fill="{bg}"/></svg><h2 class="ttl a">{esc(sc.get("title", ""))}</h2>'
-                     f'<div class="addr a">{esc(sc.get("address", ""))}</div>')
+                     f'<circle cx="24" cy="23" r="9" fill="{bg}"/></svg><h2 class="ttl a">{tx(sc.get("title", ""))}</h2>'
+                     f'<div class="addr a">{tx(sc.get("address", ""))}</div>')
             js.append(f'  drop("#{sid} .pin", {k0});')
             js.append(f'  rise("#{sid} .ttl", {round(k0 + 0.35, 3)});')
             js.append(f'  rise("#{sid} .addr", {round(k0 + 0.6, 3)});')
             for j, h in enumerate(sc.get("hours", [])[:4]):
-                body += f'<div class="hr hr{j} a">{esc(h)}</div>'
+                body += f'<div class="hr hr{j} a">{tx(h)}</div>'
                 js.append(f'  rise("#{sid} .hr{j}", {round(k0 + 0.95 + j * 0.25, 3)}, 16);')
             body += "</div>"
             pops.append(k0)
         elif kind == "team":  # 1 à 4 personnes : photo ronde, nom, fonction
             mem = sc.get("members", [])[:4]
-            body += f'<div class="tmbox"><h2 class="ttl a">{esc(sc.get("title", ""))}</h2><div class="tm n{len(mem)}">'
+            body += f'<div class="tmbox"><h2 class="ttl a">{tx(sc.get("title", ""))}</h2><div class="tm n{len(mem)}">'
             js.append(f'  rise("#{sid} .ttl", {k0});')
             prev = k0
             for j, mb in enumerate(mem):
@@ -296,14 +316,14 @@ def main():
                 at = round(max(at - 0.1, prev + 0.25 if j else k0 + 0.3), 3)
                 prev = at
                 body += (f'<div class="mb mb{j} a"><div class="av"><img src="{ph}" alt=""></div>'
-                         f'<div class="mn">{esc(mb.get("name", ""))}</div><div class="mr">{esc(mb.get("role", ""))}</div></div>')
+                         f'<div class="mn">{tx(mb.get("name", ""))}</div><div class="mr">{tx(mb.get("role", ""))}</div></div>')
                 js.append(f'  pop("#{sid} .mb{j}", {at});')
                 pops.append(at)
             body += "</div></div>"
         elif kind == "product":  # produit détouré (PNG transparent) qui flotte, atouts qui apparaissent
             img = asset(job, sc["image"], "img")
             body += (f'<div class="pdglow"></div><div class="pdwrap"><img class="pd a" src="{img}" alt=""><i class="pdshadow a"></i></div>'
-                     f'<div class="pdtop"><div class="kicker a">{esc(sc.get("kicker", ""))}</div>'
+                     f'<div class="pdtop"><div class="kicker a">{tx(sc.get("kicker", ""))}</div>'
                      f'<h2 class="pdname">{split_words(sc.get("name", ""))}</h2></div><div class="feats">')
             js.append(f'  rise("#{sid} .kicker", {k0});')
             js.append(f'  words("#{sid} .pdname .w", {round(k0 + 0.1, 3)}, 0.06);')
@@ -315,16 +335,16 @@ def main():
                 at = spoken_at(words, ft, k0, e, prev) or (prev + 0.5)
                 at = round(max(at - 0.1, prev + 0.25), 3)
                 prev = at
-                body += f'<span class="ft ft{j} a">{esc(ft)}</span>'
+                body += f'<span class="ft ft{j} a">{tx(ft)}</span>'
                 js.append(f'  pop("#{sid} .ft{j}", {at});')
                 pops.append(at)
             body += "</div>"
             if sc.get("price"):
-                body += f'<div class="pprice a">{esc(sc["price"])}</div>'
+                body += f'<div class="pprice a">{tx(sc["price"])}</div>'
                 js.append(f'  pop("#{sid} .pprice", {round(spoken_at(words, sc["price"], k0, e) or prev + 0.5, 3)});')
         elif kind == "browser":  # navigateur (cadre inspiré d'Onda, MIT) : barre d'adresse + capture du site qui défile
             src = asset(job, sc["image"], "img")
-            body += (f'<div class="dvbox"><div class="kicker a">{esc(sc.get("kicker", ""))}</div>'
+            body += (f'<div class="dvbox"><div class="kicker a">{tx(sc.get("kicker", ""))}</div>'
                      f'<h2 class="dvt">{split_words(sc.get("title", ""))}</h2></div>'
                      f'<div class="browser a"><div class="bw-bar"><i></i><i></i><i></i><span class="bw-url">{esc(sc.get("url", ""))}</span></div>'
                      f'<div class="bw-screen"><img class="dv-media" src="{src}" alt=""></div></div>')
@@ -345,7 +365,7 @@ def main():
             is_vid = src.lower().endswith((".mp4", ".webm", ".mov"))
             screen = (f'<video class="dv-media clip" src="{src}" data-start="{s}" data-duration="{d}" data-track-index="{20 + i}" muted playsinline></video>'
                       if is_vid else f'<img class="dv-media" src="{src}" alt="">')
-            body += (f'<div class="dvbox"><div class="kicker a">{esc(sc.get("kicker", ""))}</div>'
+            body += (f'<div class="dvbox"><div class="kicker a">{tx(sc.get("kicker", ""))}</div>'
                      f'<h2 class="dvt">{split_words(sc.get("title", ""))}</h2></div>'
                      f'<div class="phone a"><div class="notch"></div><div class="screen">{screen}</div></div>')
             js.append(f'  rise("#{sid} .kicker", {k0});')
