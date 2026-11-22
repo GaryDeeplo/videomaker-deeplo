@@ -147,6 +147,8 @@ def main():
                     "bg": bg, "ink": ink, "accent": accent, "font": fam, "blend": vis.get("logoBlend", "normal"),
                     "fill": bg, "icon": logo or "", "avatar": logo or "",  # fill : bloc de motion en scène plein écran
                     "card": ink}  # carte opaque (encre de la charte) : sur fond clair, une carte translucide manque de contraste
+            if name.startswith("accroche-"):  # l'accroche garde le fond et l'encre de son style (sauf vars explicites)
+                vals = {"accent": accent, "font": fam, "text": sc.get("text", ""), "sub": sc.get("sub", "")}
             vals.update(sc.get("vars", {}))
             nodes.append(mount(name, sid, s, d, W, H, 1 + i % 2, vals, z=i + 1))
             if i:

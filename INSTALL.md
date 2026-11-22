@@ -37,3 +37,9 @@ Lance les scripts Python avec `PYTHONUTF8=1` (accents sous Windows).
 7. Présente le guide `README.md` en 5 lignes et demande quelle vidéo faire en premier.
 
 Ensuite, tout passe par le skill `videomaker-deeplo` (`.claude/skills/videomaker-deeplo/SKILL.md`).
+
+## Mises à jour
+L'accueil du skill prévient quand une nouvelle version est publiée (voir `CHANGELOG.md`). Pour l'installer : dites
+« mets à jour le skill », ou lancez `python .claude/skills/videomaker-deeplo/scripts/update.py install`. Vos chartes,
+projets, clés et motions ajoutées ne sont jamais touchés. Sur GitHub, « Watch → Custom → Releases » envoie un e-mail à
+chaque version.

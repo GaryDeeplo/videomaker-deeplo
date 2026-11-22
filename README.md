@@ -80,3 +80,9 @@ Vos vidéos (`jobs/`) et vos clés (`.env`) ne partent jamais sur GitHub.
 ## Dossiers
 `jobs/` vos vidéos · `brands/` vos chartes · `library/` les animations validées (galerie : `library/index.html`) ·
 `sounds/` la banque de sons et musiques · `studio/` le projet HyperFrames de base.
+
+## Mises à jour
+L'accueil du skill prévient quand une nouvelle version est publiée (voir `CHANGELOG.md`). Pour l'installer : dites
+« mets à jour le skill », ou lancez `python .claude/skills/videomaker-deeplo/scripts/update.py install`. Vos chartes,
+projets, clés et motions ajoutées ne sont jamais touchés. Sur GitHub, « Watch → Custom → Releases » envoie un e-mail à
+chaque version.

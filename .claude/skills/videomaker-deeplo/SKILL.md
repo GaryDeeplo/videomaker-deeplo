@@ -23,6 +23,10 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
    réglages connus (par marque et par parcours), dernières vidéos / photos du dossier Téléchargements. Dès que la
    marque et le parcours sont connus : `onboard.py status --marque <m> --parcours rush|sans-rush|shorts`.
 2. `installe` faux -> propose d'abord l'installation (`INSTALL.md`), rien d'autre.
+   `mise_a_jour.maj` vrai -> une ligne (« Une mise à jour du skill est disponible : <2-3 nouveautés> ») et une question à
+   choix « Installer maintenant (recommandé) » / « Plus tard » ; si oui : `python scripts/update.py install` puis
+   `check.py` (vos chartes, projets, clés et motions ajoutées ne sont jamais touchés). Ne repose pas la question dans la
+   même session. Hors ligne : rien à dire.
 3. **La demande dit déjà quoi faire, avec quels fichiers ET pour quoi** (« monte ce rush pour un Reel de 30 s pour la Boulangerie Martin qui
    pousse la nouvelle offre ») -> pas de questions : complète le reste avec les réglages connus de CETTE marque et de CE
    parcours, écris le brief, annonce-le en une ligne et lance. Il manque le pourquoi -> tour 3 seulement.

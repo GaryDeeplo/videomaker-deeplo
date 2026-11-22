@@ -64,6 +64,7 @@ def status(a):
               "groq": bool(env_key("GROQ_API_KEY"))},
         marques=brands, projets_recents=jobs, telechargements_recents=recent,
         reglages_connus=prof.get(key) if (a.marque or a.parcours) else prof,
+        mise_a_jour=__import__("update").check(),
         note="réglages = valeurs par défaut pour CETTE marque et CE parcours ; la demande du moment gagne toujours")
 
 

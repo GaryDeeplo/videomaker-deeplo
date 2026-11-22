@@ -10,3 +10,4 @@ dist/
 .hyperframes/
 .impeccable/hook.cache.json
 profil.json
+.update_check.json

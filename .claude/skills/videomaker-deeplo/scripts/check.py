@@ -86,7 +86,7 @@ for mod in ("requests", "numpy", "scipy", "librosa", "matplotlib"):
 
 print("skills (~/.claude/skills)")
 for s, req in (("hyperframes", True), ("hyperframes-cli", True), ("hyperframes-registry", True),
-               ("media-use", True), ("reverse-any-video", False), ("real-sfx", True),
+               ("media-use", True), ("reverse-any-video", False), ("real-sfx", False),
                ("openverse-sfx", True), ("transcribe", False), ("gsap-core", False), ("remotion-to-hyperframes", False),
                ("motion-design", False)):
     line((SKILLS / s / "SKILL.md").exists(), s, required=req)
@@ -94,7 +94,8 @@ for s, req in (("hyperframes", True), ("hyperframes-cli", True), ("hyperframes-r
 print("clés API")
 env = load_env()
 line(bool(env["GEMINI_API_KEY"] or env["FISH_API_KEY"]), "voix off (Gemini ou Fish)",
-     "clé présente" if (env["GEMINI_API_KEY"] or env["FISH_API_KEY"]) else "aucune : voix locale de test seulement")
+     "clé présente" if (env["GEMINI_API_KEY"] or env["FISH_API_KEY"]) else "aucune : voix locale de test seulement (clé Gemini gratuite conseillée)",
+     required=False)
 for k, url, req in (("GEMINI_API_KEY", None, False),
                     ("FISH_API_KEY", "https://api.fish.audio/model?page_size=1", False),
                     ("GROQ_API_KEY", "https://api.groq.com/openai/v1/models", False),
@@ -121,7 +122,7 @@ cfg = SKILLS / "real-sfx" / "config.json"
 if cfg.exists():
     libs = json.loads(cfg.read_text(encoding="utf-8")).get("libraries", [])
     on_root = all(Path(lib["path"]).resolve().is_relative_to((ROOT / "sounds").resolve()) for lib in libs)
-    line(on_root, "real-sfx -> sounds/", ", ".join(lib["path"] for lib in libs)[:60])
+    line(on_root, "real-sfx -> sounds/", ", ".join(lib["path"] for lib in libs)[:60] or "(facultatif)", required=False)
 
 print()
 print("SOCLE OK" if not failed else f"{failed} point(s) obligatoire(s) à corriger")
