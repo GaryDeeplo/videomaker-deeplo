@@ -247,6 +247,8 @@ def respell(ws, toks):
         if op == "equal" or (op == "replace" and i2 - i1 == j2 - j1):
             for x, tk in zip(ws[i1:i2], toks[j1:j2]):
                 x["w"] = tk
+        elif op == "replace" and i2 - i1 == 1:  # « 1h60 » transcrit pour « une heure, soixante euros » : le texte du script
+            ws[i1]["w"] = " ".join(toks[j1:j2])
         else:
             full = False
     return full

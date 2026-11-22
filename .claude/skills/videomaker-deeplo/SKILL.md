@@ -94,6 +94,7 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
 | Même vidéo dans une autre langue | « versions traduites » | `translate.py export` |
 | Plusieurs vidéos × langues × formats | « lot » | `templates/lot-exemple.json` + `batch.py plan` |
 | Planning de publication d'un lot | « calendrier » | `planning.py` |
+| Annonce / promo / récap rythmée | « actu / punch » | `build_punch.py` |
 
 Toujours : charte du client dans `brands/` (sinon la créer depuis `brands/_exemple/`), recherche dans la bibliothèque
 avant de créer, `check` + `snapshot` avant de montrer, pas de rendu final sans accord.
@@ -178,6 +179,19 @@ temps forts du panneau en thème papier, sous-titres karaoké dans un cadre (mot
    `steps`), avec `"chapter"` (2 à 5 chapitres de 1-2 mots : « AVANT », « LE SOIN », « APRÈS », « RÉSERVER »).
 4. `python scripts/build_explainer.py <job> <slug>` (fin de marque si la charte en a une ; `--no-outro` sinon), puis
    check + snapshot + aperçu. Inspiré des explainers « interface papier » : principes repris, jamais les visuels.
+
+### Pack « actu / punch » : annonce, promo, récap d'événement
+Images plein cadre coupées vite (léger zoom + éclair à chaque coupe), gros titres condensés (Anton) qui s'empilent en
+haut et claquent sur leur mot, objets qui collent aux mots (notification, étiquette prix, étiquette, document qui se
+tape, date, chiffre, picto, emoji animé), sous-titres « impact » en bas (`--no-captions` pour s'en passer).
+1. Médias dans `inbox/` (vidéos et photos du client, de son site) ; voix : storyboard + `voice.py` (un ton plus
+   énergique : `--style "Lis d'une voix énergique, rythmée comme une annonce"`), `build_text.py`, `add_music.py --mood upbeat`.
+2. `work/<slug>_punch.json` (détails dans `scripts/build_punch.py`) : un temps fort par idée, posé sur un mot ; `media`
+   (ou `query` puis `build_punch.py fetch` / `pick` : Pixabay + planche) — une coupe toutes les 1,5 à 3 s ; `title` :
+   2-3 lignes de 1 à 3 mots (*mot* en couleur) ; `prop` : un objet par temps fort au plus.
+3. `python scripts/build_punch.py <job> <slug>` puis check + snapshot. Couleur d'accent : `visual.punchAccent` (une couleur
+   de la charte qui se lit sur les images). Inspiré des formats « actu » courts : principes repris, jamais leurs visuels.
+   Une notification est une illustration (contenu vrai), jamais une capture présentée comme réelle.
 
 ### Plusieurs rushs → une vidéo
 Le client a filmé 5 ou 6 clips, dans le désordre, avec des reprises : mets-les tous dans `inbox/` (`new_job.py --rush a b c`).

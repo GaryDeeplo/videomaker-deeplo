@@ -18,3 +18,5 @@ IBM Plex Mono Medium (© IBM Corp.), licence SIL Open Font License 1.1 (fichiers
 ## Pictos Lucide
 `.claude/skills/videomaker-deeplo/vendor/lucide/` : icônes Lucide (paquet npm lucide-static), licence ISC
 (© Lucide Icons and Contributors, `vendor/lucide/LICENSE`), téléchargées à la demande et intégrées en SVG.
+
+Anton Regular (© The Anton Project Authors), SIL Open Font License 1.1 (`vendor/fonts/OFL-Anton.txt`) : titres du pack « actu / punch ».
