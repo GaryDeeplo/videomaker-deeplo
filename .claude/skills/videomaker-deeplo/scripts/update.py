@@ -40,6 +40,17 @@ def fetch(url, timeout=4):
         return r.read()
 
 
+def get_file(name):
+    """Fichier du dépôt public : CDN raw (rapide), sinon API GitHub (le CDN met quelques minutes à voir un nouveau fichier)."""
+    try:
+        return fetch(f"{RAW}/{name}").decode("utf-8")
+    except Exception:  # noqa: BLE001
+        req = urllib.request.Request(f"https://api.github.com/repos/{REPO}/contents/{name}",
+                                     headers={"User-Agent": "videomaker-deeplo", "Accept": "application/vnd.github.raw"})
+        with urllib.request.urlopen(req, timeout=6) as r:
+            return r.read().decode("utf-8")
+
+
 def news_since(changelog, version):
     """Lignes du journal plus récentes que la version locale (sections « ## <version> »)."""
     res, on = [], False
@@ -59,9 +70,9 @@ def check(force=False):
         if time.time() - c.get("t", 0) < 12 * 3600 and c.get("locale") == loc:
             return c["res"]
     try:
-        pub = fetch(f"{RAW}/VERSION").decode("utf-8").strip()
+        pub = get_file("VERSION").strip()
         maj = vt(pub) > vt(loc)
-        news = news_since(fetch(f"{RAW}/CHANGELOG.md").decode("utf-8"), loc) if maj else []
+        news = news_since(get_file("CHANGELOG.md"), loc) if maj else []
         res = {"locale": loc, "publiee": pub, "maj": maj, "nouveautes": news}
     except Exception as e:  # noqa: BLE001 — hors ligne : on n'insiste pas
         return {"locale": loc, "publiee": None, "maj": False, "erreur": str(e)[:80]}

@@ -12,3 +12,7 @@ Skill Claude Code de montage + motion design pour PME. Guide : `README.md` ; ins
 - Chaque motion validée : proposer de la sauvegarder dans `library/` (bloc + aperçu + meta.json).
 - Un dossier par vidéo : `jobs/<AAAA-MM-JJ>-<client>-<sujet>/{inbox,work,out}`.
 - Paquet à partager : `python .claude/skills/videomaker-deeplo/scripts/package.py --pour equipe|client` -> `dist/` (jamais jobs/ ni .env ; « client » retire les chartes et aperçus des autres clients).
+- (interne) Sortir une version : monter `VERSION` (AAAA.MM.JJ, ou .2 le même jour) + une section dans `CHANGELOG.md` (sans nom de client),
+  commit + push, `python tools/export_clean.py` (code 0), commit + push dans `../videomaker-deeplo`, puis
+  `gh release create v<version> -R GaryDeeplo/videomaker-deeplo --notes-file <notes>` (e-mail aux abonnés « Releases »).
+  Les utilisateurs voient la mise à jour à l'accueil du skill (`update.py check`) et l'installent avec `update.py install`.
