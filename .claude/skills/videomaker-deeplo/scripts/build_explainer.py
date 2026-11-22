@@ -67,7 +67,8 @@ def main():
     pj = job / "work" / f"{a.slug}_panels.json"
     beats = read_json(pj) if pj.exists() else pn.default_beats(t)
     words = [w for g in t.get("captions", []) for w in g["words"]]
-    panel_html, pjs, prep = pn.nodes(job, beats, words, dur, 0.0, sw, stage_h, vis, theme="paper")
+    panel_html, pjs, prep, layers = pn.nodes(job, beats, words, dur, 0.0, sw, stage_h, vis, theme="paper",
+                                             origin=(mx + max(2, round(4 * u)), top + max(2, round(4 * u)) + chrome_h))
 
     # bandeau d'étapes : une puce par chapitre (ordre d'apparition), la courante s'allume
     chapters = []
@@ -166,6 +167,7 @@ def main():
     <div class="sheet">{chrome}<div class="stage">
 {panel_html}
     </div></div>
+{chr(10).join(layers)}
 {chr(10).join(caps)}
 {chr(10).join(audio)}
 {outro}

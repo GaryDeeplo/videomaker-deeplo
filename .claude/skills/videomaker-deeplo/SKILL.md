@@ -154,6 +154,19 @@ fort dans une boîte d'accent) sur la jointure. Pour un rush face caméra vertic
 Inspiré des Reels « split screen » d'experts tech : on reprend les principes (panneau, jointure, typo mêlée, interfaces
 qui changent d'état), jamais leurs visuels ni leurs contenus.
 
+### Visuels dans les temps forts (écran partagé ET explainer) : à mélanger, pas que du texte
+Un temps fort sur deux devrait montrer quelque chose : picto, vraie photo ou vidéo, emoji animé.
+- **Pictos** (Lucide, ISC, ~1 500 sur lucide.dev/icons, téléchargés à la demande dans `vendor/lucide/`) : `"icon"` sur un
+  `title` (grand picto qui flotte sous le titre) ; items `{"text": "…", "icon": "ban"}` dans `check` et `steps` ; type
+  `icons` (2 à 6 pastilles qui tombent avec un rebond : `{"icon": "droplet-off", "label": "Pas d'eau"}`).
+  Noms en anglais (clock, heart, calendar-check, eye-off, sparkles, package, message-circle, hand, ban…).
+- **Vraie photo ou vidéo** : `{"type": "image", "image": "inbox/x.mp4 | photo.jpg", "caption": "…"}` (vidéos du client,
+  de son site, ou de banque). Sans fichier : `"query": "1-2 mots anglais"` puis `python scripts/panel.py fetch <job> <slug>`
+  (Pixabay, vidéos assez longues puis photos, planche `work/broll/planche.jpg`) ; corrige avec `panel.py pick`.
+  Une image de banque illustre (gestes, matières, ambiance), jamais présentée comme le client, son équipe ou ses résultats.
+- **Emoji animé** : `"lottie": {"name": "valide", "x": 50, "y": 66, "size": 34}` sur n'importe quel temps fort (24 prêts,
+  voir Lottie plus bas ; crédit Noto ajouté tout seul).
+
 ### Pack « explainer papier » : vidéo sans rush façon fiche pratique
 Pour expliquer un service, un déroulé, une offre : carte papier à ombre franche sur fond à carreaux (couleurs de la
 charte), bandeau d'étapes fixe en haut (une puce par chapitre, la courante s'allume) + barre de progression du récit,

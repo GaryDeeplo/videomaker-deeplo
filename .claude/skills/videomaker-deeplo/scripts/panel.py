@@ -8,10 +8,19 @@ Temps forts (work/<slug>_panels.json), chacun posé sur un MOT dit (jamais un ti
   {"type": "search", "word": "…", "query": "fleuriste lyon", "results": ["Fleurs & Co · 4,9 ★", "…"], "tag": "…"}
   {"type": "image",  "word": "…", "image": "inbox/x.jpg | assets/broll/…", "caption": "…", "tag": "…"}
   {"type": "steps",  "word": "…", "items": ["Réservez", "Venez", "Repartez"], "tag": "…"}
+  {"type": "icons",  "word": "…", "title": "…", "items": [{"icon": "clock", "label": "1 h"}, {"icon": "heart", "label": "…"}]}
+Visuels en plus :
+  - pictos Lucide (licence ISC, lucide.dev/icons) : "icon" sur un titre, items {"text": "…", "icon": "nom"} dans check / steps ;
+  - "image" : photo OU vidéo (client, site, Pixabay) dans un cadre ; "query": "1-2 mots anglais" sans "image" ->
+    panel.py fetch la cherche sur Pixabay (planche de choix, panel.py pick) ;
+  - "lottie": {"name": "valide", "x": 78, "y": 72, "size": 26} sur n'importe quel temps fort : emoji animé (library/lottie)
+    posé dans la scène (x / y en % de la scène, taille en % de sa largeur).
 *mot* = mot fort en italique serif. Chiffres, avis, résultats : uniquement des données réelles du client.
 Sans fichier : un temps fort « title » par phrase forte (overlays gardés de text.json).
 
   python panel.py suggest <job> <slug>     # squelette work/<slug>_panels_suggested.json (une entrée par phrase)
+  python panel.py fetch   <job> <slug>     # temps forts "image" avec "query" : Pixabay -> planche work/broll/planche.jpg
+  python panel.py pick    <job> <slug> <n> <a-f|none>
 """
 import html
 import json
@@ -23,6 +32,43 @@ from pathlib import Path
 from common import ROOT, job_dir, out, read_json, word_hit, write_json
 
 VENDOR = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "fonts"
+LUCIDE = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "lucide"
+
+
+def icon(name):
+    """Picto Lucide en SVG inline (téléchargé une fois depuis le paquet npm lucide-static, gardé dans vendor/lucide)."""
+    name = re.sub(r"[^a-z0-9-]", "", str(name).lower())
+    if not name:
+        return ""
+    f = LUCIDE / f"{name}.svg"
+    if not f.exists():
+        import urllib.request
+        try:
+            with urllib.request.urlopen(f"https://cdn.jsdelivr.net/npm/lucide-static@latest/icons/{name}.svg", timeout=20) as r:
+                LUCIDE.mkdir(parents=True, exist_ok=True)
+                f.write_bytes(r.read())
+        except Exception:  # noqa: BLE001 — picto inconnu : on s'en passe
+            return ""
+    svg = re.sub(r"<!--.*?-->", "", f.read_text(encoding="utf-8"), flags=re.S).strip()
+    return re.sub(r'\swidth="24"\s+height="24"', ' width="100%" height="100%"', svg, count=1)
+
+
+def item_text(it):
+    return it.get("text") or it.get("label") or "" if isinstance(it, dict) else str(it)
+
+
+def item_icon(it):
+    return icon(it.get("icon")) if isinstance(it, dict) and it.get("icon") else ""
+
+
+def media_box(W, ph, theme):
+    """Intérieur du cadre « image » (mêmes valeurs que le CSS), pour poser une vidéo hors du temps fort minuté."""
+    u = W / 1080
+    if theme == "paper":
+        l, t, b, bw, rad = round(110 * u), round(ph * 0.12), round(ph * 0.16), max(2, round(3 * u)), round(10 * u)
+    else:
+        l, t, b, bw, rad = round(110 * u), round(120 * u), round(ph * 0.14), 2, round(24 * u)
+    return l + bw, t + bw, W - 2 * l - 2 * bw, ph - t - b - 2 * bw, max(0, rad - bw)
 
 
 def esc(s):
@@ -141,7 +187,20 @@ def css(W, ph, fam, vis):
             font: 500 {round(32*u)}px 'IBM Plex Mono', monospace; border: 2px solid rgba(255,255,255,.3); }}
   .stp.on {{ background: {acc}22; border-color: {acc}; }}
   .stp.on .n {{ background: {acc}; color: {on_acc}; border-color: {acc}; }}
-  .stps {{ position: absolute; left: {round(80*u)}px; right: {round(80*u)}px; top: {round(ph*0.2)}px; }}"""
+  .stps {{ position: absolute; left: {round(80*u)}px; right: {round(80*u)}px; top: {round(ph*0.2)}px; }}
+  .ico {{ display: inline-flex; flex: 0 0 auto; width: 1.05em; height: 1.05em; color: {acc}; }}
+  .ico svg {{ stroke-width: 2.2; }}
+  .stp .n svg {{ width: 62%; height: 62%; }}
+  .bigico {{ position: absolute; left: 50%; top: {round(ph*0.58)}px; width: {round(190*u)}px; height: {round(190*u)}px; margin-left: -{round(95*u)}px;
+            color: {acc}; opacity: 0; filter: drop-shadow(0 0 {round(24*u)}px {acc}66); }}
+  .igrid {{ position: absolute; left: {round(60*u)}px; right: {round(60*u)}px; top: {round(ph*0.2)}px; display: grid; gap: {round(46*u)}px {round(30*u)}px; }}
+  .ic {{ text-align: center; opacity: 0; }}
+  .ic .cir {{ width: {round(200*u)}px; height: {round(200*u)}px; border-radius: 50%; margin: 0 auto; background: {acc}; color: {on_acc};
+             display: flex; align-items: center; justify-content: center; box-shadow: 0 {round(14*u)}px {round(40*u)}px {acc}55; }}
+  .ic .cir svg {{ width: 50%; height: 50%; stroke-width: 2; }}
+  .ic .lab {{ margin-top: {round(22*u)}px; font-size: {round(46*u)}px; font-weight: 700; line-height: 1.1; }}
+  .ihead {{ position: absolute; left: 0; right: 0; top: {round(ph*0.08)}px; text-align: center; font: 500 {round(26*u)}px 'IBM Plex Mono', monospace;
+           letter-spacing: .12em; text-transform: uppercase; opacity: .65; }}"""
 
 
 def title_words(text):
@@ -221,12 +280,24 @@ def css_paper(W, ph, fam, vis):
   #panel.paper .lbl {{ top: {round(ph*0.24 + 345*u)}px; font-size: {round(84*u)}px; }}
   #panel.paper .stps {{ top: {round(ph*0.2)}px; }}
   #panel.paper .stp {{ font-size: {round(64*u)}px; padding: {round(32*u)}px {round(34*u)}px; margin-bottom: {round(28*u)}px; }}
-  #panel.paper .ph {{ top: {round(ph*0.12)}px; bottom: {round(ph*0.16)}px; }}"""
+  #panel.paper .ph {{ top: {round(ph*0.12)}px; bottom: {round(ph*0.16)}px; }}
+  #panel.paper .ic .cir {{ border: {max(2, round(3*u))}px solid {ink}; box-shadow: {sh}; color: #fff; }}
+  #panel.paper .ic .lab {{ color: {ink}; }}
+  #panel.paper .bigico {{ filter: none; top: {round(ph*0.68)}px; }}
+  #panel.paper .igrid {{ top: {round(ph*0.24)}px; }}
+  #panel.paper .ic .cir {{ width: {round(270*u)}px; height: {round(270*u)}px; }}
+  #panel.paper .ic .lab {{ font-size: {round(58*u)}px; margin-top: {round(28*u)}px; }}
+  #panel.paper .ihead {{ top: {round(ph*0.1)}px; font-size: {round(30*u)}px; }}
+  #panel.paper .ihead {{ color: {ink}; }}"""
 
 
-def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark"):
-    """-> (html du panneau, lignes JS, rapport). Temps : contenu (avant intro) ; T0 ajouté aux data-start."""
+def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
+    """-> (html du panneau, lignes JS, rapport, calques). Temps : contenu (avant intro) ; T0 ajouté aux data-start.
+    Calques : vidéos et emojis animés posés HORS du panneau (une vidéo minutée ne s'imbrique pas dans un temps fort),
+    positionnés par rapport à la racine grâce à origin = coin haut-gauche de la scène."""
     u = W / 1080
+    ox, oy = origin
+    layers = []
     placed = []
     for b in beats or []:
         hit = word_hit(words, b.get("word", ""), b.get("occurrence", 1)) if b.get("word") else None
@@ -247,7 +318,13 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark"):
         tag = f'<div class="tag">{esc(b["tag"])}</div>' if b.get("tag") else ""
         inner, bj = "", []
         if typ == "title":
-            inner = f'<div class="ttl">{title_words(b.get("text", ""))}</div>' + ('<div class="mark"></div>' if b.get("mark") else "")
+            big = icon(b["icon"]) if b.get("icon") else ""
+            inner = (f'<div class="ttl">{title_words(b.get("text", ""))}</div>'
+                     + (f'<div class="bigico">{big}</div>' if big else ('<div class="mark"></div>' if b.get("mark") else "")))
+            if big:
+                bj.append(f'  tl.fromTo("#{sid} .bigico", {{ opacity: 0, scale: 0.3, rotation: -25 }}, {{ opacity: 1, scale: 1, rotation: 0, '
+                          f'duration: 0.65, ease: "back.out(2.4)", immediateRender: false }}, {s0 + 0.45});')
+                bj.append(f'  tl.to("#{sid} .bigico", {{ y: -{round(14*u)}, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: {max(0, int((d - 1.2) // 1.2))} }}, {s0 + 1.1});')
             bj.append(f'  tl.fromTo("#{sid} .ttl .w", {{ opacity: 0, y: 34, filter: "blur(10px)" }}, {{ opacity: 1, y: 0, filter: "blur(0px)", '
                       f'duration: 0.42, stagger: 0.11, ease: "power3.out", immediateRender: false }}, {s0 + 0.08});')
             bj.append(f'  tl.fromTo("#{sid} .ttl .it", {{ scale: 1.25, rotation: -5 }}, {{ scale: 1, rotation: 0, duration: 0.6, '
@@ -258,7 +335,9 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark"):
                 bj.append(f'  tl.to("#{sid} .mark", {{ rotation: 45, duration: {max(0.5, d - 1.2)}, ease: "none" }}, {s0 + 1.15});')
         elif typ == "check":
             items = b.get("items", [])[:5]
-            rows = "".join(f'<div class="row r{j}"><span class="box"><i>✓</i></span><span>{esc(it)}</span></div>' for j, it in enumerate(items))
+            rows = "".join(f'<div class="row r{j}"><span class="box"><i>✓</i></span>'
+                           + (f'<span class="ico">{item_icon(it)}</span>' if item_icon(it) else "")
+                           + f'<span>{esc(item_text(it))}</span></div>' for j, it in enumerate(items))
             inner = (f'<div class="card"><div class="chead">{esc(b.get("title", ""))}</div>{rows}</div>'
                      + (f'<div class="stamp">{esc(b["stamp"])}</div>' if b.get("stamp") else ""))
             bj.append(f'  tl.fromTo("#{sid} .card", {{ opacity: 0, y: 50, rotationX: 14, transformPerspective: 900 }}, {{ opacity: 1, y: 0, '
@@ -306,26 +385,72 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark"):
                         shutil.copy2(base / p, job / "assets" / "img" / p.name)
                         src = f"assets/img/{p.name}"
                         break
-            if src.lower().endswith((".mp4", ".webm", ".mov")):  # une vidéo minutée ne s'imbrique pas : photo seulement
-                rep.append({"type": typ, "pose": False, "raison": "image attendue (pas de vidéo dans le panneau)"})
+            if not src:
+                rep.append({"type": typ, "pose": False, "raison": "pas d'image (panel.py fetch pour une query)"})
                 continue
-            med = f'<img src="{esc(src)}" alt="">'
+            is_vid = src.lower().endswith((".mp4", ".webm", ".mov"))
+            med = "" if is_vid else f'<img src="{esc(src)}" alt="">'
             inner = f'<div class="ph">{med}</div>' + (f'<div class="cap2">{esc(b["caption"])}</div>' if b.get("caption") else "")
-            bj.append(f'  tl.fromTo("#{sid} .ph", {{ opacity: 0, y: 60, rotationX: 16, transformPerspective: 1000 }}, {{ opacity: 1, y: 0, rotationX: 0, '
-                      f'duration: 0.6, ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
-            bj.append(f'  tl.fromTo("#{sid} .ph img", {{ scale: 1.0 }}, {{ scale: 1.1, duration: {d}, ease: "none", immediateRender: false }}, {s0});')
+            if is_vid:  # le cadre est dans le temps fort, la vidéo dans un calque à la même place
+                x, y, w, h, rad = media_box(W, ph, theme)
+                lid = f"lv{k}"
+                layers.append(f'    <div class="mlayer" id="{lid}" style="position:absolute;left:{ox + x}px;top:{oy + y}px;width:{w}px;height:{h}px;'
+                              f'border-radius:{rad}px;overflow:hidden;z-index:30;opacity:0"><video id="{lid}v" class="clip" src="{esc(src)}" '
+                              f'data-start="{round(s0 + T0, 3)}" data-duration="{d}" data-track-index="{80 + k}" muted playsinline '
+                              f'style="width:100%;height:100%;object-fit:cover;display:block"></video></div>')
+                bj.append(f'  tl.fromTo("#{sid} .ph", {{ opacity: 0, y: 60 }}, {{ opacity: 1, y: 0, duration: 0.6, ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
+                bj.append(f'  tl.fromTo("#{lid}", {{ opacity: 0, y: 60 }}, {{ opacity: 1, y: 0, duration: 0.6, ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
+                if k + 1 < len(placed):
+                    bj.append(f'  tl.to("#{lid}", {{ opacity: 0, y: -16, duration: 0.22, ease: "power2.in" }}, {round(t1 - 0.22, 3)});')
+            else:
+                bj.append(f'  tl.fromTo("#{sid} .ph", {{ opacity: 0, y: 60, rotationX: 16, transformPerspective: 1000 }}, {{ opacity: 1, y: 0, rotationX: 0, '
+                          f'duration: 0.6, ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
+                bj.append(f'  tl.fromTo("#{sid} .ph img", {{ scale: 1.0 }}, {{ scale: 1.1, duration: {d}, ease: "none", immediateRender: false }}, {s0});')
         elif typ == "steps":
             items = b.get("items", [])[:4]
-            rows = "".join(f'<div class="stp p{j}"><span class="n">{j + 1}</span><span>{esc(it)}</span></div>' for j, it in enumerate(items))
+            rows = "".join(f'<div class="stp p{j}"><span class="n">{item_icon(it) or j + 1}</span><span>{esc(item_text(it))}</span></div>'
+                           for j, it in enumerate(items))
             inner = f'<div class="stps">{rows}</div>'
             span = max(0.4, (d - 0.6) / max(1, len(items)))
             for j in range(len(items)):
                 tj = round(s0 + 0.15 + j * span, 3)
                 bj.append(f'  tl.fromTo("#{sid} .p{j}", {{ opacity: 0, x: 40 }}, {{ opacity: 1, x: 0, duration: 0.4, ease: "power3.out", immediateRender: false }}, {tj});')
                 bj.append(f'  tl.call(function () {{ document.querySelectorAll("#{sid} .stp").forEach(function (e, i) {{ e.classList.toggle("on", i === {j}); }}); }}, null, {tj});')
+        elif typ == "icons":
+            items = b.get("items", [])[:6]
+            cols = 2 if len(items) == 4 else min(3, max(1, len(items)))
+            cells = "".join(f'<div class="ic c{j}"><div class="cir">{item_icon(it)}</div><div class="lab">{esc(item_text(it))}</div></div>'
+                            for j, it in enumerate(items))
+            inner = ((f'<div class="ihead">{esc(b["title"])}</div>' if b.get("title") else "")
+                     + f'<div class="igrid" style="grid-template-columns:repeat({cols},1fr)">{cells}</div>')
+            span = max(0.25, min(0.6, (d * 0.6) / max(1, len(items))))
+            for j in range(len(items)):
+                tj = round(s0 + 0.15 + j * span, 3)
+                bj.append(f'  tl.fromTo("#{sid} .c{j}", {{ opacity: 0, y: -{round(120*u)}, rotation: {(-12, 10, -6, 8, -10, 6)[j]} }}, {{ opacity: 1, y: 0, rotation: 0, '
+                          f'duration: 0.7, ease: "bounce.out", immediateRender: false }}, {tj});')
         else:
             rep.append({"type": typ, "pose": False, "raison": "type inconnu"})
             continue
+        lo = b.get("lottie")
+        if lo:  # emoji animé (library/lottie) posé dans la scène, rejoué en boucle pendant le temps fort
+            import math
+            lm = ROOT / "library" / "lottie" / str(lo.get("name", "")) / "lottie.json"
+            if lm.exists() and "webm" in read_json(lm):
+                meta = read_json(lm)
+                (job / "assets" / "lottie").mkdir(parents=True, exist_ok=True)
+                shutil.copy2(lm.parent / meta["webm"], job / "assets" / "lottie" / meta["webm"])
+                from common import add_credit
+                add_credit(job, meta["credit"])
+                size = round(W * float(lo.get("size", 26)) / 100)
+                lx = ox + round(W * float(lo.get("x", 78)) / 100) - size // 2
+                ly = oy + round(ph * float(lo.get("y", 72)) / 100) - size // 2
+                one = float(meta.get("rendered_duration") or meta.get("duration") or 1.5)
+                start = s0 + 0.4
+                n = max(1, math.ceil((t1 - start - 0.25) / one - 0.05))
+                for r_ in range(n):
+                    layers.append(f'    <video id="lo{k}_{r_}" class="clip" src="assets/lottie/{meta["webm"]}" data-start="{round(start + T0 + r_ * one, 3)}" '
+                                  f'data-duration="{round(min(one, t1 - start - r_ * one), 3)}" data-track-index="{90 + k}" muted playsinline '
+                                  f'style="position:absolute;left:{lx}px;top:{ly}px;width:{size}px;height:{size}px;z-index:35"></video>')
         html_.append(f'      <div class="clip beat" id="{sid}" data-start="{round(s0 + T0, 3)}" data-duration="{d}" data-track-index="{70 + k % 2}">'
                      f'<div class="bi">{tag}{inner}</div></div>')
         js.append(f'  tl.fromTo("#{sid} .bi", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.25, ease: "power1.out", immediateRender: false }}, {s0});')
@@ -341,7 +466,7 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark"):
              f'\n{chr(10).join(html_)}\n      <div class="flash"></div><div class="grain"></div><div class="vig"></div></div>')
     if theme == "paper":  # pas de décor sombre : le papier et le motif sont dessinés par build_explainer
         panel = f'    <div id="panel" class="paper">\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
-    return panel, js, rep
+    return panel, js, rep, layers
 
 
 def default_beats(text_json):
@@ -355,6 +480,53 @@ def default_beats(text_json):
         txt = " ".join(f"*{w}*" if i == j else w for i, w in enumerate(ws))
         beats.append({"type": "title", "_t": float(o["start"]), "text": txt})
     return beats
+
+
+def fetch(job_name, slug):
+    """Temps forts "image" avec "query" et sans "image" : Pixabay (vidéos assez longues puis photos), 1re posée, planche."""
+    import argparse as _a
+
+    from broll import candidates, download, planche
+    from common import config, size_of
+    job = job_dir(job_name)
+    pj = job / "work" / f"{slug}_panels.json"
+    beats = read_json(pj)
+    items, rep_ = [], []
+    for i, b in enumerate(beats):
+        if b.get("type") != "image" or b.get("image") or not b.get("query"):
+            continue
+        alts = [x for x in candidates(job, b["query"], True, None, "wide") if float(x.get("duree") or 0) >= 4][:3]
+        alts += candidates(job, b["query"], False, None, "wide")[:3]
+        if not alts:
+            rep_.append({"temps_fort": i, "query": b["query"], "raison": "aucun résultat"})
+            continue
+        b["image"], _ = download(job, _a.Namespace(id=alts[0]["id"]))
+        items.append({"beat": i, "query": b["query"], "phrase": b.get("text") or b.get("caption") or b.get("word", ""),
+                      "alts": [x["id"] for x in alts], "_alts": alts})
+        rep_.append({"temps_fort": i, "query": b["query"], "image": b["image"]})
+    from common import write_json as _w
+    _w(pj, beats)
+    _w(job / "work" / f"{slug}_panels_alts.json", [{k: v for k, v in it.items() if k != "_alts"} for it in items])
+    pl = planche(job, items) if items else None
+    out(ok=True, images=rep_, planche=str(pl) if pl else None, suite="regarde la planche ; panel.py pick <job> <slug> <n> a-f|none")
+
+
+def pick(job_name, slug, n, choice):
+    import argparse as _a
+
+    from broll import download
+    job = job_dir(job_name)
+    pj, aj = job / "work" / f"{slug}_panels.json", job / "work" / f"{slug}_panels_alts.json"
+    beats, alts = read_json(pj), read_json(aj)
+    it = alts[int(n) - 1]
+    b = beats[it["beat"]]
+    if choice == "none":
+        b.pop("image", None)
+        b["type"] = "title" if b.get("text") else b["type"]
+    else:
+        b["image"], _ = download(job, _a.Namespace(id=it["alts"]["abcdef".index(choice)] if len(choice) == 1 else choice))
+    write_json(pj, beats)
+    out(ok=True, temps_fort=it["beat"], image=b.get("image"))
 
 
 def suggest(job_name, slug):
@@ -372,5 +544,9 @@ def suggest(job_name, slug):
 if __name__ == "__main__":
     if len(sys.argv) >= 4 and sys.argv[1] == "suggest":
         suggest(sys.argv[2], sys.argv[3])
+    elif len(sys.argv) >= 4 and sys.argv[1] == "fetch":
+        fetch(sys.argv[2], sys.argv[3])
+    elif len(sys.argv) >= 6 and sys.argv[1] == "pick":
+        pick(*sys.argv[2:6])
     else:
         print(__doc__)

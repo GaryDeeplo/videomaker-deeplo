@@ -516,7 +516,8 @@ def main():
         if not pj.exists() and hook.exists():
             beats = [{"type": "title", "_t": 0.0, "text": read_json(hook)["text"], "mark": True}] + beats
         cw = [w for g in t.get("captions", []) for w in g["words"]] or cap_words
-        panel_html, pjs, panel_rep = pn.nodes(job, beats, cw, dur, T0, W, PH, vis)
+        panel_html, pjs, panel_rep, layers = pn.nodes(job, beats, cw, dur, T0, W, PH, vis)
+        panel_html += "\n" + "\n".join(layers)
         tw += pjs
         font_face += " " + pn.fonts(job)
         seam_h = round(cap_size * 2.1)

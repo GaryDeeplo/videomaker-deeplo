@@ -14,3 +14,7 @@
 ## Polices du panneau « écran partagé »
 `.claude/skills/videomaker-deeplo/vendor/fonts/` : Instrument Serif Italic (© The Instrument Serif Project Authors) et
 IBM Plex Mono Medium (© IBM Corp.), licence SIL Open Font License 1.1 (fichiers OFL-*.txt à côté).
+
+## Pictos Lucide
+`.claude/skills/videomaker-deeplo/vendor/lucide/` : icônes Lucide (paquet npm lucide-static), licence ISC
+(© Lucide Icons and Contributors, `vendor/lucide/LICENSE`), téléchargées à la demande et intégrées en SVG.
