@@ -19,7 +19,8 @@ from pathlib import Path
 
 import panel as pn
 from build_composition import caption_spans
-from common import ROOT, block_file, brand_info, config, fail, job_dir, mount, out, read_json, size_of
+import sound_design
+from common import ROOT, block_file, brand_info, config, fail, job_dir, mount, out, read_json, scale_of, size_of
 
 esc = lambda s: html.escape(str(s), quote=True)
 
@@ -37,7 +38,8 @@ def main():
     c = config(job)
     vis = c["visual"]
     W, H = size_of(a.size, vis)
-    u = W / 1080
+    u = scale_of(W, H)
+    wide = W / H > 1.2  # paysage : fiche à gauche, sous-titres en colonne à droite
     mj, tj = job / "work" / f"{a.slug}_map.json", job / "work" / f"{a.slug}_text.json"
     for p in (mj, tj):
         if not p.exists():
@@ -65,6 +67,10 @@ def main():
     # géométrie : carte, bandeau d'étapes, scène des temps forts, cadre des sous-titres
     mx, top, bottom = round(W * 0.055), round(H * 0.045), round(H * 0.80)
     sw, chrome_h = W - 2 * mx, round(170 * u)
+    if wide:
+        mx, top, bottom = round(H * 0.06), round(H * 0.06), round(H * 0.94)
+        sw, chrome_h = round(W * 0.6), round(120 * u)
+    capx = mx + sw + round(60 * u)  # colonne des sous-titres en paysage
     stage_h = bottom - top - chrome_h
     pj = job / "work" / f"{a.slug}_panels.json"
     beats = read_json(pj) if pj.exists() else pn.default_beats(t)
@@ -131,6 +137,9 @@ def main():
         total = round(dur + od, 3)
 
     shadow = f"{round(10*u)}px {round(10*u)}px 0 {ink}"
+    wide_css = (f"  .cap {{ left: {capx}px; right: {mx}px; top: 0; bottom: 0; display: flex; align-items: center; justify-content: flex-start; text-align: left; }}" + chr(10) +
+                f"  .cap .in {{ white-space: normal; max-width: 100%; font-size: {round(76*u)}px; line-height: 1.12; }}" + chr(10) +
+                f"  .chips {{ flex-wrap: nowrap; }} .chip {{ font-size: {round(24*u)}px; white-space: nowrap; }} .prog {{ font-size: {round(20*u)}px; }}") if wide else ""
     doc = f"""<!doctype html>
 <html lang="fr">
 <head>
@@ -163,6 +172,7 @@ def main():
              text-transform: uppercase; letter-spacing: -.01em; white-space: nowrap; opacity: 0; }}
   .cap .w {{ display: inline-block; margin: 0 .08em; color: {ink}55; position: relative; z-index: 0; }}
   .cap .w.k {{ color: #fff; background: {acc}; padding: 0 .18em; border-radius: .1em; }}
+{wide_css}
 {pn.css_paper(sw, stage_h, fam, vis)}
 </style>
 </head>
@@ -199,6 +209,8 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
+        sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=total, chapitres=chapters, temps_forts=prep, sous_titres=len(caps),
         suite="npx hyperframes check, puis snapshot")
 

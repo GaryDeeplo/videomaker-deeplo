@@ -26,6 +26,7 @@ from pathlib import Path
 
 from build_composition import caption_css, caption_js, caption_spans
 from footage import camera_jitter, subject_x
+import sound_design
 from common import ROOT, block_file, brand_info, config, fail, job_dir, mount, music_beats, out, read_json, size_of, snap_beat, word_hit
 
 esc = lambda s: html.escape(str(s), quote=True)
@@ -392,6 +393,8 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
+        sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=total, plans=rep, voix=bool(voice), sous_titres=len(caps),
         coupes_sur_la_musique=f"{snapped}/{max(0, len(starts) - 1)}" if beats else "pas de musique analysée",
         suite="npx hyperframes check, puis snapshot pendant quelques plans")

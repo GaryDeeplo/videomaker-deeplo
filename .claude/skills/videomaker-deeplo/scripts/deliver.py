@@ -6,8 +6,8 @@ les crédits et une page récap (livraison.html) à ouvrir ou envoyer au client.
 Détecte seul le monteur : <slug>_footage.json -> build_footage (images sans paroles), _data.json -> build_data
 (infographie), _punch.json -> build_punch, storyboard + _panels.json -> build_explainer, storyboard -> build_scenes,
 sinon build_composition (rush, écran partagé ou cartes) ; --pack pour forcer.
-L'explainer, le punch et l'infographie sont pensés en vertical : leurs versions 1:1 et 16:9 reprennent la vidéo 9:16 au
-centre, sur un fond flouté tiré d'elle-même (mêmes son et couverture). Les autres se recomposent à chaque format.
+L'explainer, le punch et l'infographie ont une vraie mise en page 16:9 (contenu à gauche, texte à droite) ; leur 1:1
+reprend la vidéo 9:16 au centre, sur un fond flouté tiré d'elle-même. Les autres se recomposent à chaque format.
 Pour chaque format : composition à la bonne taille, rendu HyperFrames, master -14 LUFS (finalize.py),
 couverture extraite du MP4. La composition du format principal est reconstruite à la fin (Studio inchangé).
 Texte du post : work/<slug>_post.json écrit par Claude AVANT la livraison :
@@ -93,10 +93,10 @@ def main():
     dst.mkdir(parents=True, exist_ok=True)
     made = []
     base = f"{c['visual']['width']}x{c['visual']['height']}"
-    if vertical_only and "9:16" in fmts:  # le 9:16 d'abord : les autres formats en sont tirés
+    if vertical_only and "9:16" in fmts:  # le 9:16 d'abord : le 1:1 en est tiré
         fmts = ["9:16"] + [f for f in fmts if f != "9:16"]
     for f in fmts:
-        if vertical_only and f != "9:16" and made:
+        if vertical_only and f == "1:1" and made:  # le 16:9 a sa propre mise en page (contenu à gauche, texte à droite)
             tag = f.replace(":", "x") + sfx
             Wd, Hd = FORMATS[f]
             src_v, src_c = dst / made[0]["video"], dst / made[0]["cover"]

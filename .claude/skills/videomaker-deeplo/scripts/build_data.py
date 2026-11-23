@@ -33,7 +33,8 @@ from pathlib import Path
 
 import panel as pn
 from build_punch import vivid
-from common import ROOT, block_file, brand_info, config, fail, job_dir, mount, out, read_json, size_of, word_hit
+import sound_design
+from common import ROOT, block_file, brand_info, config, fail, job_dir, mount, out, read_json, scale_of, size_of, word_hit
 
 esc = lambda s: html.escape(str(s), quote=True)
 TYPES = ("bars", "grid", "people", "flip", "line", "pct", "days", "title", "end") + pn.UI_TYPES  # + maquettes d'interface du panneau
@@ -234,7 +235,8 @@ def main():
     c = config(job)
     vis = c["visual"]
     W, H = size_of(a.size, vis)
-    u = W / 1080
+    u = scale_of(W, H)
+    wide = W / H > 1.2  # paysage : graphique à gauche, phrase dite en colonne à droite
     mj, tj, dj = (job / "work" / f"{a.slug}_{x}.json" for x in ("map", "text", "data"))
     for p in (mj, tj, dj):
         if not p.exists():
@@ -277,6 +279,11 @@ def main():
     days = data.get("days") or {}
     nd = int(days.get("count", 0))
     tl_y = round(H * 0.86)
+    cp_l, cp_r = mx, mx
+    if wide:
+        st_y, st_h, sw = round(H * 0.2), round(H * 0.58), round(W * 0.56)
+        cp_l, cap_y = mx + sw + round(70 * u), round(H * 0.3)
+        tl_y = round(H * 0.84)
 
     words = [w for g in t.get("captions", []) for w in g["words"]]
     placed = []
@@ -408,6 +415,7 @@ def main():
              "<feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter>"
              "<rect width='100%' height='100%' filter='url(%23n)' opacity='.5'/></svg>")
     G = lambda x: round(x * u)
+    s2_wide = f" .stampx.s2 {{ top: auto; bottom: {G(40)}px; }}" if wide else ""  # paysage : tampon sous les cases
     doc = f"""<!doctype html>
 <html lang="fr">
 <head>
@@ -462,7 +470,7 @@ def main():
   .flbl {{ text-align: center; margin-top: {G(40)}px; font-size: {G(56)}px; font-weight: 800; }}
   .stampx {{ position: absolute; left: 0; top: {G(20)}px; padding: {G(6)}px {G(20)}px; border: {G(5)}px solid {acc}; color: {acc}; border-radius: {G(8)}px;
             font-weight: 900; font-size: {G(50)}px; text-transform: uppercase; background: #fff; }}
-  .stampx.s2 {{ top: auto; bottom: {G(160)}px; left: {G(20)}px; }}
+  .stampx.s2 {{ top: auto; bottom: {G(160)}px; left: {G(20)}px; }}{s2_wide}
   .chart {{ position: absolute; left: 0; top: 0; overflow: visible; }}
   .chart .gl {{ stroke: {ink}22; stroke-width: {max(1, G(2))}; }}
   .chart .gt {{ font: 500 {G(24)}px {mono}; fill: {C["mute"]}; }}
@@ -494,7 +502,7 @@ def main():
           background: #fff; text-align: left; box-shadow: 0 {G(18)}px {G(40)}px rgba(0,0,0,.12); }}
   .ebub small {{ display: block; font-size: {G(30)}px; color: {C["mute"]}; }}
   .ebub b {{ font-size: {G(56)}px; }}
-  .cp {{ position: absolute; left: {mx}px; right: {mx}px; top: {cap_y}px; font-size: {G(58)}px; font-weight: 800; line-height: 1.22; letter-spacing: -.01em;
+  .cp {{ position: absolute; left: {cp_l}px; right: {cp_r}px; top: {cap_y}px; font-size: {G(70 if wide else 58)}px; font-weight: 800; line-height: 1.22; letter-spacing: -.01em;
         z-index: 40; opacity: 0; }}
   .cw {{ color: {C["grey2"]}; }}
   .cw.on {{ color: {ink}; }}
@@ -545,6 +553,8 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
+        sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=total, temps_forts=rep, rubriques=len(heads), phrases=len(caps),
         suite="npx hyperframes check, puis snapshot")
 

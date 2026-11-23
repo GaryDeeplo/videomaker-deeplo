@@ -30,7 +30,8 @@ from pathlib import Path
 
 import panel as pn
 from build_composition import SHADOW, caption_css, caption_js, caption_spans
-from common import ROOT, add_credit, config, fail, job_dir, music_beats, out, probe, read_json, size_of, snap_beat, word_hit, write_json
+import sound_design
+from common import ROOT, add_credit, config, fail, job_dir, music_beats, out, probe, read_json, scale_of, size_of, snap_beat, word_hit, write_json
 
 esc = lambda s: html.escape(str(s), quote=True)
 VENDOR = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "fonts"
@@ -110,7 +111,9 @@ def build(a):
     c = config(job)
     vis = c["visual"]
     W, H = size_of(a.size, vis)
-    u = W / 1080
+    u = scale_of(W, H)
+    wide = W / H > 1.2  # paysage : titres à gauche, objets (notification, date, prix…) à droite
+    PW = W * 0.46 if wide else W  # largeur de la zone des objets
     mj, tj, pj = job / "work" / f"{a.slug}_map.json", job / "work" / f"{a.slug}_text.json", job / "work" / f"{a.slug}_punch.json"
     for p in (mj, tj, pj):
         if not p.exists():
@@ -214,17 +217,17 @@ def build(a):
                     (job / "assets" / "lottie").mkdir(parents=True, exist_ok=True)
                     shutil.copy2(lm.parent / meta["webm"], job / "assets" / "lottie" / meta["webm"])
                     add_credit(job, meta["credit"])
-                    size = round(W * float(pr.get("size", 40)) / 100)
+                    size = round(min(PW, H * 0.56) * float(pr.get("size", 40)) / 100 * (1.6 if wide else 1))
                     one = float(meta.get("rendered_duration") or meta.get("duration") or 1.5)
                     for r_ in range(max(1, math.ceil((t_next - p0) / one - 0.05))):
                         layers.append(f'    <video id="lo{k}_{r_}" class="clip" src="assets/lottie/{meta["webm"]}" data-start="{round(p0 + r_ * one, 3)}" '
                                       f'data-duration="{round(min(one, t_next - p0 - r_ * one), 3)}" data-track-index="{40 + k}" muted playsinline '
-                                      f'style="position:absolute;left:{(W - size) // 2}px;top:{round(H * y / 100) - size // 2}px;width:{size}px;height:{size}px;z-index:35"></video>')
+                                      f'style="position:absolute;left:{round(W * 0.73 - size / 2) if wide else (W - size) // 2}px;top:{round(H * (46 if wide else y) / 100) - size // 2}px;width:{size}px;height:{size}px;z-index:35"></video>')
                 continue
             h = prop_html(pid, pr, u, acc)
             if h:
                 props.append(f'    <div class="clip pwrap" data-start="{round(p0, 3)}" data-duration="{round(t_next - p0, 3)}" data-track-index="{30 + k % 3}" '
-                             f'style="top:{round(H * y / 100)}px">{h}</div>')
+                             f'style="top:{round(H * (46 if wide else y) / 100)}px">{h}</div>')
                 js += prop_js(pid, pr, round(p0, 3), t_next)
 
     caps, capjs, last = [], [], -99.0
@@ -248,6 +251,13 @@ def build(a):
     if mu.exists():
         audio.append(f'    <audio id="music" class="clip" src="{read_json(mu)["file"]}" data-start="0" data-duration="{dur}" data-track-index="9" data-volume="1"></audio>')
     cap_size = round(80 * u)
+    wide_css = ""
+    if wide:
+        wide_css = (f"  .ttls {{ left: {round(W*0.05)}px; right: {round(W*0.5)}px; top: {round(H*0.1)}px; text-align: left; }}"
+                    f"  .ttls .ln {{ font-size: {round(165*u)}px; }} .ttls .ln:first-child {{ font-size: {round(118*u)}px; }}"
+                    f"  .pwrap {{ left: {round(W*0.5)}px; right: {round(W*0.04)}px; }}"
+                    f"  #burst {{ left: 27%; }}"
+                    f"  .cap {{ top: {round(H*0.8)}px; }} .cap .in {{ margin: 0 {round(W*0.12)}px; }}")
     doc = f"""<!doctype html>
 <html lang="fr">
 <head>
@@ -272,7 +282,7 @@ def build(a):
   .ttls .a {{ color: {acc}; }}
   .pwrap {{ position: absolute; left: 0; right: 0; z-index: 30; display: flex; justify-content: center; transform: translateY(-50%); }}
   .pp {{ opacity: 0; }}
-  .notif {{ width: {round(W*0.86)}px; background: rgba(246,246,248,.94); border-radius: {round(38*u)}px; padding: {round(26*u)}px {round(30*u)}px;
+  .notif {{ width: {round(PW*0.86 if wide else W*0.86)}px; background: rgba(246,246,248,.94); border-radius: {round(38*u)}px; padding: {round(26*u)}px {round(30*u)}px;
            box-shadow: 0 {round(20*u)}px {round(60*u)}px rgba(0,0,0,.45); color: #111; font-family: 'Inter', system-ui, sans-serif; }}
   .notif .nh {{ display: flex; align-items: center; gap: {round(16*u)}px; font-size: {round(30*u)}px; color: #555; }}
   .notif .nh b {{ color: #333; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; font-size: {round(26*u)}px; }}
@@ -296,7 +306,7 @@ def build(a):
           box-shadow: 0 {round(18*u)}px {round(50*u)}px rgba(0,0,0,.45); font-family: 'Inter', system-ui, sans-serif; }}
   .date span {{ display: block; background: #e53935; color: #fff; font-weight: 700; font-size: {round(46*u)}px; padding: {round(12*u)}px 0; }}
   .date b {{ display: block; font-weight: 300; font-size: {round(170*u)}px; line-height: 1.15; }}
-  .doc {{ width: {round(W*0.84)}px; background: #fbfbf8; color: #111; padding: {round(30*u)}px {round(36*u)}px; border-radius: {round(8*u)}px;
+  .doc {{ width: {round(PW*0.84 if wide else W*0.84)}px; background: #fbfbf8; color: #111; padding: {round(30*u)}px {round(36*u)}px; border-radius: {round(8*u)}px;
          box-shadow: 0 {round(18*u)}px {round(50*u)}px rgba(0,0,0,.45); font-family: 'Inter', system-ui, sans-serif; }}
   .doc .dh {{ font: 500 {round(22*u)}px 'IBM Plex Mono', monospace; letter-spacing: .12em; color: #666; border-bottom: 2px solid #111;
              padding-bottom: {round(10*u)}px; }}
@@ -317,6 +327,7 @@ def build(a):
              line-height: 1.08; color: #fff; text-shadow: {SHADOW}; text-transform: uppercase; }}
   .cap .w {{ display: inline-block; margin: 0 .07em; transform-origin: 50% 70%; }}
 {caption_css("impact", acc)}
+{wide_css}
 </style>
 </head>
 <body>
@@ -344,6 +355,8 @@ def build(a):
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
+        sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=dur, plans=rep, titres=len(titles), objets=len(props) + len(layers), sous_titres=len(caps),
         suite="npx hyperframes check, puis snapshot")
 

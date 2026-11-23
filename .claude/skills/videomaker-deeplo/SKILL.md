@@ -477,6 +477,25 @@ Horaires = repères génériques : dis au client de les ajuster selon les statis
 Seul levier : moins d'images. Aperçus à valider : `-f 15` ou `deliver.py … --apercu` (≈ -40 %) ; livraison finale
 toujours à 30 i/s. Ne lance pas plusieurs rendus en parallèle : ça ne va pas plus vite.
 
+### Zooms, bruitages et variantes d'accroche
+- **Zooms sur les mots forts** (rush face caméra) : `build_composition.py … --zooms` (ou `"camera": {"zooms": true}`,
+  `zoomsPerMinute` 8 par défaut). Mots choisis par les mesures (`zooms.py <job> <slug>` les liste) : volume de la voix
+  comparé aux 4 s autour, mot étiré, chiffre ou mot fort ; jamais sur un petit mot ni à moins de 3,5 s du précédent.
+  Coup sec et glissé en alternance, retour à la fin de la phrase. À proposer d'office pour un ton dynamique.
+- **Sound design automatique** : chaque monteur termine par `sound_design.auto` (whoosh sur un changement de plan ou de
+  temps fort, pop sur un élément de liste, impact sur un chiffre, clic sur un bouton, ding sur une notification…),
+  instants lus dans la composition, sons de la banque harmonisés et espacés (≥ 0,45 s). Relancer à la main :
+  `python scripts/sound_design.py <job>` ; `--off` les retire ; `"sfx": {"design": false}` pour s'en passer.
+  La musique n'est pas baissée sous les bruitages : volumes déjà dosés pour passer dessus.
+- **Variantes d'accroche A/B** (après validation de l'aperçu, base rendue SANS accroche) :
+  `variants.py propose <job> <slug>` -> réécris les titres de `work/<slug>_variantes.json` (3 promesses différentes :
+  bénéfice, question, contraste ; ≤ 6 mots ; rien que la vidéo ne tienne), puis `variants.py make <job> <slug>` :
+  seules les 3 premières secondes sont rendues par variante (≈ 40 s chacune), recollées au reste de la base (voix
+  d'origine dès le début, sous le titre). -> `renders/variantes/` + `variantes.html` (lecteurs + tableau de suivi).
+  Conseil à donner : « Reels d'essai » Instagram ou jours comparables, garder la meilleure rétention à 3 s.
+- **16:9 natif** : explainer, punch et infographie ont une vraie mise en page paysage (`--size 16:9` : contenu à gauche,
+  texte à droite) ; la livraison l'utilise, le 1:1 reste tiré du 9:16.
+
 ## Livraison (tous les parcours)
 
 1. Écris `work/<slug>_post.json` : `caption` (2-3 phrases dans le ton de la marque, sans promesse inventée),

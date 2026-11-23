@@ -46,7 +46,8 @@ SPLIT = """        const T = String(v.text || ""), host = document.querySelector
           host.appendChild(ws); if (wi < T.split(" ").length - 1) host.appendChild(document.createTextNode(" "));
         });
         const LW = Math.max.apply(null, T.split(" ").map(function (w) { return w.length; }).concat([1]));  // le mot le plus long tient dans la largeur
-        host.style.fontSize = Math.max(5, Math.min(15, 150 / Math.max(6, T.length * 0.95), 82 / (0.74 * LW))) + "vmin";
+        const NL = T.length <= 14 ? 1 : (T.length <= 30 ? 2 : 3);  // un titre plus long passe sur 2 ou 3 lignes au lieu de rapetisser
+        host.style.fontSize = Math.max(5, Math.min(12, 82 / (0.62 * Math.ceil(T.length / NL)), 82 / (0.74 * LW))) + "vmin";
         const CH = document.querySelectorAll(r + ".ch");
         const EXIT = Math.max(1.2, D - 0.45);"""
 EXIT = """        tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);"""

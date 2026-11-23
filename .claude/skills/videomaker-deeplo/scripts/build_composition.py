@@ -18,6 +18,8 @@ from pathlib import Path
 
 import re
 
+from zooms import strong_words, zoom_js
+import sound_design
 from common import (REAL_SFX_INDEX, ROOT, SOUNDS, add_credit, block_file, brand_info, config, fail, job_dir, motion_nodes,
                     mount, out, probe, read_json, size_of, word_hit)
 
@@ -290,6 +292,7 @@ def main():
     ap.add_argument("slug")
     ap.add_argument("--no-cam", action="store_true")
     ap.add_argument("--no-sfx", action="store_true")
+    ap.add_argument("--zooms", action="store_true", help="zooms sur les mots appuyés (zooms.py ; ou camera.zooms dans la config)")
     ap.add_argument("--size", help="9:16 | 1:1 | 4:5 | 16:9 | LxH (défaut : config)")
     ap.add_argument("--layout", choices=["full", "split", "cards"],
                     help="split : animation en haut, visage en bas ; cards : visage plein écran, cartes en haut (visual.layout)")
@@ -419,6 +422,10 @@ def main():
             tw.append(f'  tl.set("#{oid}", {{ opacity: 0 }}, {round(en, 3)});')
 
     cam = [] if (a.no_cam or not c["camera"]["enabled"]) else build_cam(dur, punches)
+    zooms = []
+    if (a.zooms or c["camera"].get("zooms")) and not a.no_cam:  # resserrements sur les mots appuyés, mesurés (zooms.py)
+        zooms = [z for z in strong_words(job, a.slug, float(c["camera"].get("zoomsPerMinute", 8)))
+                 if not any(abs(z["t"] - p) < 1.5 for p in punches)]  # pas sur un punch-in déjà posé
 
     sfx_nodes, n_whoosh, n_tick = [], 0, 0
     if not a.no_sfx and sfxc["enabled"]:
@@ -591,6 +598,7 @@ def main():
   #bg {{ position: absolute; inset: 0; background: #000; }}
   .zw {{ position: absolute; inset: 0; overflow: hidden; }}
   #cam {{ position: absolute; inset: 0; transform-origin: {vis["focusX"]}% 42%; will-change: transform; }}
+  #zm {{ position: absolute; inset: 0; transform-origin: {vis["focusX"]}% 38%; }}
   #a-roll {{ position: absolute; left: 0; top: 0; width: {W}px; height: {H}px; object-fit: {"contain" if fill else "cover"};
              object-position: {vis["focusX"]}% 50%; display: block; }}
   #a-fill {{ position: absolute; left: 0; top: 0; width: {W}px; height: {H}px; object-fit: cover;
@@ -625,11 +633,11 @@ def main():
   <div id="root" data-composition-id="reel" data-start="0" data-width="{W}" data-height="{H}" data-duration="{total}">
     <div id="bg"></div>
     <div class="zw">
-      <div id="cam">
+      <div id="zm"><div id="cam">
         {f'<video id="a-fill" class="clip" src="assets/{esc(cut)}" data-start="{T0}" data-duration="{dur}" data-track-index="1" muted playsinline></video>' if fill else ""}
         <video id="a-roll" class="clip" src="assets/{esc(cut)}" data-start="{T0}" data-duration="{dur}"
                data-track-index="0" playsinline data-has-audio="true" data-volume="1"{' style="width: ' + str(VW) + 'px; max-width: none; object-fit: fill;"' if track else ''}></video>
-      </div>
+      </div></div>
     </div>
 {panel_html}
 {'    <div class="seam"></div>' if split else ''}
@@ -670,6 +678,7 @@ def main():
   CAM.forEach(function (c) {{
     tl.fromTo("#cam", {{ scale: c[1] }}, {{ scale: c[2], duration: c[3], ease: c[4], immediateRender: false }}, c[0]);
   }});
+{chr(10).join(zoom_js(zooms))}
 
 {chr(10).join(tw)}
 
@@ -679,13 +688,15 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
+        sound_design.auto(job)
     drifts = sum(1 for x in cam if x[4] == "power1.inOut")
     out(ok=True, format=f"{W}x{H}", duree=total, contenu=dur, intro=T0, outro=outro_d, bandeau=bool(lt.get("name")),
         motions=motion_rep, plans_de_coupe=broll_rep, mode=mode, style=style,
         cadrage="écran partagé" if split else ("suit le visage" if track else ("image entière, fond flouté" if fill else "recadré")),
         panneau=panel_rep or None,
         captions=sum(1 for n in nodes if 'class="clip cap"' in n), overlays=sum(1 for n in nodes if "note" in n),
-        drifts=drifts, punchs=len(cam) - drifts, sfx_whoosh=n_whoosh, sfx_tick=n_tick,
+        drifts=drifts, punchs=len(cam) - drifts, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
         suite="npx hyperframes check, puis snapshot / preview")
 
 

@@ -3,6 +3,13 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.23.2
+- Vraie mise en page 16:9 pour l'explainer, l'actu / punch et l'infographie (contenu à gauche, texte à droite), pour YouTube et LinkedIn.
+- Zooms sur les mots appuyés dans un rush face caméra (coup sec ou glissé), choisis d'après la voix et le texte.
+- Sound design automatique : un bruitage discret sur chaque apparition (changement de plan, élément de liste, chiffre, bouton, notification), dans tous les rendus.
+- Variantes d'accroche A/B : 2 ou 3 versions des 3 premières secondes sur le même montage, avec une page pour les comparer et suivre les résultats.
+- Accroches animées : un titre long passe sur 2 ou 3 lignes au lieu de rapetisser.
+
 ## 2026.11.23
 - Livraison de tous les rendus (montage, infographie, actu / punch, fiche animée) : le bon monteur est choisi tout seul ; les rendus pensés en vertical sortent aussi en 1:1 et 16:9 sur fond flouté.
 - Contrôle qualité automatique avant de montrer une vidéo (`qa.py`) : plans trop courts, images noires ou figées, volume, trous de son, sous-titres trop rapides.

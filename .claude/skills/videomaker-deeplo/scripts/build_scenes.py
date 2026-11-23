@@ -20,6 +20,7 @@ from pathlib import Path
 
 from build_text import HARD
 from build_composition import SHADOW, STYLES, caption_css, caption_js, caption_spans, emoji_tween, sfx_asset
+import sound_design
 from common import (ROOT, add_credit, block_file, brand_info, config, fail, job_dir, motion_nodes, mount, out, read_json,
                     size_of)
 
@@ -717,6 +718,8 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
+        sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=round(dur, 1), scenes=len(scenes), sous_titres=len(caps_nodes),
         sfx=len(sfx_times) + len(pops), musique=mj.exists(), motions=motion_report, suite="npx hyperframes check, snapshot, puis rendu")
 

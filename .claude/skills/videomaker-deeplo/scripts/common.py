@@ -93,6 +93,12 @@ def size_of(arg, vis):
     return int(w), int(h)
 
 
+def scale_of(W, H):
+    """Échelle des textes et marges, pensée pour le 1080 × 1920 : 1 en vertical, ~0,95 en carré et en paysage (la hauteur
+    commande, sinon tout grossit de 1,78 en 16:9 et déborde)."""
+    return min(W / 1080, H / 1080 * 0.95)
+
+
 def block_file(job, name):
     """Copie le bloc <name> de library/ dans <job>/compositions/ s'il n'y est pas ; renvoie le chemin relatif."""
     import shutil
