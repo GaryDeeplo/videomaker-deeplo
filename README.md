@@ -4,17 +4,20 @@ Des vidéos prêtes à poster pour votre entreprise ou vos propres réseaux, mon
 clips, photos, chiffres et idées. Tout se passe dans Claude Code, en français : vous décrivez, Claude monte, vous validez.
 Tapez `/videomaker-deeplo` : quelques questions à choix, puis un aperçu.
 
+<p align="center"><img src="docs/apercu.gif" width="300" alt="Aperçu : accroche animée, explainer, actu, infographie, montage d'ambiance, journal de chantier"></p>
+
 ## Ce que ça fait
 
 | Vous donnez | Vous recevez |
 |---|---|
 | Plusieurs **petits clips** filmés au téléphone, dans le désordre | Une seule vidéo dans l'ordre du propos, avec la meilleure prise de chaque phrase |
-| Un **rush face caméra** (même avec des ratés et des reprises) | Un reel serré : meilleures prises, blancs, « euh » et bégaiements coupés, sous-titres mot à mot, zooms, sons, musique, et vos photos (ou des images et vidéos Pixabay) qui illustrent ce qui est dit |
+| Un **rush face caméra** (même avec des ratés et des reprises) | Un reel serré : meilleures prises, blancs, « euh » et bégaiements coupés, sous-titres mot à mot, zooms sur les mots forts, titre géant derrière vous, bruitages, musique qui s'efface quand vous parlez, et vos photos (ou des images et vidéos Pixabay) qui illustrent ce qui est dit |
 | Des **photos + une idée** (ou un texte) | Une vidéo animée dans vos couleurs, avec voix off, sous-titres et musique ; pas assez de photos ? des images et vidéos d'ambiance Pixabay |
 | Une **longue vidéo** (interview, webinaire, live) | 3 à 5 shorts qui se comprennent seuls, avec un titre d'accroche |
 | Une vidéo déjà faite | Sa version **sous-titrée en néerlandais ou en anglais** (accroche et post traduits aussi) |
 | Un **lien de musique** ou votre propre fichier | La musique calée sous la voix (droits à vérifier pour un lien) |
 | Des **clips sans paroles** (chantier, ambiance, plats, événement) | Un montage rythmé : meilleurs passages repérés tout seuls, accélérés, « JOUR 12 · La cuisine », avant / après, série « Semaine 4 sur 12 » |
+| Une vidéo **validée** | 2 ou 3 **variantes d'accroche** (A/B) sur le même montage, et une page pour comparer leurs résultats |
 | Des **chiffres** (résultats, étude de cas) | Une infographie animée façon journal : barres, compteur, courbe, pourcentages, frise des jours |
 | Un **texte ou mémo vocal** | La voix off : voix de synthèse naturelle (Gemini, gratuite) ou votre propre enregistrement |
 

@@ -15,7 +15,8 @@
  ],
  "usage": "\"hook\": {\"style\": \"isometrique\", \"text\": \"…\", \"sub\": \"…\"} (config, plan de montage) ou build_composition.py --accroche isometrique",
  "source_job": null,
- "preview": null,
+ "preview": "preview.mp4",
  "created": "2026-11-22",
- "uses": 0
+ "uses": 0,
+ "apercu": "composition de test générique (sans client ni visage)"
 }
