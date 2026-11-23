@@ -25,29 +25,57 @@ import subprocess
 from pathlib import Path
 
 from build_composition import caption_css, caption_js, caption_spans
-from common import ROOT, block_file, brand_info, config, fail, job_dir, mount, out, read_json, size_of, word_hit
+from footage import camera_jitter, subject_x
+from common import ROOT, block_file, brand_info, config, fail, job_dir, mount, music_beats, out, read_json, size_of, snap_beat, word_hit
 
 esc = lambda s: html.escape(str(s), quote=True)
+JITTER_MIN = 1.0  # tremblement de la caméra (footage.camera_jitter, px sur 320) au-delà duquel on stabilise ; plans posés : < 0,3
 
 
-def render_clip(job, src, start, length, speed, W, H, fit):
-    """Extrait [start, start + length] du clip, accéléré, au format W × H (recadré, ou image entière sur fond flouté)."""
-    key = hashlib.md5(f"{src}|{start:.2f}|{length:.2f}|{speed}|{W}x{H}|{fit}".encode()).hexdigest()[:10]
+def render_clip(job, src, start, length, speed, W, H, fit, focus=None, stab=False):
+    """Extrait [start, start + length] du clip, accéléré, au format W × H (recadré, ou image entière sur fond flouté).
+    focus : position du sujet de gauche (0) à droite (1), mesurée par footage.subject_x ; le recadrage le garde dans
+    l'image au lieu de couper au milieu. stab : stabilisation en deux passes (vidstab) d'un passage filmé à main levée."""
+    key = hashlib.md5(f"{src}|{start:.2f}|{length:.2f}|{speed}|{W}x{H}|{fit}|{focus}|{stab}".encode()).hexdigest()[:10]
     d = job / "assets" / "footage"
     d.mkdir(parents=True, exist_ok=True)
     dst = d / f"{Path(src).stem[:24]}-{key}.mp4"
+    mark = dst.with_suffix(".stab")  # présent si la version stabilisée a été gardée
     if dst.exists():
-        return dst
+        return dst, mark.exists()
+    inp = ["-ss", f"{start:.3f}", "-t", f"{length:.3f}", "-i", str(src)]
+    used = False
+    if stab:  # passe 1 : mouvements de la caméra ; passe 2 : trajet lissé (les panoramiques voulus restent), léger zoom
+        raw, sta = d / f"_raw-{key}.mp4", d / f"_sta-{key}.mp4"
+        trf = f"_stab-{key}.trf"  # chemin relatif (dossier de travail = d) : pas de « C: » à échapper dans le filtre
+        enc = ["-an", "-c:v", "libx264", "-preset", "veryfast", "-crf", "16"]
+        subprocess.run(["ffmpeg", "-v", "error", "-y", *inp, *enc, raw.name], check=True, cwd=d)
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", raw.name, "-vf", f"vidstabdetect=shakiness=6:accuracy=10:result={trf}",
+                        "-f", "null", "-"], check=True, cwd=d)
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", raw.name, "-vf",
+                        f"vidstabtransform=input={trf}:smoothing=20:optzoom=1:interpol=bicubic,unsharp=5:5:0.5:3:3:0.2", *enc, sta.name],
+                       check=True, cwd=d)
+        before, after = camera_jitter(raw), camera_jitter(sta)
+        used = after < 0.6 * before  # gardée seulement si elle tremble nettement moins (sinon le sujet a trompé l'outil)
+        inp = ["-i", str(sta if used else raw)]
     sp = f"setpts=PTS/{speed}," if speed != 1 else ""
     if fit == "blur":
         vf = (f"[0:v]{sp}split[a][b];[a]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},boxblur=30:3,eq=brightness=-0.08[bg];"
               f"[b]scale={W}:{H}:force_original_aspect_ratio=decrease[fg];[bg][fg]overlay=(W-w)/2:(H-h)/2,fps=30,format=yuv420p")
         args = ["-filter_complex", vf]
     else:
-        args = ["-vf", f"{sp}scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},fps=30,format=yuv420p"]
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{start:.3f}", "-t", f"{length:.3f}", "-i", str(src), *args, "-an",
-                    "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-movflags", "+faststart", str(dst)], check=True)
-    return dst
+        fx = 0.5 if focus is None else min(1.0, max(0.0, float(focus)))
+        # x du recadrage : sujet au centre de la fenêtre, sans sortir de l'image (même chose en hauteur si la source est plus haute)
+        crop = f"crop={W}:{H}:x='max(0,min(iw-{W},iw*{fx:.3f}-{W}/2))':y='(ih-{H})/2'"
+        args = ["-vf", f"{sp}scale={W}:{H}:force_original_aspect_ratio=increase,{crop},fps=30,format=yuv420p"]
+    subprocess.run(["ffmpeg", "-v", "error", "-y", *inp, *args, "-an",
+                    "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-movflags", "+faststart", str(dst)], check=True, cwd=d)
+    if stab:
+        for f in (d / f"_raw-{key}.mp4", d / f"_sta-{key}.mp4", d / f"_stab-{key}.trf"):
+            f.unlink(missing_ok=True)
+        if used:
+            mark.write_text(f"tremblement {before} -> {after}", encoding="utf-8")
+    return dst, used
 
 
 def still(job, src, t, W, H):
@@ -68,6 +96,8 @@ def main():
     ap.add_argument("--style", default="boite")
     ap.add_argument("--fit", choices=["cover", "blur"])
     ap.add_argument("--no-outro", action="store_true")
+    ap.add_argument("--lang", help="sous-titres traduits (translate.py apply) : nl, en…")
+    ap.add_argument("--no-captions", action="store_true", help="sans sous-titres (couverture)")
     ap.add_argument("--accroche", help="accroche animée de 3 s en ouverture (papier, plan, neon… ; ou plan.hook)")
     a = ap.parse_args()
     job = job_dir(a.job)
@@ -119,6 +149,20 @@ def main():
         ends = [round(s + l, 3) for s, l in zip(starts, lens)]
         dur = ends[-1]
 
+    # coupes calées sur les temps de la musique (la musique part de 0, le montage après l'éventuelle accroche)
+    hk0 = dict(plan.get("hook") or c.get("hook") or {})
+    T0e = (float(hk0.get("dur", 3.0)) - 0.45) if (hk0.get("style") or a.accroche) else 0.0
+    beats = [] if plan.get("beat_sync") is False else music_beats(job, a.slug)
+    snapped = 0
+    if beats and len(starts) > 1:
+        tol = 0.3 if voice else 0.26
+        new = [starts[0]]
+        for s_ in starts[1:]:
+            t_ = snap_beat(s_ + T0e, beats, tol, lo=new[-1] + T0e + 1.2) - T0e
+            snapped += abs(t_ - s_) > 1e-3
+            new.append(round(t_, 3))
+        starts = new
+        ends = starts[1:] + [ends[-1]]
     vids, labels, js, rep = [], [], [], []
     for i, ((kind, o), s0, s1) in enumerate(zip(seq, starts, ends)):
         d = round(s1 - s0, 3)
@@ -155,7 +199,19 @@ def main():
             st = min(max(0.0, mid - need / 2), max(0.0, sc["duration"] - need))
             if need < d * speed:  # clip trop court pour la durée voulue : on ralentit un peu plutôt que de figer
                 speed = max(0.5, need / d)
-        clip = render_clip(job, src, st, need, round(speed, 3), W, H, fit)
+        # main levée : stabilisé si le passage tremble (mesure du scan) ; recadrage : fenêtre posée sur le sujet mesuré
+        if "stab" in o:
+            stab = bool(o["stab"])
+        else:
+            stab = plan.get("stab", "auto") == "auto" and not o.get("timelapse") and camera_jitter(src, st, need) >= JITTER_MIN
+        focus = None
+        if fit != "blur" and abs(sc["width"] / max(1, sc["height"]) - W / H) > 0.15:
+            if isinstance(o.get("focus"), (int, float)):
+                focus = float(o["focus"])
+            elif o.get("focus", plan.get("focus", "auto")) == "auto":
+                focus = subject_x(src, st, need, frac=min(1.0, (W / H) / (sc['width'] / max(1, sc['height']))))
+        clip, stab = render_clip(job, src, st, need, round(speed, 3), W, H, fit, focus=focus, stab=stab)
+        rep_shot = {"stabilise": stab, "sujet_x": focus if focus not in (None, 0.5) else None}
         vid = f"fv{i}"
         vids.append(f'    <video id="{vid}" class="clip shotv" src="assets/footage/{clip.name}" data-start="{round(s0, 3)}" data-duration="{d}" '
                     f'data-track-index="{5 + i % 2}" muted playsinline></video>')
@@ -170,7 +226,7 @@ def main():
             lt = s0 + 0.1 + (min(3.2, d) - 0.2 if i == 0 and plan.get("title") else 0)  # pas sous le titre d'ouverture
             js.append(f'  tl.set("#{lid} > *", {{ opacity: 0 }}, {round(s0, 3)});')
             js.append(f'  tl.fromTo("#{lid} > *", {{ opacity: 0, x: -24 }}, {{ opacity: 1, x: 0, duration: 0.35, stagger: 0.08, ease: "power3.out", immediateRender: false }}, {round(lt, 3)});')
-        rep.append({"type": "accéléré" if o.get("timelapse") else "plan", "clip": o["clip"], "a": round(s0, 2), "duree": d, "vitesse": round(speed, 2)})
+        rep.append({"type": "accéléré" if o.get("timelapse") else "plan", "clip": o["clip"], "a": round(s0, 2), "duree": d, "vitesse": round(speed, 2), **{k: v for k, v in rep_shot.items() if v}})
 
     # titre d'ouverture et série
     over = []
@@ -190,8 +246,11 @@ def main():
 
     # sous-titres de la voix off
     caps, capjs = [], []
-    if voice and words:
-        groups = t.get("captions", [])
+    if voice and words and not a.no_captions:
+        tl_ = t
+        if a.lang and (job / "work" / f"{a.slug}_text_{a.lang}.json").exists():
+            tl_ = read_json(job / "work" / f"{a.slug}_text_{a.lang}.json")
+        groups = tl_.get("captions", [])
         for gi, g in enumerate(groups):
             stc = round(max(0.05, g["words"][0]["start"] - 0.05), 3)
             nxt = groups[gi + 1]["words"][0]["start"] - 0.05 if gi + 1 < len(groups) else dur
@@ -334,6 +393,7 @@ def main():
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
     out(ok=True, format=f"{W}x{H}", duree=total, plans=rep, voix=bool(voice), sous_titres=len(caps),
+        coupes_sur_la_musique=f"{snapped}/{max(0, len(starts) - 1)}" if beats else "pas de musique analysée",
         suite="npx hyperframes check, puis snapshot pendant quelques plans")
 
 

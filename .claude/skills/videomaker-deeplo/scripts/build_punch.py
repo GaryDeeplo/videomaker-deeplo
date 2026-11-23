@@ -30,7 +30,7 @@ from pathlib import Path
 
 import panel as pn
 from build_composition import SHADOW, caption_css, caption_js, caption_spans
-from common import ROOT, add_credit, config, fail, job_dir, out, probe, read_json, size_of, word_hit, write_json
+from common import ROOT, add_credit, config, fail, job_dir, music_beats, out, probe, read_json, size_of, snap_beat, word_hit, write_json
 
 esc = lambda s: html.escape(str(s), quote=True)
 VENDOR = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "fonts"
@@ -154,6 +154,12 @@ def build(a):
         media_starts.append((tt, b))
     if len(media_starts) > 1 and dur - media_starts[-1][0] < 1.2:
         rep.append({"media": media_starts.pop()[1]["media"], "pose": False, "raison": "dernier plan trop court"})
+    beats = music_beats(job, a.slug)  # l'image change sur le temps de musique le plus proche (0,2 s au plus : les titres restent sur leurs mots)
+    if beats:
+        ms = [media_starts[0]]
+        for tt_, b_ in media_starts[1:]:
+            ms.append((round(snap_beat(tt_, beats, 0.2, lo=ms[-1][0] + 1.2), 3), b_))
+        media_starts = ms
     for i, (tt, b) in enumerate(media_starts):
         t1 = media_starts[i + 1][0] if i + 1 < len(media_starts) else dur
         src = media_src(job, b["media"])
@@ -223,7 +229,10 @@ def build(a):
 
     caps, capjs, last = [], [], -99.0
     if not a.no_captions:
-        groups = t.get("captions", [])
+        tl_ = t
+        if a.lang and (job / "work" / f"{a.slug}_text_{a.lang}.json").exists():
+            tl_ = read_json(job / "work" / f"{a.slug}_text_{a.lang}.json")
+        groups = tl_.get("captions", [])
         for i, g in enumerate(groups):
             st = round(max(0.05, g["words"][0]["start"] - 0.05), 3)
             nxt = groups[i + 1]["words"][0]["start"] - 0.05 if i + 1 < len(groups) else dur
@@ -392,6 +401,7 @@ def main():
     ap.add_argument("slug")
     ap.add_argument("--size")
     ap.add_argument("--no-captions", action="store_true")
+    ap.add_argument("--lang", help="sous-titres traduits (translate.py apply) : nl, en…")
     build(ap.parse_args())
 
 

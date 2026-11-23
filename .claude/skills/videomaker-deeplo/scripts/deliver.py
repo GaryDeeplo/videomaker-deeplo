@@ -3,7 +3,11 @@ les crédits et une page récap (livraison.html) à ouvrir ou envoyer au client.
 
   python deliver.py <job> <slug> [--formats 9:16,1:1,16:9] [--quality delivery|draft] [--cover-at S]
 
-Détecte seul le type de vidéo : storyboard présent -> build_scenes.py, sinon build_composition.py (rush).
+Détecte seul le monteur : <slug>_footage.json -> build_footage (images sans paroles), _data.json -> build_data
+(infographie), _punch.json -> build_punch, storyboard + _panels.json -> build_explainer, storyboard -> build_scenes,
+sinon build_composition (rush, écran partagé ou cartes) ; --pack pour forcer.
+L'explainer, le punch et l'infographie sont pensés en vertical : leurs versions 1:1 et 16:9 reprennent la vidéo 9:16 au
+centre, sur un fond flouté tiré d'elle-même (mêmes son et couverture). Les autres se recomposent à chaque format.
 Pour chaque format : composition à la bonne taille, rendu HyperFrames, master -14 LUFS (finalize.py),
 couverture extraite du MP4. La composition du format principal est reconstruite à la fin (Studio inchangé).
 Texte du post : work/<slug>_post.json écrit par Claude AVANT la livraison :
@@ -47,6 +51,8 @@ def main():
     ap.add_argument("--cover-at", type=float, help="instant de la couverture (s) ; défaut : fin de l'accroche")
     ap.add_argument("--lang", help="version sous-titrée traduite (translate.py) : nl, en…")
     ap.add_argument("--fps", type=int, help="images par seconde (défaut : celles de la composition, 30)")
+    ap.add_argument("--pack", choices=["rush", "scenes", "explainer", "punch", "infographie", "montage"],
+                    help="monteur à utiliser (sinon détecté d'après les fichiers de work/)")
     ap.add_argument("--apercu", action="store_true",
                     help="aperçu rapide pour validation : 15 i/s, qualité brouillon (~40 %% plus rapide), pas pour publier")
     a = ap.parse_args()
@@ -55,7 +61,12 @@ def main():
     meta = read_json(job / "job.json")
     work = job / "work"
     scenes = (work / f"{a.slug}_storyboard.json").exists()
-    builder = "build_scenes.py" if scenes else "build_composition.py"
+    has = lambda x: (work / f"{a.slug}_{x}.json").exists()
+    pack = a.pack or ("montage" if has("footage") else "infographie" if has("data") else "punch" if has("punch")
+                      else "explainer" if (scenes and has("panels")) else "scenes" if scenes else "rush")
+    builder = {"rush": "build_composition.py", "scenes": "build_scenes.py", "explainer": "build_explainer.py",
+               "punch": "build_punch.py", "infographie": "build_data.py", "montage": "build_footage.py"}[pack]
+    vertical_only = pack in ("explainer", "punch", "infographie")
     fmts = [f.strip() for f in a.formats.split(",") if f.strip()]
     for f in fmts:
         if f not in FORMATS:
@@ -63,7 +74,10 @@ def main():
 
     cover_t = a.cover_at
     if cover_t is None:
-        if scenes:
+        if pack == "montage":
+            plan = read_json(work / f"{a.slug}_footage.json")
+            cover_t = 1.5 + (float((plan.get("hook") or {}).get("dur", 3.0)) - 0.45 if (plan.get("hook") or {}).get("style") else 0)
+        elif scenes and (work / f"{a.slug}_timing.json").exists():
             tm = read_json(work / f"{a.slug}_timing.json")["scenes"]
             first = next((x for x in tm if x.get("voice_start") is not None), tm[0])  # l'accroche, pas le logo d'intro
             cover_t = round(min(first["end"] - 0.3, (first.get("voice_start") or first["start"]) + 2.2), 2)
@@ -79,7 +93,24 @@ def main():
     dst.mkdir(parents=True, exist_ok=True)
     made = []
     base = f"{c['visual']['width']}x{c['visual']['height']}"
+    if vertical_only and "9:16" in fmts:  # le 9:16 d'abord : les autres formats en sont tirés
+        fmts = ["9:16"] + [f for f in fmts if f != "9:16"]
     for f in fmts:
+        if vertical_only and f != "9:16" and made:
+            tag = f.replace(":", "x") + sfx
+            Wd, Hd = FORMATS[f]
+            src_v, src_c = dst / made[0]["video"], dst / made[0]["cover"]
+            final, cover = dst / f"{a.slug}_{tag}.mp4", dst / f"{a.slug}_{tag}_cover.jpg"
+            fc = (f"[0:v]split[a][b];[a]scale={Wd}:{Hd}:force_original_aspect_ratio=increase,crop={Wd}:{Hd},boxblur=40:4,"
+                  f"eq=brightness=-0.12[bg];[b]scale=-2:{Hd}[fg];[bg][fg]overlay=(W-w)/2:0,format=yuv420p[v]")
+            sh(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src_v), "-filter_complex", fc, "-map", "[v]", "-map", "0:a?",
+                "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-c:a", "copy", "-movflags", "+faststart", str(final)],
+               "ffmpeg (format dérivé)")
+            sh(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src_c), "-filter_complex", fc.replace(",format=yuv420p", ""),
+                "-map", "[v]", "-frames:v", "1", "-q:v", "2", str(cover)], "ffmpeg (couverture dérivée)")
+            made.append({**made[0], "format": f, "video": final.name, "cover": cover.name, "mo": round(final.stat().st_size / 1e6, 1),
+                         "derive": "9:16 sur fond flouté"})
+            continue
         tag = f.replace(":", "x") + sfx
         run_py(builder, str(job), a.slug, "--size", f, *lg)
         raw = job / "renders" / f"{a.slug}_{tag}.mp4"
@@ -161,7 +192,9 @@ button {{ background: var(--acc); color: #fff; border: 0; padding: 10px 16px; bo
 {f'<h2>Premier commentaire</h2><pre>{esc(post["first_comment"])}</pre>' if post.get("first_comment") else ""}
 </main></body></html>"""
     (dst / "livraison.html").write_text(page, encoding="utf-8")
+    qa = run_py("qa.py", str(job), a.slug, "--video", str(dst / made[0]["video"])) if made else {}  # contrôle qualité du format principal
     out(ok=all(m["verdict"] == "OK" for m in made), dossier=str(dst), formats=made, couverture_a=cover_t,
+        controle={k: qa.get(k) for k in ("verdict", "a_revoir", "infos")},
         post="présent" if post else "absent (écris work/<slug>_post.json)", page=str(dst / "livraison.html"))
 
 

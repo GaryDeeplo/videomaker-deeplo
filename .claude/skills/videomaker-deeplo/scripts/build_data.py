@@ -227,6 +227,8 @@ def main():
     ap.add_argument("slug")
     ap.add_argument("--size")
     ap.add_argument("--no-outro", action="store_true")
+    ap.add_argument("--lang", help="sous-titres traduits (translate.py apply) : nl, en…")
+    ap.add_argument("--no-captions", action="store_true", help="sans sous-titres (couverture)")
     a = ap.parse_args()
     job = job_dir(a.job)
     c = config(job)
@@ -356,7 +358,12 @@ def main():
 
     # phrase dite : morceau de phrase entier, mots qui passent du gris à l'encre, mot fort en boîte
     caps, capjs = [], []
-    groups = [o for o in t.get("overlays", []) if o.get("words")] or [{"words": g["words"], "start": g["start"], "end": g["end"]} for g in t.get("captions", [])]
+    tl_ = t
+    if a.lang and (job / "work" / f"{a.slug}_text_{a.lang}.json").exists():
+        tl_ = read_json(job / "work" / f"{a.slug}_text_{a.lang}.json")
+    groups = [o for o in tl_.get("overlays", []) if o.get("words")] or [{"words": g["words"], "start": g["start"], "end": g["end"]} for g in tl_.get("captions", [])]
+    if a.no_captions:
+        groups = []
     for i, g in enumerate(groups):
         ws = g["words"]
         st = round(max(0.0, ws[0]["start"] - 0.08), 3)

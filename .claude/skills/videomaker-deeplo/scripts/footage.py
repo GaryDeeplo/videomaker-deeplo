@@ -21,7 +21,7 @@ from pathlib import Path
 
 import numpy as np
 
-from common import fail, job_dir, out, read_json, write_json
+from common import ROOT, fail, job_dir, out, read_json, write_json
 
 VIDEO = {".mp4", ".mov", ".m4v", ".webm", ".mkv", ".avi"}
 FPS = 4
@@ -91,6 +91,120 @@ def measure(src):
         (dx, dy), _ = cv2.phaseCorrelate(a.astype(np.float32), b.astype(np.float32), win)
         shake.append(float(np.hypot(dx, dy)))
     return {"sharp": sharp, "bright": bright, "motion": motion, "shake": np.array(shake)}
+
+
+def camera_jitter(src, start=0.0, length=None, fps=15):
+    """Tremblement de la CAMÉRA (pas du sujet) : mouvement de l'arrière-plan suivi point par point (RANSAC écarte ce qui
+    bouge dans l'image), puis écart entre ce trajet et sa version lissée ; un panoramique voulu est lisse et ne compte pas.
+    En pixels sur une image de 320 px de large ; > JITTER_MIN : la main tremble."""
+    import cv2
+    cap = cv2.VideoCapture(str(src))
+    sfps = cap.get(cv2.CAP_PROP_FPS) or 30
+    sw, sh = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    if not sw:
+        return 0.0
+    size = (320, max(2, int(sh * 320 / sw)))
+    cap.set(cv2.CAP_PROP_POS_MSEC, start * 1000)
+    step = max(1, round(sfps / fps))
+    n_max = int((length if length else 1e9) * sfps)
+    path, prev, f = [(0.0, 0.0)], None, 0
+    while f < n_max:
+        ok = cap.grab()
+        if not ok:
+            break
+        f += 1
+        if (f - 1) % step:
+            continue
+        ok, img = cap.retrieve()
+        if not ok:
+            break
+        g = cv2.cvtColor(cv2.resize(img, size), cv2.COLOR_BGR2GRAY)
+        if prev is not None:
+            dx = dy = 0.0
+            pts = cv2.goodFeaturesToTrack(prev, 200, 0.01, 8)
+            if pts is not None and len(pts) >= 8:
+                nxt, st, _ = cv2.calcOpticalFlowPyrLK(prev, g, pts, None)
+                good = st.flatten() == 1
+                if good.sum() >= 8:
+                    m, inl = cv2.estimateAffinePartial2D(pts[good], nxt[good], method=cv2.RANSAC, ransacReprojThreshold=2)
+                    if m is not None and inl is not None and inl.sum() >= 8:
+                        q = pts[good][inl.flatten() == 1].reshape(-1, 2)
+                        spread = np.ptp(q, axis=0) / np.array(size)
+                        if spread[0] >= 0.4 and spread[1] >= 0.4:  # points sur tout le décor, pas sur un objet qui passe
+                            dx, dy = float(m[0, 2]), float(m[1, 2])
+            path.append((path[-1][0] + dx, path[-1][1] + dy))
+        prev = g
+    cap.release()
+    p = np.array(path)
+    if len(p) < 6:
+        return 0.0
+    k = 7
+    pad = np.pad(p, ((k // 2, k // 2), (0, 0)), mode="edge")
+    smooth = np.stack([np.convolve(pad[:, i], np.ones(k) / k, mode="valid") for i in range(2)], axis=1)
+    return round(float(np.mean(np.hypot(*(p - smooth).T))), 2)
+
+
+def subject_x(src, start, length, frac=0.32, n=8):
+    """Où est le sujet, de gauche (0) à droite (1), sur [start, start + length] : centre des visages (YuNet) s'il y en a,
+    sinon centre de ce qui bouge et de ce qui est net (la main qui perce, le chef qui pétrit), plutôt que le milieu.
+    frac : largeur gardée par le recadrage, en part de la largeur source (9:16 tiré du 16:9 = 0,32)."""
+    import cv2
+    try:
+        cv2.utils.logging.setLogLevel(cv2.utils.logging.LOG_LEVEL_ERROR)  # avertissement sans conséquence du moteur dnn
+    except Exception:  # noqa: BLE001
+        pass
+    cap = cv2.VideoCapture(str(src))
+    sw, sh = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    if not sw or not sh:
+        return 0.5
+    k = 320 / sw
+    size = (320, max(2, int(sh * k)))
+    model = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "yunet" / "face_detection_yunet_2023mar.onnx"
+    det = cv2.FaceDetectorYN.create(str(model), "", size, 0.7, 0.3, 20) if model.exists() else None
+    faces, imgs = [], []
+    for t in np.linspace(start + 0.1, start + max(0.2, length - 0.1), n):
+        cap.set(cv2.CAP_PROP_POS_MSEC, t * 1000)
+        ok, img = cap.read()
+        if not ok:
+            continue
+        img = cv2.resize(img, size)
+        imgs.append(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32))
+        if det is not None:
+            _, fc = det.detect(img)
+            if fc is not None and len(fc):
+                big = max(fc, key=lambda f: f[2] * f[3])
+                if big[2] * big[3] > 0.004 * size[0] * size[1]:
+                    faces.append((big[0] + big[2] / 2) / size[0])
+    cap.release()
+    if len(faces) >= max(2, len(imgs) // 3):
+        return round(float(np.median(faces)), 3)
+    if len(imgs) < 2:
+        return 0.5
+    energy = np.zeros_like(imgs[0])
+    for a, b in zip(imgs[:-1], imgs[1:]):
+        energy += np.abs(b - a)  # ce qui bouge
+    energy /= max(1e-6, energy.max())
+    lap = np.abs(cv2.Laplacian(np.mean(imgs, axis=0), cv2.CV_32F))
+    lap = cv2.GaussianBlur(lap, (0, 0), 6)
+    lap /= max(1e-6, lap.max())
+    prof = (np.sqrt(energy * lap) + 0.15 * lap).mean(axis=0)  # ce qui bouge ET est net (un premier plan flou qui passe ne compte pas)
+    prof = np.convolve(prof, np.ones(15) / 15, mode="same")
+    if prof.max() - prof.mean() < 0.02:  # rien qui ressorte : on reste au milieu
+        return 0.5
+    # fenêtre (largeur frac) qui garde le plus de sujet, avec une préférence pour le milieu à couverture presque égale
+    n_ = len(prof)
+    cw = max(2, int(round(frac * n_)))
+    if cw >= n_:
+        return 0.5
+    cs = np.concatenate([[0], np.cumsum(prof - prof.min())])
+    cover = (cs[cw:] - cs[:-cw]) / max(1e-6, cs[-1])
+    xs = (np.arange(len(cover)) + cw / 2) / n_
+    best = int(np.argmax(cover - 0.25 * np.abs(xs - 0.5)))
+    mid = int(np.argmin(np.abs(xs - 0.5)))
+    if cover[best] - cover[mid] < 0.1:  # le décentrage ne gagne pas grand-chose (plan large, sujet au milieu) : milieu
+        return 0.5
+    # sans visage, la mesure est moins sûre : on ne va qu'aux 2/3 du chemin (le sujet reste cadré, le centre aussi)
+    return round(0.5 + 0.65 * (float(xs[best]) - 0.5), 3)
 
 
 def best_windows(m, seg, ref_sharp, k=3):

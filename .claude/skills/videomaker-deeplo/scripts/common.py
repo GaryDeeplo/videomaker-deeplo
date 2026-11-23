@@ -209,3 +209,35 @@ def motion_nodes(job, motions, words, W, H, offset=0.0, lo=0.0, hi=1e9, base_val
         nodes.append(mount(mo["block"], f"mo-{k}", start + offset, float(mo.get("dur", 3)), W, H, track + k, vals, z=z + k))
         rep.append({"block": mo["block"], "mot": mo.get("word"), "pose": True, "a": round(start, 2)})
     return nodes, rep
+
+
+def music_beats(job, slug):
+    """Temps de la musique du slug (librosa, en secondes depuis le début de la piste), gardés dans work/<slug>_beats.json."""
+    mj = job / "work" / f"{slug}_music.json"
+    if not mj.exists():
+        return []
+    src = job / read_json(mj)["file"]
+    if not src.exists():
+        return []
+    cache = job / "work" / f"{slug}_beats.json"
+    if cache.exists():
+        c = read_json(cache)
+        if c.get("file") == str(src) and c.get("mtime") == src.stat().st_mtime:
+            return c["beats"]
+    try:
+        import librosa
+        y, sr = librosa.load(str(src), sr=22050, mono=True)
+        _, frames = librosa.beat.beat_track(y=y, sr=sr)
+        beats = [round(float(t), 3) for t in librosa.frames_to_time(frames, sr=sr)]
+    except Exception:  # noqa: BLE001 — pas d'analyse possible : on coupe sans caler
+        beats = []
+    write_json(cache, {"file": str(src), "mtime": src.stat().st_mtime, "beats": beats})
+    return beats
+
+
+def snap_beat(t, beats, tol=0.3, lo=None):
+    """Instant t recalé sur le temps de musique le plus proche (à tol près), sans passer avant lo."""
+    best = min(beats, key=lambda b: abs(b - t)) if beats else None
+    if best is None or abs(best - t) > tol or (lo is not None and best < lo):
+        return t
+    return best

@@ -292,7 +292,14 @@ python scripts/footage.py plan <job> <slug> --duree 30   # premier jet work/<slu
 python scripts/add_music.py <job> <slug> --mood upbeat   # ou une voix off : storyboard + voice.py + build_text.py (même slug)
 python scripts/build_footage.py <job> <slug> [--fit blur] [--style boite]   # puis check + snapshot
 ```
+- **Coupes sur la musique** : avec une musique (`add_music.py`), chaque changement de plan tombe sur un temps de la piste (analysé par librosa, gardé dans `work/<slug>_beats.json`) ; avec voix off, la coupe ne glisse que de 0,3 s au plus. `"beat_sync": false` dans le plan pour s'en passer. Le pack punch fait de même (0,2 s au plus, les titres restent sur leurs mots).
 - **Accéléré** : proposé pour un clip long filmé caméra posée (`timelapse: true`, vitesse calculée pour la durée).
+- **Stabilisation** : un passage filmé à main levée (tremblement de la caméra mesuré sur le décor, pas sur ce qui bouge
+  dans l'image) est stabilisé tout seul (vidstab, deux passes) ; la version stabilisée n'est gardée que si elle tremble
+  nettement moins (rapport : `"stabilise": true`). `"stab": true|false` sur un plan pour forcer, `"stab": false` dans le plan pour tout couper.
+- **Recadrage sur le sujet** : clip paysage en 9:16, la fenêtre se pose sur le visage (YuNet) ou, sans visage, sur ce
+  qui bouge ET est net (la personne qui peint, la main qui pétrit) ; plan large sans sujet net : milieu. `"focus": 0.3`
+  (0 = gauche, 1 = droite) sur un plan pour imposer, `"focus": false` dans le plan pour recadrer au milieu. Vérifie sur le snapshot.
 - **Avant / après** : `compare` avec deux clips filmés du même endroit -> volet qui découvre l'après.
 - **Série** : `series` (« Journal de chantier · Semaine 4 sur 12 ») en haut, barre de progression ; un job par épisode.
 - **Voix off** : les plans changent sur les débuts de phrases (ou sur `word`), sous-titres au style choisi. Sinon musique.
@@ -470,7 +477,7 @@ Horaires = repères génériques : dis au client de les ajuster selon les statis
 Seul levier : moins d'images. Aperçus à valider : `-f 15` ou `deliver.py … --apercu` (≈ -40 %) ; livraison finale
 toujours à 30 i/s. Ne lance pas plusieurs rendus en parallèle : ça ne va pas plus vite.
 
-## Livraison (les deux parcours)
+## Livraison (tous les parcours)
 
 1. Écris `work/<slug>_post.json` : `caption` (2-3 phrases dans le ton de la marque, sans promesse inventée),
    `cta`, `hashtags` (5 à 8, locaux + métier), `first_comment` facultatif. Marque-le « brouillon à valider ».
@@ -553,6 +560,10 @@ continue, les sous-titres restent au-dessus.
 4. `build_composition.py` les pose (whoosh discret à l'entrée) ; vérifie sur `snapshot` pendant chaque plan.
 
 ### Contrôle avant de montrer
+0. **`python scripts/qa.py <job> <slug>`** sur l'aperçu rendu (le plus récent du job, ou `--video`) : plans trop courts
+   (< 0,8 s, coupes confirmées par la couleur ET la structure de l'image), images noires ou figées, volume, trous de son,
+   sous-titres lus trop vite (> 22 car/s), durée vs brief. Verdict « à revoir » = tu corriges avant de montrer ; les
+   « infos » se jugent. `deliver.py` le relance sur la livraison (clé `controle`).
 1. `check` : 0 erreur. Les avertissements `line_unread` sur des groupes mot à mot sont attendus en débit rapide.
 2. `snapshot` : visage non couvert, texte dans la zone sûre (ni tout en haut ni dans le dernier quart), pas de
    sous-titres déjà incrustés dans la source (sinon `--mode overlays` ou pas de texte), cadrage 9:16 qui garde la

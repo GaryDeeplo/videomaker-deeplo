@@ -30,6 +30,8 @@ def main():
     ap.add_argument("slug")
     ap.add_argument("--size")
     ap.add_argument("--no-outro", action="store_true")
+    ap.add_argument("--lang", help="sous-titres traduits (translate.py apply) : nl, en…")
+    ap.add_argument("--no-captions", action="store_true", help="sans sous-titres (couverture)")
     a = ap.parse_args()
     job = job_dir(a.job)
     c = config(job)
@@ -88,7 +90,10 @@ def main():
 
     # sous-titres karaoké dans un cadre
     caps, capjs, last_emo = [], [], -99.0
-    groups = t.get("captions", [])
+    tl_ = t
+    if a.lang and (job / "work" / f"{a.slug}_text_{a.lang}.json").exists():
+        tl_ = read_json(job / "work" / f"{a.slug}_text_{a.lang}.json")
+    groups = [] if a.no_captions else tl_.get("captions", [])
     for i, g in enumerate(groups):
         st = round(max(0.05, g["words"][0]["start"] - 0.05), 3)
         nxt = groups[i + 1]["words"][0]["start"] - 0.05 if i + 1 < len(groups) else dur

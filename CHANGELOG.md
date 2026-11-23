@@ -3,6 +3,12 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.23
+- Livraison de tous les rendus (montage, infographie, actu / punch, fiche animée) : le bon monteur est choisi tout seul ; les rendus pensés en vertical sortent aussi en 1:1 et 16:9 sur fond flouté.
+- Contrôle qualité automatique avant de montrer une vidéo (`qa.py`) : plans trop courts, images noires ou figées, volume, trous de son, sous-titres trop rapides.
+- Coupes calées sur les temps de la musique (montage sans paroles et actu / punch).
+- Images sans paroles : stabilisation automatique des passages filmés à main levée, et recadrage vertical posé sur le sujet (visage, ou ce qui bouge et est net) au lieu du milieu.
+
 ## 2026.11.22.2
 - Accroche avec le sujet dessiné : le plat, la façade ou le produit apparaît dans le style choisi (tracé au trait, rebond, papier qui tombe…).
 - À l'accueil, une question « Accroche animée ? » (non / titre animé / avec le sujet dessiné), retenue pour la marque si vous le voulez.
