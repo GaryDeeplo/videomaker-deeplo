@@ -182,15 +182,20 @@ def apply(job, gap=0.45, off=False):
 
 
 def auto(job):
-    """Appelé par les monteurs après l'écriture de index.html."""
+    """Appelé par les monteurs après l'écriture de index.html : bruitages, puis baisse de la musique (mix.py)."""
     c = config(job)
     sf = c.get("sfx", {})
-    if not sf.get("enabled", True) or not sf.get("design", True):
-        return None
-    try:
-        return apply(job)
-    except Exception as e:  # noqa: BLE001  (le bruitage ne doit jamais bloquer un montage)
-        return {"erreur": str(e)[:200]}
+    rep = None
+    if sf.get("enabled", True) and sf.get("design", True):
+        try:
+            rep = apply(job)
+        except Exception as e:  # noqa: BLE001  (le bruitage ne doit jamais bloquer un montage)
+            rep = {"erreur": str(e)[:200]}
+    import mix
+    p = job / "index.html"
+    h, mrep = mix.auto(job, p.read_text(encoding="utf-8"))
+    p.write_text(h, encoding="utf-8")
+    return {"bruitages": rep, "musique": mrep}
 
 
 def main():

@@ -292,6 +292,8 @@ def main():
     ap.add_argument("slug")
     ap.add_argument("--no-cam", action="store_true")
     ap.add_argument("--no-sfx", action="store_true")
+    ap.add_argument("--derriere", help="titre géant DERRIÈRE la personne détourée (cutout.py), 2,6 s ; ou config behind.text")
+    ap.add_argument("--derriere-mot", help="mot dit où le titre derrière apparaît (sinon au début)")
     ap.add_argument("--zooms", action="store_true", help="zooms sur les mots appuyés (zooms.py ; ou camera.zooms dans la config)")
     ap.add_argument("--size", help="9:16 | 1:1 | 4:5 | 16:9 | LxH (défaut : config)")
     ap.add_argument("--layout", choices=["full", "split", "cards"],
@@ -525,6 +527,36 @@ def main():
     if not cap_words:
         from build_text import remap
         cap_words = remap(read_json(job / "work" / f"{a.slug}_words.json")["words"], m["segments"])
+    # titre géant derrière la personne : vidéo détourée (cutout.py) posée par-dessus le titre, dans la même caméra
+    behind_html, behind_rep, btop = "", None, 0
+    bh = dict(c.get("behind") or {})
+    if a.derriere:
+        bh["text"] = a.derriere
+    if a.derriere_mot:
+        bh["word"] = a.derriere_mot
+    if bh.get("text") and not (track or fill or split or cards):
+        hit = word_hit(cap_words, bh["word"], bh.get("occurrence", 1)) if bh.get("word") else None
+        b0 = max(0.0, (hit["start"] - 0.1) if hit else max(0.0, hook_end))
+        bd = round(min(float(bh.get("dur", 2.6)), dur - b0 - 0.1), 3)
+        if bd >= 1.0:
+            from cutout import head_top, person_matte
+            rel = person_matte(job, job / "assets" / cut, b0, bd, model=bh.get("model", "u2net_human_seg"))
+            words_ = esc(str(bh["text"])).split()
+            half = (len(words_) + 1) // 2
+            lines = [" ".join(words_[:half]), " ".join(words_[half:])] if len(words_) > 1 else words_
+            longest = max(len(x) for x in lines)
+            bfs = round(min(H * 0.15, W * 1.2 / max(4, longest)))  # le plus gros possible sur la largeur
+            st_ = round(T0 + b0, 3)
+            # hauteur du titre : centré sur le haut de la tête (mesuré sur le détourage) : la tête passe devant
+            head = head_top(job, rel)
+            btop = max(round(H * 0.04), round(head * H - 0.95 * bfs))
+            behind_html = (f'        <div class="clip bh" id="bh" data-start="{st_}" data-duration="{bd}" data-track-index="3" '
+                           f'style="font-size:{bfs}px">' + "".join(f'<span class="bl">{x}</span>' for x in lines if x) + '</div>' + chr(10) +
+                           f'        <video id="a-cut" class="clip" src="{rel}" data-start="{st_}" data-duration="{bd}" data-track-index="4" muted playsinline></video>')
+            tw.append(f'  tl.fromTo("#bh .bl", {{ opacity: 0, scale: 1.25, y: 40 }}, {{ opacity: 1, scale: 1, y: 0, duration: 0.45, stagger: 0.12, '
+                      f'ease: "power3.out", immediateRender: false }}, {round(b0, 3)});')
+            tw.append(f'  tl.to("#bh .bl", {{ opacity: 0, y: -30, duration: 0.25, stagger: 0.05, ease: "power2.in" }}, {round(b0 + bd - 0.3, 3)});')
+            behind_rep = {"texte": bh["text"], "a": round(b0, 2), "duree": bd, "detourage": rel}
     bj = job / "work" / f"{a.slug}_broll.json"
     broll_rep = []
     if bj.exists():  # plans de coupe : photos / vidéos du client ou images libres, calés sur des mots dits
@@ -601,6 +633,11 @@ def main():
   #zm {{ position: absolute; inset: 0; transform-origin: {vis["focusX"]}% 38%; }}
   #a-roll {{ position: absolute; left: 0; top: 0; width: {W}px; height: {H}px; object-fit: {"contain" if fill else "cover"};
              object-position: {vis["focusX"]}% 50%; display: block; }}
+  #a-cut {{ position: absolute; left: 0; top: 0; width: {W}px; height: {H}px; object-fit: cover; object-position: {vis["focusX"]}% 50%; }}
+  .bh {{ position: absolute; left: 0; right: 0; top: {btop}px; text-align: center; font-family: '{family}', 'Inter', sans-serif;
+        font-weight: 900; line-height: .92; letter-spacing: -.02em; text-transform: uppercase; color: #fff; }}
+  .bh .bl {{ display: block; text-shadow: 0 .04em .12em rgba(0,0,0,.35); }}
+  .bh .bl:nth-child(2) {{ color: {accent}; }}
   #a-fill {{ position: absolute; left: 0; top: 0; width: {W}px; height: {H}px; object-fit: cover;
              filter: blur(40px) brightness(.55); transform: scale(1.15); }}
   .cap {{ position: absolute; left: 0; right: 0; top: {round(H * cap_top / 100)}px; overflow: visible; z-index: 50; }}
@@ -637,6 +674,7 @@ def main():
         {f'<video id="a-fill" class="clip" src="assets/{esc(cut)}" data-start="{T0}" data-duration="{dur}" data-track-index="1" muted playsinline></video>' if fill else ""}
         <video id="a-roll" class="clip" src="assets/{esc(cut)}" data-start="{T0}" data-duration="{dur}"
                data-track-index="0" playsinline data-has-audio="true" data-volume="1"{' style="width: ' + str(VW) + 'px; max-width: none; object-fit: fill;"' if track else ''}></video>
+{behind_html}
       </div></div>
     </div>
 {panel_html}
@@ -696,7 +734,7 @@ def main():
         cadrage="écran partagé" if split else ("suit le visage" if track else ("image entière, fond flouté" if fill else "recadré")),
         panneau=panel_rep or None,
         captions=sum(1 for n in nodes if 'class="clip cap"' in n), overlays=sum(1 for n in nodes if "note" in n),
-        drifts=drifts, punchs=len(cam) - drifts, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
+        drifts=drifts, punchs=len(cam) - drifts, titre_derriere=behind_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
         suite="npx hyperframes check, puis snapshot / preview")
 
 

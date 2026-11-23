@@ -113,6 +113,10 @@ def main():
               "[bed][sc]sidechaincompress=threshold=0.02:ratio=8:attack=20:release=400:makeup=1[out]")
     sh(cmd + ["-filter_complex", fc, "-map", "[out]", "-t", f"{dur:.3f}", "-c:a", "pcm_s16le", str(dst)],
        "ffmpeg (lit musical)")
+    # lit sans baisse : mix.py en tire une courbe précise (parole + bruitages) une fois la composition montée
+    bed = job / "assets" / f"{a.slug}_music_bed.wav"
+    sh(["ffmpeg", "-y", "-loglevel", "error"] + (["-stream_loop", "-1"] if loop else []) + ["-i", str(src), "-filter_complex",
+        chain.replace("[bed]", "[out]"), "-map", "[out]", "-t", f"{dur:.3f}", "-c:a", "pcm_s16le", str(bed)], "ffmpeg (lit sans baisse)")
 
     write_json(job / "work" / f"{a.slug}_music.json",
                {**{k: v for k, v in meta.items() if k != "file"}, "file": f"assets/{dst.name}",

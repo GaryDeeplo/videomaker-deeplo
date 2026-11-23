@@ -493,12 +493,27 @@ toujours à 30 i/s. Ne lance pas plusieurs rendus en parallèle : ça ne va pas 
   seules les 3 premières secondes sont rendues par variante (≈ 40 s chacune), recollées au reste de la base (voix
   d'origine dès le début, sous le titre). -> `renders/variantes/` + `variantes.html` (lecteurs + tableau de suivi).
   Conseil à donner : « Reels d'essai » Instagram ou jours comparables, garder la meilleure rétention à 3 s.
+- **Musique qui s'efface** (`mix.py`, automatique après le sound design) : la musique descend de 10 dB sous la parole
+  (énergie de la voix, rampes 0,12 s / 0,5 s) et de 4 dB sous chaque bruitage, puis remonte dans les silences.
+  Piste d'origine intacte (`assets/<slug>_music_bed.wav`, écrit par add_music) ; `mix.py <job> --voix -8` pour régler,
+  `--off` pour revenir ; `"music": {"duck": false}` pour s'en passer.
+- **Titre derrière la personne** (rush face caméra, cadrage plein écran) : `build_composition.py … --derriere "Montage
+  automatisé" [--derriere-mot montage]` (ou `"behind": {"text", "word", "dur"}`). Détourage local (`cutout.py`, rembg,
+  ~30 s pour 2,6 s), titre géant calé sur le haut de la tête : la tête passe devant les lettres. Une fois par vidéo,
+  sur l'idée principale ; snapshot obligatoire (le titre doit rester lisible malgré la tête).
+- **Ralentis et accélérés** (montage sans paroles, automatique) : le geste fort d'un plan (pic de mouvement mesuré,
+  pas une coupe du clip) passe à 40 % avec images intermédiaires ; un plan où rien ne bouge est accéléré ×1,6.
+  `"ralenti": false` sur un plan ou `"ramps": "off"` dans le plan pour s'en passer ; `"speed"` imposé gagne toujours.
 - **16:9 natif** : explainer, punch et infographie ont une vraie mise en page paysage (`--size 16:9` : contenu à gauche,
   texte à droite) ; la livraison l'utilise, le 1:1 reste tiré du 9:16.
 
 ## Livraison (tous les parcours)
 
-1. Écris `work/<slug>_post.json` : `caption` (2-3 phrases dans le ton de la marque, sans promesse inventée),
+1. `python scripts/post.py draft <job> <slug>` rassemble la matière (accroche, phrases fortes, brief, mentions, hashtags
+   marque / ville / sujets) dans `work/<slug>_post_draft.json` ; réécris-le, puis `post.py check` (longueur de la
+   première ligne, hashtags, mentions obligatoires, « à éviter », chiffres absents de la vidéo) et `post.py date`
+   (prochain créneau libre de la marque, `renders/publication.ics` à importer ; jours / heure : `"publication"` dans
+   brand.json). Écris `work/<slug>_post.json` : `caption` (2-3 phrases dans le ton de la marque, sans promesse inventée),
    `cta`, `hashtags` (5 à 8, locaux + métier), `first_comment` facultatif. Marque-le « brouillon à valider ».
 1 bis. **Couverture avec titre** (facultatif, conseillé pour YouTube et les Reels épinglés) :
    `python scripts/covers.py <job> <slug> --title "<titre 1>" --title "<titre 2>"` — titres de 6 mots max tirés de la

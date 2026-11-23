@@ -144,6 +144,21 @@ def camera_jitter(src, start=0.0, length=None, fps=15):
     return round(float(np.mean(np.hypot(*(p - smooth).T))), 2)
 
 
+def motion_profile(src, start, length, fps=10):
+    """Quantité de mouvement dans l'image, image par image (écart moyen entre deux images, niveaux de gris 160 px),
+    sur [start, start + length] : le pic = le geste fort (coup de marteau, pâte qui s'étire, verre qu'on remplit)."""
+    p = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{max(0.0, start):.3f}", "-t", f"{length:.3f}", "-i", str(src),
+                        "-vf", f"fps={fps},scale=160:-2,format=gray", "-f", "rawvideo", "-"], capture_output=True)
+    m = meta(src)
+    h = round(m["height"] * 160 / max(1, m["width"]) / 2) * 2 or 160
+    n = len(p.stdout) // (160 * h)
+    if n < 3:
+        return np.zeros(0)
+    f = np.frombuffer(p.stdout[:n * 160 * h], np.uint8).reshape(n, h, 160).astype(np.int16)
+    d = np.abs(np.diff(f, axis=0)).reshape(n - 1, -1).mean(axis=1)
+    return np.concatenate([[d[0]], d])
+
+
 def subject_x(src, start, length, frac=0.32, n=8):
     """Où est le sujet, de gauche (0) à droite (1), sur [start, start + length] : centre des visages (YuNet) s'il y en a,
     sinon centre de ce qui bouge et de ce qui est net (la main qui perce, le chef qui pétrit), plutôt que le milieu.

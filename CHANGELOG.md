@@ -3,6 +3,12 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.23.3
+- La musique s'efface toute seule quand on parle et sous chaque bruitage, puis remonte dans les silences.
+- Titre géant derrière la personne : détourage en local, la tête passe devant les lettres.
+- Montage sans paroles : ralenti automatique sur le geste fort (coup de marteau, pâte qui s'étire), léger accéléré des passages calmes.
+- Texte du post : premier jet tiré de ce qui est dit et du brief, vérification (mentions obligatoires, chiffres, longueur) et date de publication proposée avec rappel d'agenda.
+
 ## 2026.11.23.2
 - Vraie mise en page 16:9 pour l'explainer, l'actu / punch et l'infographie (contenu à gauche, texte à droite), pour YouTube et LinkedIn.
 - Zooms sur les mots appuyés dans un rush face caméra (coup sec ou glissé), choisis d'après la voix et le texte.

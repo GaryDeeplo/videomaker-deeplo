@@ -25,19 +25,22 @@ import subprocess
 from pathlib import Path
 
 from build_composition import caption_css, caption_js, caption_spans
-from footage import camera_jitter, subject_x
+import numpy as np
+
+from footage import camera_jitter, motion_profile, subject_x
 import sound_design
 from common import ROOT, block_file, brand_info, config, fail, job_dir, mount, music_beats, out, read_json, size_of, snap_beat, word_hit
 
 esc = lambda s: html.escape(str(s), quote=True)
+RAMP_SRC, RAMP_FACTOR = 0.6, 0.4  # ralenti : 0,6 s de geste joué à 40 % (1,5 s à l'écran)
 JITTER_MIN = 1.0  # tremblement de la caméra (footage.camera_jitter, px sur 320) au-delà duquel on stabilise ; plans posés : < 0,3
 
 
-def render_clip(job, src, start, length, speed, W, H, fit, focus=None, stab=False):
+def render_clip(job, src, start, length, speed, W, H, fit, focus=None, stab=False, ramp=None):
     """Extrait [start, start + length] du clip, accéléré, au format W × H (recadré, ou image entière sur fond flouté).
     focus : position du sujet de gauche (0) à droite (1), mesurée par footage.subject_x ; le recadrage le garde dans
     l'image au lieu de couper au milieu. stab : stabilisation en deux passes (vidstab) d'un passage filmé à main levée."""
-    key = hashlib.md5(f"{src}|{start:.2f}|{length:.2f}|{speed}|{W}x{H}|{fit}|{focus}|{stab}".encode()).hexdigest()[:10]
+    key = hashlib.md5(f"{src}|{start:.2f}|{length:.2f}|{speed}|{W}x{H}|{fit}|{focus}|{stab}|{ramp}".encode()).hexdigest()[:10]
     d = job / "assets" / "footage"
     d.mkdir(parents=True, exist_ok=True)
     dst = d / f"{Path(src).stem[:24]}-{key}.mp4"
@@ -69,6 +72,16 @@ def render_clip(job, src, start, length, speed, W, H, fit, focus=None, stab=Fals
         # x du recadrage : sujet au centre de la fenêtre, sans sortir de l'image (même chose en hauteur si la source est plus haute)
         crop = f"crop={W}:{H}:x='max(0,min(iw-{W},iw*{fx:.3f}-{W}/2))':y='(ih-{H})/2'"
         args = ["-vf", f"{sp}scale={W}:{H}:force_original_aspect_ratio=increase,{crop},fps=30,format=yuv420p"]
+    if ramp:  # ralenti au milieu : normal, geste à RAMP_FACTOR (images intermédiaires calculées), normal
+        A, S, f = ramp
+        rfc = (f"[0:v]fps=30,split=3[ra][rb][rc];[ra]trim=0:{A},setpts=PTS-STARTPTS[r1];"
+               f"[rb]trim={A}:{A + S},setpts=(PTS-STARTPTS)/{f},minterpolate=fps=30:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1[r2];"
+               f"[rc]trim={A + S},setpts=PTS-STARTPTS[r3];[r1][r2][r3]concat=n=3:v=1:a=0[rv];")
+        if args[0] == "-vf":  # recadré d'abord (moins de pixels à interpoler), puis ralenti
+            args = ["-filter_complex", f"[0:v]{sp}scale={W}:{H}:force_original_aspect_ratio=increase,{crop}[pre];"
+                    + rfc.replace("[0:v]", "[pre]", 1) + "[rv]fps=30,format=yuv420p"]
+        else:
+            args = ["-filter_complex", rfc + args[1].replace("[0:v]", "[rv]", 1)]
     subprocess.run(["ffmpeg", "-v", "error", "-y", *inp, *args, "-an",
                     "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-movflags", "+faststart", str(dst)], check=True, cwd=d)
     if stab:
@@ -187,6 +200,7 @@ def main():
             continue
         sc = scan[o["clip"]]
         src = job / "inbox" / o["clip"]
+        ramp = None
         if o.get("timelapse"):
             speed = float(o.get("speed") or max(2.0, sc["duration"] / d))
             need = min(sc["duration"], d * speed)
@@ -200,6 +214,26 @@ def main():
             st = min(max(0.0, mid - need / 2), max(0.0, sc["duration"] - need))
             if need < d * speed:  # clip trop court pour la durée voulue : on ralentit un peu plutôt que de figer
                 speed = max(0.5, need / d)
+            # vitesse vivante : ralenti sur le geste fort mesuré, léger accéléré d'un passage calme
+            if "speed" not in o and o.get("ralenti", plan.get("ramps", "auto")) not in (False, "off") and speed == 1:
+                w0 = max(0.0, mid - 3.0)
+                prof = motion_profile(src, w0, min(6.0, sc["duration"] - w0))
+                if len(prof) >= 10:
+                    raw_ = prof
+                    prof = np.convolve(prof, np.ones(3) / 3, mode="same")  # un geste dure ; une coupe du clip = 1 image
+                    pk = int(np.argmax(prof))
+                    med = float(np.median(prof))
+                    spike = raw_[max(0, pk - 1):pk + 2].max() > 2.2 * max(prof[pk], 0.5) or raw_.max() > 30
+                    if d >= 2.2 and not spike and prof[pk] >= 3.0 and prof[pk] >= 2.2 * max(med, 0.5):
+                        S, f = RAMP_SRC, RAMP_FACTOR
+                        a_ = (d - S / f) / 2  # temps normal avant et après le ralenti
+                        need = a_ * 2 + S
+                        pt = w0 + pk / 10
+                        st = min(max(0.0, pt - S / 2 - a_), max(0.0, sc["duration"] - need))
+                        ramp = (round(pt - S / 2 - st, 3), S, f)
+                    elif float(np.mean(prof)) < 1.2 and sc["duration"] >= d * 1.6 + 0.2:
+                        speed, need = 1.6, d * 1.6 + 0.1  # rien ne bouge : légèrement accéléré
+                        st = min(max(0.0, mid - need / 2), max(0.0, sc["duration"] - need))
         # main levée : stabilisé si le passage tremble (mesure du scan) ; recadrage : fenêtre posée sur le sujet mesuré
         if "stab" in o:
             stab = bool(o["stab"])
@@ -211,8 +245,8 @@ def main():
                 focus = float(o["focus"])
             elif o.get("focus", plan.get("focus", "auto")) == "auto":
                 focus = subject_x(src, st, need, frac=min(1.0, (W / H) / (sc['width'] / max(1, sc['height']))))
-        clip, stab = render_clip(job, src, st, need, round(speed, 3), W, H, fit, focus=focus, stab=stab)
-        rep_shot = {"stabilise": stab, "sujet_x": focus if focus not in (None, 0.5) else None}
+        clip, stab = render_clip(job, src, st, need, round(speed, 3), W, H, fit, focus=focus, stab=stab, ramp=ramp)
+        rep_shot = {"stabilise": stab, "sujet_x": focus if focus not in (None, 0.5) else None, "ralenti": f"x{ramp[2]} sur le geste" if ramp else None}
         vid = f"fv{i}"
         vids.append(f'    <video id="{vid}" class="clip shotv" src="assets/footage/{clip.name}" data-start="{round(s0, 3)}" data-duration="{d}" '
                     f'data-track-index="{5 + i % 2}" muted playsinline></video>')
