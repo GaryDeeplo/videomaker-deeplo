@@ -837,6 +837,7 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
         bj.append(f'  tl.to("#{sid} .hand", {{ x: {round(W * 0.42)}, y: {by}, duration: 0.3, ease: "power2.inOut" }}, {tb});')
         bj.append(f'  tl.fromTo("#{sid} .fbtn", {{ scale: 1 }}, {{ scale: 0.95, duration: 0.1, yoyo: true, repeat: 1, immediateRender: false }}, {round(tb + 0.3, 3)});')
         bj.append(f'  tl.fromTo("#{sid} .fbtn .t2", {{ opacity: 0, y: 30 }}, {{ opacity: 1, y: 0, duration: 0.3, ease: "back.out(2)", immediateRender: false }}, {round(tb + 0.42, 3)});')
+        bj.append(f'  tl.to("#{sid} .fbtn > span:first-child", {{ opacity: 0, duration: 0.15 }}, {round(tb + 0.42, 3)});')
         bj.append(f'  tl.to("#{sid} .hand", {{ opacity: 0, duration: 0.3 }}, {round(tb + 0.8, 3)});')
     elif typ == "chat":
         msgs = b.get("messages", [])[:4]

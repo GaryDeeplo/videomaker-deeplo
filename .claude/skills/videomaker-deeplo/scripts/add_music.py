@@ -73,10 +73,18 @@ def main():
     job = job_dir(a.job)
     config(job)
     mj = job / "work" / f"{a.slug}_map.json"
-    if not mj.exists():
-        fail(f"{mj} absent : dérushe d'abord")
-    m = read_json(mj)
-    dur, cut = float(m["out_duration"]), Path(m["cut"])
+    fpj = job / "work" / f"{a.slug}_footage.json"
+    if mj.exists():
+        m = read_json(mj)
+        dur, cut = float(m["out_duration"]), Path(m["cut"])
+    elif fpj.exists():  # montage sans paroles et sans voix off : durée tirée du plan, pas de voix à laisser passer
+        fp = read_json(fpj)
+        dur = sum(float(i.get("dur", 3.5 if i.get("timelapse") else 2.5)) for i in fp.get("items", []) if i.get("keep", True))
+        dur += sum(float(cp.get("dur", 3.2)) for cp in fp.get("compare", []))
+        dur += float((fp.get("hook") or {}).get("dur", 3.0)) - 0.45 if (fp.get("hook") or {}).get("style") else 0
+        cut, a.no_duck = None, True
+    else:
+        fail(f"{mj} absent : dérushe d'abord (ou footage.py plan pour un montage sans paroles)")
 
     if a.url:
         src, meta = from_url(a.url, job / "inbox" / "music")

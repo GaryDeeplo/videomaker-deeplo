@@ -137,8 +137,10 @@ def beat_html(job, b, sid, s0, d, sw, sh, u, C, vis):
         grid = "".join(f'<line x1="{x0}" x2="{x0 + cw}" y1="{Y(top_v * k / 3):.0f}" y2="{Y(top_v * k / 3):.0f}" class="gl" />'
                        f'<text x="{x0 - round(14*u)}" y="{Y(top_v * k / 3) + round(8*u):.0f}" class="gt" text-anchor="end">{fmt(round(top_v * k / 3, -1) if top_v > 50 else top_v * k / 3)}</text>'
                        for k in range(0, 4))
-        xl = "".join(f'<text x="{X(i * (len(pts) - 1) / max(1, len(b["xlabels"]) - 1)):.0f}" y="{y0 + ch + round(44*u)}" class="gt" text-anchor="middle">{esc(t)}</text>'
-                     for i, t in enumerate(b.get("xlabels", [])))
+        nxl = len(b.get("xlabels", []))
+        xl = "".join(f'<text x="{X(i * (len(pts) - 1) / max(1, nxl - 1)):.0f}" y="{y0 + ch + round(44*u)}" class="gt" '
+                     f'text-anchor="{"start" if i == 0 else ("end" if i == nxl - 1 else "middle")}">{esc(t)}</text>'
+                     for i, t in enumerate(b.get("xlabels", [])))  # premières et dernières étiquettes dans le cadre
         notes = "".join(f'<g class="note2 m{k}"><rect x="{X(i) - round(70*u):.0f}" y="{Y(pts[i]) - round(66*u):.0f}" width="{round(140*u)}" height="{round(40*u)}" rx="{round(8*u)}" />'
                         f'<text x="{X(i):.0f}" y="{Y(pts[i]) - round(38*u):.0f}" text-anchor="middle">{esc(t)}</text></g>'
                         for k, (i, t) in enumerate(b.get("notes", [])) if 0 <= int(i) < len(pts))

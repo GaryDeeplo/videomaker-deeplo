@@ -196,7 +196,8 @@ def caption_css(style, accent, shadow=SHADOW):
              background: {accent}; opacity: 0; transform-origin: 50% 50%; box-shadow: 0 0.08em 0.3em rgba(0,0,0,.35); }}"""
     if style == "impact":
         css += f"""
-  .cap .in {{ -webkit-text-stroke: 0.09em #000; paint-order: stroke fill; text-shadow: 0 0.07em 0 #000, {shadow}; }}"""
+  .cap .in {{ -webkit-text-stroke: 0.09em #000; paint-order: stroke fill; text-shadow: 0 0.07em 0 #000, {shadow}; }}
+  .cap .w {{ margin: 0 0.2em; }}  /* le mot dit grossit de 8 % : de la place pour ne pas toucher ses voisins */"""
     if style == "mono":  # majuscules machine à écrire, chaque mot dans sa boîte noire, le mot dit en couleur d'accent
         css += """
   .cap .in { font-family: 'IBM Plex Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0; text-shadow: none; }
@@ -231,7 +232,7 @@ def caption_js(style):
     tl.fromTo(g + " .in", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.18, ease: "back.out(2.2)", immediateRender: false }, st);
     ws.forEach(function (t, i) {
       const on = Math.max(st, t[0] - 0.02);
-      tl.to(spans[i], { color: ACCENT, scale: 1.14, duration: 0.07, ease: "power2.out" }, on);
+      tl.to(spans[i], { color: ACCENT, scale: 1.08, duration: 0.07, ease: "power2.out" }, on);
       if (i + 1 < ws.length) tl.to(spans[i], { color: INK, scale: 1, duration: 0.07, ease: "power2.in" }, Math.max(on + 0.08, ws[i + 1][0] - 0.02));
     });
     tl.to(g + " .in", { opacity: 0, scale: 0.94, duration: 0.1, ease: "power2.in" }, en - 0.1);

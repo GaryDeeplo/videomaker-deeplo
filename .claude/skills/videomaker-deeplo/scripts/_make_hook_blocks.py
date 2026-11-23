@@ -45,7 +45,8 @@ SPLIT = """        const T = String(v.text || ""), host = document.querySelector
           Array.from(w).forEach(function (c) { const s = document.createElement("span"); s.className = "ch"; s.textContent = c; ws.appendChild(s); });
           host.appendChild(ws); if (wi < T.split(" ").length - 1) host.appendChild(document.createTextNode(" "));
         });
-        host.style.fontSize = Math.max(8.5, Math.min(15, 150 / Math.max(6, T.length * 0.95))) + "vmin";
+        const LW = Math.max.apply(null, T.split(" ").map(function (w) { return w.length; }).concat([1]));  // le mot le plus long tient dans la largeur
+        host.style.fontSize = Math.max(5, Math.min(15, 150 / Math.max(6, T.length * 0.95), 82 / (0.74 * LW))) + "vmin";
         const CH = document.querySelectorAll(r + ".ch");
         const EXIT = Math.max(1.2, D - 0.45);"""
 EXIT = """        tl.fromTo(r + ".hk", { clipPath: "inset(0% 0% 0% 0%)" }, { clipPath: "inset(0% 0% 100% 0%)", duration: 0.42, ease: "power3.in" }, EXIT);"""
@@ -92,7 +93,7 @@ def hook(style, desc, defaults, deco, css, js):
         #{name} .hk-t {{ font-weight: 900; line-height: 1.02; letter-spacing: -0.02em; }}
         #{name} .hk-t .wd {{ display: inline-block; white-space: nowrap; }}
         #{name} .hk-t .ch {{ display: inline-block; }}
-        #{name} .hk-s {{ margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; }}
+        #{name} .hk-s {{ margin-top: 3vmin; font-size: 4.4vmin; font-weight: 600; opacity: 0; overflow-wrap: anywhere; }}
         #{name} .hk-art {{ position: absolute; left: 12%; right: 12%; top: 40%; height: 44%; z-index: 4; display: none; }}
         #{name} .hk-art svg {{ width: 100%; height: 100%; overflow: visible; }}
         #{name} .hk-art svg > * {{ transform-box: fill-box; transform-origin: 50% 50%; }}
