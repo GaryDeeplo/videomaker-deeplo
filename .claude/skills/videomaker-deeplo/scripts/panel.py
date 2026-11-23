@@ -591,6 +591,14 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
     placed.sort(key=lambda x: x[0])
     if placed:
         placed[0] = (0.0, placed[0][1])  # le panneau n'est jamais vide au début
+    kept = []
+    for t, b in placed:  # un temps fort reste au moins 1 s : trop proche du précédent, il est écarté (pas de trou ni de flash)
+        if kept and t - kept[-1][0] < 1.0:
+            continue
+        kept.append((t, b))
+    if len(kept) > 1 and dur - kept[-1][0] < 1.0:
+        kept.pop()
+    placed = kept
     html_, js, rep = [], ([background_js(dur, T0)] if theme == "dark" else []), []
     has_list = any(b.get("list") for _, b in placed)
     if has_list:

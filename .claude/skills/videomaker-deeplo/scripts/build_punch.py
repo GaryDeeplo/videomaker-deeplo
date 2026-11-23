@@ -144,7 +144,16 @@ def build(a):
         fail("aucun temps fort placé (mots introuvables)")
     placed[0] = (0.0, placed[0][1])
     shots, layers, titles, props, js, rep = [], [], [], [], [], []
-    media_starts = [(tt, b) for tt, b in placed if b.get("media")]
+    media_starts = []
+    for tt, b in placed:  # un plan dure au moins 1,2 s : un média trop proche du précédent n'est pas montré
+        if not b.get("media"):
+            continue
+        if media_starts and tt - media_starts[-1][0] < 1.2:
+            rep.append({"media": b["media"], "pose": False, "raison": "trop près du plan précédent (moins de 1,2 s)"})
+            continue
+        media_starts.append((tt, b))
+    if len(media_starts) > 1 and dur - media_starts[-1][0] < 1.2:
+        rep.append({"media": media_starts.pop()[1]["media"], "pose": False, "raison": "dernier plan trop court"})
     for i, (tt, b) in enumerate(media_starts):
         t1 = media_starts[i + 1][0] if i + 1 < len(media_starts) else dur
         src = media_src(job, b["media"])

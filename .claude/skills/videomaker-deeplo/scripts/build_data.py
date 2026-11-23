@@ -287,6 +287,12 @@ def main():
     if not placed:
         fail("aucun temps fort posé (mots introuvables ?)")
     placed[0] = (0.0, placed[0][1])
+    kept = []
+    for t0_, b_ in placed:  # un graphique reste au moins 1,2 s à l'écran
+        if kept and t0_ - kept[-1][0] < 1.2:
+            continue
+        kept.append((t0_, b_))
+    placed = kept
 
     stage, js, rep = [], [], []
     head, day = "", None

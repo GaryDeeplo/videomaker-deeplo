@@ -106,12 +106,12 @@ def main():
             obj = seq[i][1]
             hit = word_hit(words, obj["word"], obj.get("occurrence", 1)) if obj.get("word") else None
             if hit:
-                starts.append(max(starts[-1] + 0.8, hit["start"] - 0.1))
+                starts.append(max(starts[-1] + 1.2, hit["start"] - 0.1))
                 continue
             target = dur * i / len(seq)
-            cand = [x for x in anchors if x > starts[-1] + 0.8]
+            cand = [x for x in anchors if x > starts[-1] + 1.2]
             starts.append(min(cand, key=lambda x: abs(x - target)) if cand and abs(min(cand, key=lambda x: abs(x - target)) - target) < dur / len(seq)
-                          else max(starts[-1] + 0.8, target))
+                          else max(starts[-1] + 1.2, target))
         ends = starts[1:] + [dur]
     else:
         lens = [float(o.get("dur", 3.2 if kind == "compare" else (3.5 if o.get("timelapse") else 2.5))) for kind, o in seq]
