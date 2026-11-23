@@ -3,6 +3,11 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.23.4
+- Montage depuis un script écrit : prompteur sur téléphone pour le tournage, puis meilleure prise de chaque phrase gardée toute seule, phrases manquantes et passages hors script signalés.
+- S'inspirer d'un reel qui marche : son rythme est mesuré (plans, coupes, débit, tempo, place de l'accroche) et appliqué à votre montage, sans rien copier de son contenu.
+- Démos : voix Gemini pour le coach et le fleuriste, nouveau showreel, aperçu animé dans le README.
+
 ## 2026.11.23.3
 - La musique s'efface toute seule quand on parle et sous chaque bruitage, puis remonte dans les silences.
 - Titre géant derrière la personne : détourage en local, la tête passe devant les lettres.

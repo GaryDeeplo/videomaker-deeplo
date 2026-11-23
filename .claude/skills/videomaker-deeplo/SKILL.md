@@ -307,6 +307,29 @@ python scripts/build_footage.py <job> <slug> [--fit blur] [--style boite]   # pu
   ou un repère (« jour 12, on casse le mur »). Le son des clips n'est pas gardé (machines, vent).
 - Avant que le client filme : `guide.py --metier chantier` (points fixes, plans de 10 s, accéléré posé, phrase repère).
 
+### Avec un script écrit (texte prévu avant de filmer)
+```bash
+python scripts/script.py prompteur <job> [--script texte.txt]   # renders/prompteur.html : prompteur sur téléphone / tablette (espace, vitesse, miroir)
+#   … tournage, transcribe.py, cut_plan.py …
+python scripts/script.py match <job> <slug>                     # meilleure prise de chaque phrase -> keep / reason du plan
+```
+Le script va dans `work/script.txt`. `match` garde la prise la plus complète de chaque phrase (la dernière à
+égalité), écarte les autres prises et signale : îlots « hors script : à relire » (une improvisation peut valoir le
+coup : à toi de trancher), phrases manquantes (à refaire ou à retirer), ordre dit différent du script. Relis le
+rapport `work/<slug>_script_report.json` avant `build_cut.py`.
+
+### S'inspirer d'un reel qui marche (rythme d'une référence)
+```bash
+python scripts/reference.py analyse <lien ou fichier> --nom <ref>   # jobs/_references/<ref>/ : profil.json + planche.jpg
+#   TU regardes planche.jpg et complètes "lecture" : mise_en_page (full|split|cards), sous_titres (style), mots_par_groupe,
+#   accroche, texte, alternance, fin, ton
+python scripts/reference.py apply <job> <slug> --ref <ref>          # config du job (zooms, mise en page, sous-titres) + durées des plans
+```
+Mesuré : plans (coupes confirmées), coupes par minute, plan médian, 1re coupe, débit de parole, tempo, coupes sur le
+temps, volume. On reprend le RYTHME et la grammaire (mise en page, densité de texte, place de l'accroche), jamais le
+contenu : ni images, ni musique, ni textes, ni marque de la référence. La vidéo téléchargée reste dans
+`jobs/_references/` (analyse seulement). Lien privé ou connexion demandée : demande le fichier.
+
 ### Plusieurs rushs → une vidéo
 Le client a filmé 5 ou 6 clips, dans le désordre, avec des reprises : mets-les tous dans `inbox/` (`new_job.py --rush a b c`).
 ```bash
