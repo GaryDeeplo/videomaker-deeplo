@@ -7,7 +7,8 @@ Vérifie (mesures ffmpeg + sous-titres du slug) :
   - images noires (> 0,15 s) et images figées longues (> 3 s, souvent une vidéo trop courte pour son plan) ;
   - volume : -14 LUFS ± 1,5 attendu après finalize / livraison, pic < -1 dB ; trous de son (> 1,2 s de silence
     dans une vidéo parlée) ;
-  - sous-titres : groupes affichés moins de 0,5 s ou lus trop vite (> 22 caractères par seconde) ;
+  - sous-titres : groupes affichés moins de 0,5 s ou lus trop vite (> 32 caractères par seconde : les sous-titres
+    sont calés mot à mot, on les lit au rythme de la voix ; 25 à 32 = info) ;
   - durée par rapport au brief (work/brief.json), si elle y est.
 Sortie : verdict « OK » ou « à revoir » + la liste des points avec leurs instants. À lancer sur l'aperçu, avant de le
 montrer (les points « info » n'empêchent rien, les « à revoir » se corrigent d'abord).
@@ -151,8 +152,10 @@ def main():
             chars = len(" ".join(w["w"] for w in ws))
             if gd < 0.5 and len(ws) > 1:
                 pts.append(("info", "sous-titre éclair", f"« {' '.join(w['w'] for w in ws)} » {gd:.2f} s à {g['start']:.1f} s"))
-            elif chars / gd > 22:
+            elif chars / gd > 32:  # sous-titres calés mot à mot : on lit au rythme de la voix ; au-delà de 32 car/s, illisible
                 pts.append(("à revoir", "sous-titre trop rapide", f"« {' '.join(w['w'] for w in ws)} » {chars / gd:.0f} car/s à {g['start']:.1f} s"))
+            elif chars / gd > 25:
+                pts.append(("info", "sous-titre rapide", f"« {' '.join(w['w'] for w in ws)} » {chars / gd:.0f} car/s à {g['start']:.1f} s (débit de la voix)"))
     bj = work / "brief.json"
     if bj.exists():
         m = re.search(r"\d+", str(read_json(bj).get("duree", "")))

@@ -568,6 +568,21 @@ def main():
         nodes += bn
         tw += bjs
         sfx_nodes += bsfx
+    # piles de cartes d'outils (work/<slug>_outils.json) : captures de sites étiquetées sur la vidéo floutée
+    ts_css, stack_rep = "", None
+    if (job / "work" / f"{a.slug}_outils.json").exists():
+        import panel as pn_
+        from common import music_beats
+        from tools_stack import stack_nodes
+        tn, tjs, stack_rep = stack_nodes(job, a.slug, cap_words, dur, W, H, T0, beats=music_beats(job, a.slug), logo_fn=pn_.logo)
+        nodes += tn
+        tw += tjs
+        ts_css = (stack_rep or {}).pop("css", "")
+        if stack_rep and stack_rep.get("pose"):  # sous-titres descendus sous la pile pendant qu'elle est là
+            dy = round(H * (stack_rep["bas_libre"] + 0.06) - H * cap_top / 100)
+            if dy > 0:
+                tw.append(f'  tl.set(".cap", {{ y: {dy} }}, {stack_rep["t0"]});')
+                tw.append(f'  tl.set(".cap", {{ y: 0 }}, {stack_rep["t1"]});')
     if mj_.exists() and (split or cards):  # écran partagé : pas de bloc par-dessus le panneau, ce qu'ils disent va dans les temps forts
         motion_rep = [{"block": m_.get("block"), "pose": False, "raison": "écran partagé : à mettre dans le panneau"} for m_ in read_json(mj_)]
     elif mj_.exists():  # blocs de motion design calés sur des mots prononcés
@@ -646,6 +661,7 @@ def main():
              {"text-transform: uppercase; letter-spacing: -0.01em;" if style != "minimal" else "font-weight: 700;"} }}
   .cap .w {{ display: inline-block; margin: 0 0.07em; transform-origin: 50% 70%; {"opacity: 0;" if style in ("pop", "duo", "mono") else ""} }}
 {caption_css(style, accent)}
+{ts_css}
   .broll {{ position: absolute; inset: 0; z-index: 30; overflow: hidden; }}
   .broll .bw {{ position: absolute; inset: 0; overflow: hidden; opacity: 0; }}
   .broll .bri {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
@@ -734,7 +750,7 @@ def main():
         cadrage="écran partagé" if split else ("suit le visage" if track else ("image entière, fond flouté" if fill else "recadré")),
         panneau=panel_rep or None,
         captions=sum(1 for n in nodes if 'class="clip cap"' in n), overlays=sum(1 for n in nodes if "note" in n),
-        drifts=drifts, punchs=len(cam) - drifts, titre_derriere=behind_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
+        drifts=drifts, punchs=len(cam) - drifts, titre_derriere=behind_rep, outils=stack_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
         suite="npx hyperframes check, puis snapshot / preview")
 
 

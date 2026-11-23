@@ -23,7 +23,8 @@ c ça cela il elle ils elles on je j tu nous vous me m te t se s lui leur leurs 
 son sa ses notre nos votre vos est sont été être avoir ai as avons avez ont fait faire sur sous dans par pour avec sans
 chez vers comme si alors bon ben euh hein voilà là ici aussi très tout tous toute toutes bien peu
 permet permettent permettre mettre met mettent utiliser créer crée créé dire dit aller va vont voir peut peux peuvent
-notamment différents différentes plusieurs chose choses truc trucs genre""".split())
+notamment différents différentes plusieurs chose choses truc trucs genre juste ailleurs également ensuite déjà
+ajouté ajoutés ajoutée ajoutées parallèle côté pareil niveau donc""".split())
 STRONG = set("""jamais toujours rien tout gratuit gratuite offert offerte vraiment énorme incroyable seul seule seulement
 premier première dernier dernière nouveau nouvelle meilleur meilleure pire secret secrets stop attention erreur
 erreurs problème solution résultat résultats moitié double triple zéro aucun aucune fois maintenant aujourd'hui

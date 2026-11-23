@@ -1,0 +1,87 @@
+<!-- deeplo-library-block: commente-mot · fin « Commente : MOT » : le mot s'écrit, un commentaire arrive avec son cœur, puis le message reçu ; « Abonne-toi » en bas -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="commente-mot" data-composition-id="commente-mot" data-start="0" data-duration="4.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "mot", "type": "string", "label": "Mot à commenter", "default": "FILM"}, {"id": "avant", "type": "string", "label": "Texte avant le mot", "default": "Commente :"}, {"id": "pour", "type": "string", "label": "Promesse", "default": "pour recevoir la liste complète"}, {"id": "ressource", "type": "string", "label": "Message reçu (vide = pas de message)", "default": "Voici la liste complète 🎁"}, {"id": "compte", "type": "string", "label": "Compte", "default": "@toncompte"}, {"id": "abonne", "type": "string", "label": "Ligne du bas (vide = rien)", "default": "Abonne-toi pour pas rater la suite"}, {"id": "accent", "type": "color", "label": "Accent", "default": "#2f6bff"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "rgba(0,0,0,0.45)"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 26, "min": 0, "max": 70}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}]'>
+      <div class="cm-fill"></div>
+      <div class="cm-pos">
+        <div class="cm-ask"><span class="cm-avant" data-var-text="avant">Commente :</span> <b class="cm-mot"></b><i class="cm-caret"></i></div>
+        <div class="cm-pour" data-var-text="pour">pour recevoir la liste complète</div>
+        <div class="cm-com">
+          <span class="cm-av"></span>
+          <div class="cm-body"><div class="cm-who">toi · à l'instant</div><div class="cm-txt"></div></div>
+          <svg class="cm-heart" viewBox="0 0 24 24"><path d="M12 21s-7.5-4.6-10-9.3C.5 8.3 2.6 4.5 6.3 4.5c2.1 0 3.6 1.2 4.4 2.6h.6c.8-1.4 2.3-2.6 4.4-2.6 3.7 0 5.8 3.8 4.3 7.2C19.5 16.4 12 21 12 21z"/></svg>
+        </div>
+        <div class="cm-dm"><span class="cm-dmi">✉</span><div><div class="cm-dmh"><span data-var-text="compte">@toncompte</span> · message</div><div class="cm-dmt" data-var-text="ressource">Voici la liste complète 🎁</div></div></div>
+      </div>
+      <div class="cm-sub" data-var-text="abonne">Abonne-toi pour pas rater la suite</div>
+      <style>
+        #commente-mot { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: #fff; }
+        #commente-mot .cm-fill { position: absolute; inset: 0; background: var(--fill, rgba(0,0,0,.45)); opacity: 0; }
+        #commente-mot .cm-pos { position: absolute; left: 7%; right: 7%; top: calc(var(--top, 26) * 1%); display: flex; flex-direction: column; align-items: center; gap: 3vmin; }
+        #commente-mot .cm-ask { background: #fff; color: #111; border-radius: 3vmin; padding: 2.4vmin 4.4vmin; font-size: 7.4vmin; font-weight: 800;
+                                box-shadow: 0 2vmin 6vmin rgba(0,0,0,.35); opacity: 0; white-space: nowrap; }
+        #commente-mot .cm-mot { color: var(--accent, #2f6bff); letter-spacing: .02em; }
+        #commente-mot .cm-caret { display: inline-block; width: .08em; height: .9em; margin-left: .06em; vertical-align: -.1em; background: var(--accent, #2f6bff); }
+        #commente-mot .cm-pour { font-size: 4.6vmin; font-weight: 600; text-shadow: 0 .5vmin 2vmin rgba(0,0,0,.6); opacity: 0; text-align: center; }
+        #commente-mot .cm-com { display: flex; align-items: center; gap: 2.6vmin; width: 100%; background: rgba(22,22,26,.92); border-radius: 3vmin;
+                                padding: 2.6vmin 3vmin; box-shadow: 0 2vmin 5vmin rgba(0,0,0,.4); opacity: 0; }
+        #commente-mot .cm-av { width: 8vmin; height: 8vmin; border-radius: 50%; flex: none; background: linear-gradient(135deg, var(--accent, #2f6bff), #ff4fa3); }
+        #commente-mot .cm-body { flex: 1; min-width: 0; }
+        #commente-mot .cm-who { font-size: 3.2vmin; color: #a8a8b3; }
+        #commente-mot .cm-txt { font-size: 5vmin; font-weight: 700; }
+        #commente-mot .cm-heart { width: 6vmin; height: 6vmin; fill: none; stroke: #c9c9d1; stroke-width: 2; flex: none; }
+        #commente-mot .cm-dm { display: flex; align-items: center; gap: 2.6vmin; width: 100%; background: linear-gradient(135deg, var(--accent, #2f6bff), #7b5cff);
+                               border-radius: 3vmin; padding: 2.6vmin 3vmin; box-shadow: 0 2vmin 5vmin rgba(0,0,0,.4); opacity: 0; }
+        #commente-mot .cm-dmi { width: 8vmin; height: 8vmin; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center;
+                                background: rgba(255,255,255,.22); font-size: 4.4vmin; }
+        #commente-mot .cm-dmh { font-size: 3.2vmin; opacity: .85; }
+        #commente-mot .cm-dmt { font-size: 4.6vmin; font-weight: 700; }
+        #commente-mot .cm-sub { position: absolute; left: 0; right: 0; bottom: 12%; text-align: center; font-size: 4.4vmin; font-weight: 700; opacity: 0; }
+        #commente-mot .cm-sub span, #commente-mot .cm-sub { text-shadow: 0 .5vmin 2vmin rgba(0,0,0,.7); }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("commente-mot");
+        const r = '[data-composition-id="commente-mot"] ';
+        const root = document.getElementById("commente-mot");
+        const MOT = String(v.mot || "FILM");
+        const motEl = root.querySelector(".cm-mot");
+        Array.from(MOT).forEach(function (c) { const s = document.createElement("span"); s.className = "cm-ch"; s.textContent = c; s.style.display = "none"; motEl.appendChild(s); });
+        root.querySelector(".cm-txt").textContent = MOT;
+        if (!v.ressource) root.querySelector(".cm-dm").style.display = "none";
+        if (!v.abonne) root.querySelector(".cm-sub").style.display = "none";
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 4.0;
+        const K = Math.min(1, D / 4.0);  // tout se resserre si le bloc est monté plus court
+        tl.to(r + ".cm-fill", { opacity: 1, duration: 0.3 }, 0);
+        tl.fromTo(r + ".cm-ask", { opacity: 0, y: 30, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.8)" }, 0.05);
+        root.querySelectorAll(".cm-ch").forEach(function (el, i) { tl.set(el, { display: "inline" }, (0.35 + 0.09 * i) * K); });  // le mot s'écrit, le curseur suit
+        tl.fromTo(r + ".cm-caret", { opacity: 1 }, { opacity: 0, duration: 0.25, repeat: 7, yoyo: true, ease: "steps(1)" }, 0.3 * K);
+        tl.fromTo(r + ".cm-pour", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.35 }, (0.45 + 0.09 * MOT.length) * K);
+        tl.fromTo(r + ".cm-com", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 1.2 * K);
+        tl.to(r + ".cm-heart", { fill: "#ff3b5c", stroke: "#ff3b5c", scale: 1.35, duration: 0.18, ease: "back.out(3)" }, 1.75 * K);
+        tl.to(r + ".cm-heart", { scale: 1, duration: 0.15 }, 1.93 * K);
+        tl.fromTo(r + ".cm-dm", { opacity: 0, y: -40, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, 2.2 * K);
+        tl.fromTo(r + ".cm-sub", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.35 }, 2.6 * K);
+        tl.to(r + ".cm-pos, " + r + ".cm-sub", { opacity: 0, duration: 0.3, ease: "power2.in" }, D - 0.32);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["commente-mot"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

@@ -21,6 +21,7 @@ def main():
     ap.add_argument("--crf", type=int, default=18)
     ap.add_argument("--preset", default="medium")
     ap.add_argument("--denoise", action="store_true", help="afftdn : rushs au téléphone, souffle")
+    ap.add_argument("--no-enhance", action="store_true", help="sans stabilisation / netteté automatiques (enhance.py)")
     a = ap.parse_args()
     job = job_dir(a.job)
     c = config(job)
@@ -90,7 +91,14 @@ def main():
         cur += e - s
     write_json(job / "work" / f"{a.slug}_map.json",
                {"slug": a.slug, "cut": str(dst), "segments": mapping, "out_duration": round(cur, 3)})
-    out(ok=True, segments=len(segs), avant=round(plan["duration"], 1), apres=round(cur, 1),
+    enh = None
+    if not a.no_enhance and config(job).get("video_enhance", True) is not False:
+        try:  # passages filmés en marchant stabilisés, passages flous renforcés ; temps et son inchangés
+            from enhance import enhance
+            enh = enhance(job, a.slug)
+        except Exception as e:  # noqa: BLE001 (la retouche ne doit jamais bloquer un dérush)
+            enh = {"erreur": str(e)[:200]}
+    out(ok=True, segments=len(segs), avant=round(plan["duration"], 1), apres=round(cur, 1), retouche=enh,
         gain_pct=round(100 * (1 - cur / plan["duration"])), jetes=len(plan["islands"]) - len(keep),
         fillers_retires=n_fill, cut=str(dst))
 

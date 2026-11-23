@@ -321,9 +321,11 @@ rapport `work/<slug>_script_report.json` avant `build_cut.py`.
 ### S'inspirer d'un reel qui marche (rythme d'une référence)
 ```bash
 python scripts/reference.py analyse <lien ou fichier> --nom <ref>   # jobs/_references/<ref>/ : profil.json + planche.jpg
-#   TU regardes planche.jpg et complètes "lecture" : mise_en_page (full|split|cards), sous_titres (style), mots_par_groupe,
+#   TU regardes planche.jpg et complètes "grammaire" (le MÉCANISME réutilisable : accroche, structure, dispositifs, rythme,
+#   fin, leçons — pas l'anecdote) et "lecture" : mise_en_page (full|split|cards), sous_titres (style), mots_par_groupe,
 #   accroche, texte, alternance, fin, ton
 python scripts/reference.py apply <job> <slug> --ref <ref>          # config du job (zooms, mise en page, sous-titres) + durées des plans
+python scripts/reference.py synthese                               # toutes les références : accroches, dispositifs, fins, ce qui MANQUE au skill
 ```
 Mesuré : plans (coupes confirmées), coupes par minute, plan médian, 1re coupe, débit de parole, tempo, coupes sur le
 temps, volume. On reprend le RYTHME et la grammaire (mise en page, densité de texte, place de l'accroche), jamais le
@@ -499,6 +501,20 @@ Horaires = repères génériques : dis au client de les ajuster selon les statis
 (indisponible sous Windows) et rendus simultanés (HyperFrames les exécute l'un après l'autre) ne changent rien.
 Seul levier : moins d'images. Aperçus à valider : `-f 15` ou `deliver.py … --apercu` (≈ -40 %) ; livraison finale
 toujours à 30 i/s. Ne lance pas plusieurs rendus en parallèle : ça ne va pas plus vite.
+
+### Piles de cartes d'outils, fin « Commente : MOT », rush filmé en marchant
+- **Piles de cartes d'outils** (format « outils à sauvegarder ») : `work/<slug>_outils.json` (`word`, `dur` ou `until`,
+  `par_pile`, `outils` [{`nom`, `url`, `logo`, `image`}]), puis `python scripts/tools_stack.py capture <job> <slug>`
+  (captures locales du haut des pages ; page vide, de chargement ou « vérification anti-robots » écartée — jamais
+  contournée — et remplacée par une carte logo + nom ; « image » pour fournir sa capture) ; `build_composition.py` pose
+  les piles de 3 sur la vidéo floutée et assombrie, une pile par temps de musique, sous-titres descendus. Regarde les
+  captures avant de montrer. Logos : usage informatif, jamais un partenariat.
+- **Fin « Commente : MOT »** : bloc `commente-mot` (mot qui s'écrit, commentaire + cœur, message reçu, abonne-toi) ;
+  variables `mot`, `pour`, `ressource` (vide = pas de message), `compte`, `abonne`. Ne promets que ce qui sera vraiment
+  envoyé (la liste, le lien) : c'est un engagement envers les gens qui commentent.
+- **Rush filmé en marchant** : `build_cut.py` lance `enhance.py` (sauf `--no-enhance`) : chaque morceau qui tremble est
+  stabilisé (gardé seulement si ça aide), les morceaux plus flous que le reste du rush reçoivent un léger renfort de
+  netteté ; temps et son inchangés (`<slug>_cut_avant_retouche.mp4` gardé). Un flou de bougé ne se rattrape pas : dis-le.
 
 ### Zooms, bruitages et variantes d'accroche
 - **Zooms sur les mots forts** (rush face caméra) : `build_composition.py … --zooms` (ou `"camera": {"zooms": true}`,

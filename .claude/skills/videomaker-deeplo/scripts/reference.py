@@ -2,6 +2,7 @@
 
   python reference.py analyse <lien Instagram / TikTok / YouTube | fichier vidéo> [--nom ref1]
         -> jobs/_references/<nom>/ : video.mp4, profil.json, planche.jpg (1 image par seconde, à REGARDER)
+  python reference.py synthese          # toutes les références : accroches, dispositifs, fins, ce qui manque au skill
   python reference.py apply <job> <slug> --ref <nom>
         -> le rythme de la référence dans jobs/<job>/config.json ("pacing") et le plan de montage (durées des plans)
 
@@ -141,6 +142,8 @@ def analyse(src, nom):
         "musique": {"tempo_bpm": tempo, "coupes_sur_le_temps": on_beat},
         "volume_lufs": loudness(v),
         "mouvement_moyen": round(float(mot.mean()), 2) if len(mot) else None,
+        "grammaire": {"_a_remplir_par_claude": "le MÉCANISME, pas l'anecdote : accroche {type, mecanisme, duree_s}, structure, "
+                      "dispositifs [liste réutilisable], rythme {changement_visuel_s, cale_sur}, texte, fin {type, mecanisme}, a_retenir [leçons]"},
         "lecture": {"_a_remplir_par_claude": "regarde planche.jpg : texte à l'écran (où, combien, style des sous-titres), "
                     "accroche visuelle des 2 premières secondes, effets (zooms, emojis, transitions), ton"},
     }
@@ -209,12 +212,57 @@ def apply(job_name, slug, nom):
         suite="reconstruis (build_*.py), puis check + snapshot ; le contenu reste le tien, seul le rythme est repris")
 
 
+# dispositifs repérés dans les références -> ce que le skill sait déjà faire (mots-clés -> capacité)
+CAPACITES = [
+    (("série numérotée", "liste numérotée", "épisode"), "liste « 1 sur 5 » / série (panel list, footage series)"),
+    (("alternance",), None),
+    (("écran partagé", "split"), "écran partagé (layout split)"),
+    (("illustration", "plan d'ambiance", "b-roll", "banque d'images"), "plans de coupe (broll.py)"),
+    (("piles de cartes", "cartes"), "piles de cartes d'outils (tools_stack)"),
+    (("commentaire", "commente"), "fin « Commente : MOT » (bloc commente-mot)"),
+    (("sans parole",), None),
+    (("bulles de texte", "bulle"), None),
+    (("maquette",), "maquettes d'interface (panel ui)"),
+    (("avant / après", "avant-après"), "avant / après (compare)"),
+    (("zoom",), "zooms sur les mots forts"),
+    (("titre derrière",), "titre derrière la personne (cutout)"),
+]
+
+
+def synthese():
+    """Vue d'ensemble de toutes les références analysées : accroches, dispositifs, fins, rythme, et ce qui manque au
+    skill. C'est ce recul (plusieurs reels qui marchent) qui décide des prochains développements, pas un cas isolé."""
+    profs = [(p.parent.name, read_json(p)) for p in sorted(REFS.glob("*/profil.json"))]
+    gs = [(n, p.get("grammaire")) for n, p in profs if p.get("grammaire")]
+    if not gs:
+        fail("aucune référence avec \"grammaire\" remplie (analyse, puis Claude remplit grammaire dans profil.json)")
+    from collections import Counter
+    disp = Counter(d for _, g in gs for d in g.get("dispositifs", []))
+    rows = []
+    for d, n in disp.most_common():
+        cap = next((c for keys, c in CAPACITES if any(k in d.lower() for k in keys)), "?")
+        rows.append({"dispositif": d, "references": n, "skill": cap or "MANQUE"})
+    res = {
+        "references": len(gs),
+        "accroches": Counter(g["accroche"]["type"] for _, g in gs if g.get("accroche")).most_common(),
+        "duree_accroche_s": round(sum(g["accroche"].get("duree_s", 0) for _, g in gs) / len(gs), 1),
+        "fins": Counter(g["fin"]["type"] for _, g in gs if g.get("fin")).most_common(),
+        "rythme_s": [g.get("rythme", {}).get("changement_visuel_s") for _, g in gs],
+        "dispositifs": rows,
+        "manques": [r["dispositif"] for r in rows if r["skill"] in ("MANQUE", "?")],
+        "lecons": [l for _, g in gs for l in g.get("a_retenir", [])],
+    }
+    write_json(REFS / "synthese.json", res)
+    out(ok=True, **res, fichier=str(REFS / "synthese.json"))
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
     a1 = sub.add_parser("analyse")
     a1.add_argument("src")
     a1.add_argument("--nom")
+    sub.add_parser("synthese")
     a2 = sub.add_parser("apply")
     a2.add_argument("job")
     a2.add_argument("slug")
@@ -222,6 +270,8 @@ def main():
     a = ap.parse_args()
     if a.cmd == "analyse":
         analyse(a.src, a.nom)
+    elif a.cmd == "synthese":
+        synthese()
     else:
         apply(a.job, a.slug, a.ref)
 

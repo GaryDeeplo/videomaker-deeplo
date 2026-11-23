@@ -3,6 +3,13 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.23.5
+- Piles de cartes d'outils : captures des sites prises en local, présentées par 3 sur votre vidéo floutée, au rythme de la musique.
+- Fin « Commente : MOT » : le mot s'écrit, un commentaire arrive, puis le message reçu.
+- Rush filmé en marchant : les passages qui tremblent sont stabilisés et les passages flous un peu renforcés, sans toucher au son.
+- Analyse de références : synthèse de tous les reels analysés (types d'accroche, dispositifs, fins, ce qui manque encore).
+- Contrôle qualité : vitesse des sous-titres jugée comme pour des sous-titres calés mot à mot ; zooms jamais sur un petit mot.
+
 ## 2026.11.23.4
 - Montage depuis un script écrit : prompteur sur téléphone pour le tournage, puis meilleure prise de chaque phrase gardée toute seule, phrases manquantes et passages hors script signalés.
 - S'inspirer d'un reel qui marche : son rythme est mesuré (plans, coupes, débit, tempo, place de l'accroche) et appliqué à votre montage, sans rien copier de son contenu.

@@ -1,0 +1,22 @@
+{
+ "name": "commente-mot",
+ "type": "block",
+ "title": "Fin : Commente MOT",
+ "description": "fin « Commente : MOT » : le mot s'écrit, un commentaire arrive avec son cœur, puis le message reçu ; « Abonne-toi » en bas",
+ "when_to_use": "Fin de reel qui échange une ressource contre un commentaire (liste, lien, modèle) : pousse l'algorithme et crée des contacts",
+ "tags": [
+  "fin",
+  "cta",
+  "commentaire",
+  "mot-cle",
+  "abonnement"
+ ],
+ "files": [
+  "commente-mot.html"
+ ],
+ "usage": "motions : {\"block\": \"commente-mot\", \"word\": \"<mot dit>\", \"dur\": 4, \"vars\": {\"mot\": \"FILM\", \"pour\": \"pour recevoir la liste\", \"ressource\": \"Voici la liste 🎁\", \"compte\": \"@compte\"}} ; ou scène de fin {\"kind\": \"block\", \"block\": \"commente-mot\", \"hold\": 4}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}
