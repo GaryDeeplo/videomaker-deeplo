@@ -1,0 +1,22 @@
+{
+ "name": "chat-message",
+ "type": "registre",
+ "title": "Chat Message",
+ "description": "One message arrives on the measured entry - scale 0.75, 0.12s, growing from its sender's corner. The type is an enum switched like marker-highlight's style: a received or sent bubble with a real tail, a large emoji row, an image, or a link card with title and domain. The atom that chat-thread builds conversations from",
+ "when_to_use": "Registre HyperFrames (composant) : video-primitive, chat, mock-ui, message",
+ "tags": [
+  "video-primitive",
+  "chat",
+  "mock-ui",
+  "message"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add chat-message   (variables : type, text, cardTitle, cardDomain, tail, delivered)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -1,0 +1,26 @@
+{
+ "name": "camera-scan-gate",
+ "type": "registre",
+ "title": "Camera Scan Gate",
+ "description": "A camera and QR recognition moment with a viewfinder sweep, bracket lock, confirmation pulse, and verified next beat.",
+ "when_to_use": "Registre HyperFrames (composant) : prop, ui-props, camera, qr, scan, recognition",
+ "tags": [
+  "prop",
+  "ui-props",
+  "camera",
+  "qr",
+  "scan",
+  "recognition",
+  "interaction",
+  "demonstrate"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add camera-scan-gate   (variables : scanColor, targetLabel, sweepSpeed)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

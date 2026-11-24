@@ -3,6 +3,9 @@
 Seul endroit où l'on ré-encode la vidéo. Tout l'habillage suit dans HyperFrames.
 Ajouts : réduction à la taille utile du format de sortie (un rush 4K n'est pas traîné jusqu'au rendu),
 voix normalisée (loudnorm, derush.voiceLufs), débruitage optionnel.
+Rushs de téléphone : cadence variable (VFR) remise à cadence fixe par le filtre fps en fin de chaîne (sinon l'image
+glisse jusqu'à ~56 ms derrière le son après les coupes) ; vidéo HDR (HLG / PQ / Dolby Vision, iPhone) ramenée en SDR
+BT.709 (zscale + tonemap hable), sans quoi elle sort délavée.
 
   python build_cut.py <job> <slug> [--crf 18] [--denoise]
 """
@@ -11,7 +14,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from common import config, fail, job_dir, out, probe, read_json, sh, write_json
+from common import config, fail, ffmpeg_has, hdr_to_sdr, job_dir, out, probe, read_json, round_fps, sh, write_json
 
 
 def main():
@@ -60,6 +63,20 @@ def main():
     info = probe(src)
     k = max(W / info["width"], H / info["height"])  # échelle « cover » du format de sortie
     scale = f",scale=-2:{int(round(info['height'] * k / 2) * 2)}" if k < 1 else ""
+    vpost, venc, notes = [], [], []
+    if info.get("hdr"):  # après la mise à l'échelle : le tone mapping en flottant coûte cher en 4K
+        if ffmpeg_has("zscale"):
+            vpost.append(hdr_to_sdr(info))
+            venc = ["-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709"]
+            notes.append(f"source {info.get('hdr_format')} ramenée en SDR BT.709 (tonemap hable)")
+        else:
+            notes.append(f"ATTENTION : source {info.get('hdr_format')} mais ce ffmpeg n'a pas le filtre zscale : "
+                         "couleurs délavées. Installe un ffmpeg complet (build « full » de gyan.dev) puis relance.")
+    if info.get("vfr"):  # filtre fps en dernier, pas seulement -r : chaque image retrouve sa place (d'après ffmpeg-skill, MIT)
+        rate = round_fps(info.get("fps"), info.get("fps_nominal"))
+        vpost.append(f"fps={rate}")
+        venc += ["-r", rate]
+        notes.append(f"cadence variable ({info.get('fps')} i/s en moyenne) remise à {rate} i/s fixes")
 
     parts = []
     for n, (s, e) in enumerate(segs):
@@ -69,8 +86,9 @@ def main():
             af += f",afade=t=in:st=0:d={f},afade=t=out:st={d - f:.3f}:d={f}"
         parts.append(f"[0:v]trim=start={s}:end={e},setpts=PTS-STARTPTS{scale}[v{n}];[0:a]{af}[a{n}]")
     post = (",afftdn=nf=-25" if a.denoise else "") + f",loudnorm=I={lufs}:TP=-1.5:LRA=11,aresample=48000"
+    vtail = f";[vc]{','.join(vpost)}[v]" if vpost else ";[vc]null[v]"
     fc = ";".join(parts) + ";" + "".join(f"[v{n}][a{n}]" for n in range(len(segs))) \
-        + f"concat=n={len(segs)}:v=1:a=1[v][ac];[ac]anull{post}[a]"
+        + f"concat=n={len(segs)}:v=1:a=1[vc][ac]{vtail};[ac]anull{post}[a]"
 
     dst = job / "assets" / f"{a.slug}_cut.mp4"
     fd, script = tempfile.mkstemp(suffix=".txt")
@@ -79,7 +97,7 @@ def main():
     try:
         sh(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src), "-filter_complex_script", script,
             "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-crf", str(a.crf), "-preset", a.preset,
-            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(dst)],
+            "-pix_fmt", "yuv420p", *venc, "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", str(dst)],
            "ffmpeg (dérush)")
     finally:
         Path(script).unlink(missing_ok=True)
@@ -100,7 +118,7 @@ def main():
             enh = {"erreur": str(e)[:200]}
     out(ok=True, segments=len(segs), avant=round(plan["duration"], 1), apres=round(cur, 1), retouche=enh,
         gain_pct=round(100 * (1 - cur / plan["duration"])), jetes=len(plan["islands"]) - len(keep),
-        fillers_retires=n_fill, cut=str(dst))
+        fillers_retires=n_fill, cut=str(dst), source=notes or None)
 
 
 if __name__ == "__main__":

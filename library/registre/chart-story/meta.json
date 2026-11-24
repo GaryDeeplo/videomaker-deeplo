@@ -1,0 +1,27 @@
+{
+ "name": "chart-story",
+ "type": "registre",
+ "title": "Chart Story",
+ "description": "One chart builds from data in reading order and lands the exact supplied values: staggered bars, a left-to-right line with area fill, a sweeping donut, or filling progress bars, with an accented value callout on the emphasized datum.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, proof, stats, chart, bars, line",
+ "tags": [
+  "motion-primitive",
+  "proof",
+  "stats",
+  "chart",
+  "bars",
+  "line",
+  "donut",
+  "progress",
+  "deterministic"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add chart-story   (variables : type, data, labels, emphasize, unit, accent, exit)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

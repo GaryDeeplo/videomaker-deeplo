@@ -20,34 +20,12 @@ MOVE, MIN_GAP = 0.7, 1.5  # durée d'un glissement, écart minimal entre deux gl
 
 
 def detect(src, fps):
-    import cv2
-    cap = cv2.VideoCapture(str(src))
-    sfps = cap.get(cv2.CAP_PROP_FPS) or 30
-    n = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    sw, sh = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    k = 640 / sw
-    det = cv2.FaceDetectorYN.create(str(MODEL), "", (640, int(sh * k)), 0.7, 0.3, 50)
-    step, res, prev = max(1, round(sfps / fps)), [], None
-    for f in range(n):  # lecture continue (un saut par image est beaucoup plus lent) ; on ne décode qu'1 image sur step
-        if f % step:
-            if not cap.grab():
-                break
-            continue
-        ok, img = cap.read()
-        if not ok:
-            break
-        _, faces = det.detect(cv2.resize(img, (640, int(sh * k))))
-        cx = None
-        if faces is not None and len(faces):
-            big = max(fc[2] * fc[3] for fc in faces)
-            ok_f = [fc for fc in faces if fc[2] * fc[3] >= 0.4 * big]  # ignore les petits visages du fond
-            pick = (min(ok_f, key=lambda fc: abs((fc[0] + fc[2] / 2) / 640 - prev)) if prev is not None
-                    else max(ok_f, key=lambda fc: fc[2] * fc[3]))
-            cx = float((pick[0] + pick[2] / 2) / 640)
-            prev = cx
-        res.append((f / sfps, cx))
-    cap.release()
-    return res, sw, sh
+    """Centres de visage [(t, cx|None)] (part de la largeur) ; détection commune avec face.py, boîtes gardées dans
+    detect.boxes pour le cache des visages (sous-titres qui évitent le visage, contrôle « visage couvert »)."""
+    from face import detect_boxes
+    boxes, sw, sh = detect_boxes(src, fps)
+    detect.boxes = boxes
+    return [(b[0], None if b[1] is None else b[7]) for b in boxes], sw, sh
 
 
 def camera_path(samples, cw, zone=0.18):
@@ -86,6 +64,8 @@ def main():
     if not MODEL.exists():
         fail(f"modèle de détection absent : {MODEL}")
     samples, sw, sh = detect(src, a.fps)
+    from face import save_samples
+    save_samples(src, detect.boxes, sw, sh, a.fps, job / "work")  # face.py s'en sert sans redétecter
     cw = (sh * W / H) / sw  # largeur visible de la source, en fraction
     if cw >= 0.98:
         return out(ok=True, utile=False, raison="la source n'est pas plus large que le format : rien à suivre")

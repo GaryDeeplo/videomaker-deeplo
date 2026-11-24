@@ -8,11 +8,17 @@
 - Charte : police, couleurs, cadrage horizontal (visual.focusX) depuis config / brand.json.
 Rien n'est gravé : tout reste modifiable dans le Studio HyperFrames.
 
+- Sous-titres qui évitent le visage (face.py, vertical) : sous le menton, sinon au-dessus de la tête, sinon en bas
+  sur fond sombre, dans la zone sûre de la plateforme (text.platform : tous | reels | tiktok | shorts) ;
+  --no-visage (ou text.captionFace: false) garde la hauteur fixe captionTopPct.
+- work/<slug>_calques.json : où et quand chaque calque est posé (contrôle « visage couvert » de face.py / qa.py).
+
   python build_composition.py <job> <slug> [--no-cam] [--no-sfx] [--mode captions|overlays|both] [--style pop]
 """
 import argparse
 import html
 import json
+import math
 import shutil
 from pathlib import Path
 
@@ -141,6 +147,18 @@ def broll_nodes(job, items, words, dur, W, H, T0, whoosh=None):
         rep.append({"mot": b.get("word"), "pose": True, "a": t0, "duree": D, "image": rel, "mode": mode})
         prev_end = en
     return nodes, js, sfx, rep
+
+
+def text_box(text, size, x0, width, top, line_h, max_lines=None, center=True, pad=0.0):
+    """Boîte estimée d'un texte à l'écran [x0, y0, x1, y1] (≈ 0,6 em par caractère gras) : pour placer les
+    sous-titres et repérer un visage couvert (face.py). center : centré dans la largeur, sinon calé à gauche."""
+    tw = len(text) * 0.6 * size + 2 * pad * size
+    lines = max(1, math.ceil(tw / max(1.0, width)))
+    if max_lines:
+        lines = min(lines, max_lines)
+    w = min(width, tw)
+    xa = x0 + (width - w) / 2 if center else x0
+    return [round(xa), round(top), round(xa + w), round(top + lines * line_h * size + 2 * pad * size)]
 
 
 EMOJI_CHAR = {"valide": "✅", "coeur": "❤️", "etoile": "⭐", "pouce": "👍", "fusee": "🚀", "cadeau": "🎁", "idee": "💡",
@@ -353,6 +371,9 @@ def main():
     ap.add_argument("--emoji", action="store_true", help="emoji après les mots-clés (bravo 👏, idée 💡…)")
     ap.add_argument("--no-branding", action="store_true", help="sans intro / outro / bandeau nom")
     ap.add_argument("--lang", help="sous-titres traduits (translate.py) : nl, en…")
+    ap.add_argument("--plateforme", choices=["tous", "reels", "tiktok", "shorts"],
+                    help="zones sûres pour les sous-titres (text.platform ; défaut : tous)")
+    ap.add_argument("--no-visage", action="store_true", help="sous-titres à hauteur fixe (captionTopPct), sans éviter le visage")
     a = ap.parse_args()
     job = job_dir(a.job)
     c = config(job)
@@ -418,6 +439,7 @@ def main():
     use_emoji = a.emoji or txt.get("captionEmoji", False)
 
     nodes, tw = [], []
+    cap_blocks, calques = [], []  # groupes de sous-titres à placer ; calques posés (work/<slug>_calques.json)
     overlays = sorted((o for o in t["overlays"] if o.get("keep") and o["start"] < dur), key=lambda o: o["start"])
     punches = sorted(float(o["start"]) for o in t["overlays"] if o.get("punch") and o["start"] < dur)
 
@@ -437,6 +459,8 @@ def main():
             fit_text = text + (" MM" if emo is not None else "")  # place de l'emoji dans le calcul de taille
             nodes.append(f'      <div class="clip cap" id="{gid}" data-start="{st}" data-duration="{round(en - st, 3)}" '
                          f'data-track-index="4"><div class="in" data-fit="{esc(fit_text)}">{spans}</div></div>')
+            bx = text_box(fit_text, cap_size, W * 0.08, W * 0.84, 0, 1.08, max_lines=2, pad=0.3 if style == "bulle" else 0)
+            cap_blocks.append({"id": gid, "t0": st, "t1": en, "h": bx[3], "x0": bx[0], "x1": bx[2]})
             times = [[round(max(st, w["start"]), 3), round(w["end"], 3)] for w in words]
             tw.append(f'  cap("{gid}", {st}, {en}, {json.dumps(times)});')
             if emo is not None:
@@ -461,6 +485,15 @@ def main():
             spans = " ".join(f'<span class="w">{esc(w["w"])}</span>' for w in o["words"])
             nodes.append(f'      <div class="clip note {place}" id="{oid}" data-start="{st}" '
                          f'data-duration="{round(en - st, 3)}" data-track-index="5">{spans}</div>')
+            otext = " ".join(w["w"] for w in o["words"])
+            obox = {"nL": (otext, SZ["side"], 90 * r, W * 0.58, H * 0.40, False),
+                    "nR": (otext, SZ["side"], W - 90 * r - W * 0.58, W * 0.58, H * 0.46, False),
+                    "nC": (otext, SZ["center"], 70 * r, W - 140 * r, H * 0.52, True),
+                    "topline": (otext.upper(), SZ["topline"], 70 * r, W - 140 * r, H * 0.16, True)}[place]
+            bx = text_box(*obox[:5], 1.1, center=obox[5])
+            if place == "nR":  # calé à droite
+                bx = [round(W - 90 * r - (bx[2] - bx[0])), bx[1], round(W - 90 * r), bx[3]]
+            calques.append({"type": "texte", "nom": oid, "t0": st, "t1": round(en, 3), "box": bx})
             times, prev = [], None
             for w in o["words"]:
                 tt = max(st, float(w["start"]))
@@ -505,6 +538,8 @@ def main():
         tw.append(f'  tl.fromTo("#hook .hk", {{ opacity: 0, y: -30, scale: 0.92 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.45, '
                   f'ease: "back.out(2)", immediateRender: false }}, 0.15);')
         tw.append(f'  tl.to("#hook .hk", {{ opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }}, {round(0.15 + hd - 0.35, 3)});')
+        calques.append({"type": "accroche", "nom": "hook", "t0": 0.15, "t1": round(0.15 + hd, 3),
+                        "box": text_box(read_json(hook)["text"], cap_size * 0.82, W * 0.08, W * 0.84, H * (0.11 if H > W else 0.08), 1.12, pad=0.3)})
 
     music = job / "work" / f"{a.slug}_music.json"
     if music.exists():
@@ -623,6 +658,12 @@ def main():
         mots_css += f"\n  .acut {{ object-position: {vis['focusX']}% 50%; }}"  # même recadrage que la vidéo
         nodes += mo_over
         tw += mjs
+        for r_ in mots_rep:  # mot géant posé devant (plan serré) : il peut couvrir le visage ; derrière, la personne passe devant
+            if r_["place"].startswith("devant"):
+                calques.append({"type": "texte", "nom": f'mot géant « {r_["geant"]} »', "t0": r_["a"], "t1": round(r_["a"] + r_["duree"], 3),
+                                "box": r_.pop("box"), "estime": True})
+            else:
+                r_.pop("box", None)
     bj = job / "work" / f"{a.slug}_broll.json"
     broll_rep = []
     if bj.exists():  # plans de coupe : photos / vidéos du client ou images libres, calés sur des mots dits
@@ -706,6 +747,75 @@ def main():
                     tw.append(f'  tl.set(".zw", {{ top: {0 if full else PH}, height: {H if full else H - PH} }}, {t_});')
                     tw.append(f'  tl.set("#a-roll", {{ height: {H if full else H - PH}, objectPosition: "{vis["focusX"]}% {50 if full else 32}%" }}, {t_});')
                     tw.append(f'  tl.set(".cap", {{ top: {cap_full if full else cap_split} }}, {t_});')
+    # géométrie de la vidéo à l'écran (face.py la rejoue pour situer le visage)
+    geo = None
+    if src.get("width") and not cards:
+        geo = {"W": W, "H": H, "src": [src["width"], src["height"]], "focusX": vis["focusX"],
+               "fit": "track" if track else ("contain" if fill else "cover"), "cam": cam,
+               "zooms": [[z["t"], z["fin"], 1.12 if z["kind"] == "sec" else 1.09] for z in zooms]}
+        if track:
+            geo.update(VW=VW, track={"start": track["start"], "moves": track["moves"]})
+        if split:
+            geo.update(zone=[0, PH, W, H - PH], posY=32, cam=[], zooms=[])
+    for b_ in broll_rep:  # plans de coupe : plein écran (le visage est remplacé, voulu) ou carte en haut
+        if b_.get("pose"):
+            full = b_.get("mode", "full") != "carte"
+            calques.append({"type": "plein-ecran" if full else "carte", "nom": f'plan de coupe {b_["image"]}', "t0": b_["a"],
+                            "t1": round(b_["a"] + b_["duree"], 3),
+                            "box": [0, 0, W, H] if full else [round(W * 0.1), card_top, round(W * 0.9), card_top + card_h]})
+    if stack_rep and stack_rep.get("pose"):  # pile d'outils : vidéo floutée derrière, voulu
+        calques.append({"type": "plein-ecran", "nom": "pile d'outils", "t0": stack_rep["t0"], "t1": stack_rep["t1"], "box": [0, 0, W, H]})
+    if mj_.exists() and not (split or cards):  # blocs de motion : hauteur connue (var top), taille estimée
+        for mo_, rp in zip(read_json(mj_), motion_rep):
+            if not rp.get("pose"):
+                continue
+            v_ = {**mvals, **mo_.get("vars", {})}
+            t0_ = rp["a"]
+            if mo_.get("block") == "lottie":
+                sz = float(v_.get("size", 34)) / 100 * min(W, H)
+                cx_, cy_ = float(v_.get("x", 50)) / 100 * W, float(v_.get("y", 30)) / 100 * H
+                bx = [round(cx_ - sz / 2), round(cy_ - sz / 2), round(cx_ + sz / 2), round(cy_ + sz / 2)]
+            else:
+                y_ = float(v_.get("top", 40)) / 100 * H
+                bx = [round(W * 0.1), round(y_), round(W * 0.9), round(y_ + 0.35 * min(W, H))]
+            calques.append({"type": "bloc", "nom": mo_.get("block"), "t0": t0_, "t1": round(t0_ + float(mo_.get("dur", 3)), 3), "box": bx, "estime": True})
+    if lt.get("name"):  # bandeau nom (position estimée)
+        y_ = float(lt.get("top", (80 if fill else 50) if H > W else 64)) / 100 * H
+        calques.append({"type": "bandeau", "nom": "bandeau-nom", "t0": round(lt_start, 3), "t1": round(lt_start + min(4.0, dur - lt_start), 3),
+                        "box": [round(W * 0.05), round(y_), round(W * 0.75), round(y_ + 0.12 * min(W, H))], "estime": True})
+    # sous-titres qui évitent le visage : vertical, plein cadre (l'écran partagé a sa propre couture)
+    plat = a.plateforme or txt.get("platform", "tous")
+    face_rep, cap_y = None, {}
+    if cap_blocks and geo and H > W and not split and not a.no_visage and txt.get("captionFace", True):
+        import face as fc
+        try:
+            vis_f = fc.face_samples(job / "assets" / cut)
+        except Exception as e:  # détection indisponible : hauteur fixe, la composition se construit quand même
+            vis_f = {"samples": [], "erreur": str(e)[:200]}
+        pct = fc.part_visages(vis_f)
+        if pct >= 15:
+            masques = [(c_["t0"], c_["t1"]) for c_ in calques if c_["type"] == "plein-ecran"]
+            pile = (stack_rep["t0"], stack_rep["t1"]) if stack_rep and stack_rep.get("pose") else None
+            blocs = [b_ for b_ in cap_blocks if not (pile and b_["t0"] < pile[1] and b_["t1"] > pile[0])]  # pile : sous-titres déjà descendus
+            occ = [{"t0": c_["t0"], "t1": c_["t1"], "y0": c_["box"][1], "y1": c_["box"][3]} for c_ in calques
+                   if c_["type"] in ("accroche", "carte", "texte")]
+            pl = fc.placer_sous_titres(blocs, vis_f, geo, plat, ideal=round(H * cap_top / 100), occupes=occ, masques=masques)
+            for p_ in pl:
+                cap_y[p_["id"]] = p_["y"]
+                cls = "clip cap fond" if p_["fond"] and style not in ("bulle", "mono") else "clip cap"
+                for i_, n_ in enumerate(nodes):
+                    if f'id="{p_["id"]}"' in n_:
+                        nodes[i_] = n_.replace('class="clip cap"', f'class="{cls}" style="top:{p_["y"]}px"', 1)
+                        break
+            modes = {}
+            for p_ in pl:
+                modes[p_["mode"]] = modes.get(p_["mode"], 0) + 1
+            face_rep = {"plateforme": plat, "visages_pct": pct, "zones": modes}
+        else:
+            face_rep = {"visages_pct": pct, "zones": "hauteur fixe (pas assez de visage)"}
+    for b_ in cap_blocks:
+        y_ = cap_y.get(b_["id"], round(H * cap_top / 100) if not split else PH - round(cap_size * 0.62))
+        calques.append({"type": "sous-titre", "nom": b_["id"], "t0": b_["t0"], "t1": b_["t1"], "box": [b_["x0"], y_, b_["x1"], y_ + b_["h"]]})
     if style == "mono" and not (split or cards):  # police machine à écrire du style « mono »
         import panel as pn
         font_face += " " + pn.fonts(job)
@@ -737,6 +847,8 @@ def main():
   .cap .in {{ margin: 0 {round(W * 0.08)}px; text-align: center; font-family: '{family}'; font-weight: 900;
              font-size: {cap_size}px; line-height: 1.08; color: {ink}; text-shadow: {SHADOW}; text-wrap: balance;
              {"text-transform: uppercase; letter-spacing: -0.01em;" if style != "minimal" else "font-weight: 700;"} }}
+  .cap.fond .in {{ width: fit-content; max-width: {round(W * 0.84)}px; margin: 0 auto; padding: .1em .35em .14em; border-radius: .22em;
+                  background: rgba(0,0,0,.58); box-sizing: border-box; }}  /* gros plan : sous la bouche, sur fond sombre */
   .cap .w {{ display: inline-block; margin: 0 0.07em; transform-origin: 50% 70%; {"opacity: 0;" if style in ("pop", "duo", "mono") else ""} }}
 {caption_css(style, accent)}
 {ts_css}
@@ -821,6 +933,9 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    write_json(job / "work" / f"{a.slug}_calques.json",
+               {"slug": a.slug, "T0": T0, "duree": dur, "video": f"assets/{cut}", "ideal": round(H * cap_top / 100), "plateforme": plat,
+                "geo": geo, "calques": sorted(calques, key=lambda c_: c_["t0"])})
     if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
         sound_design.auto(job)
     drifts = sum(1 for x in cam if x[4] == "power1.inOut")
@@ -829,7 +944,7 @@ def main():
         cadrage="écran partagé" if split else ("suit le visage" if track else ("image entière, fond flouté" if fill else "recadré")),
         panneau=panel_rep or None,
         captions=sum(1 for n in nodes if 'class="clip cap"' in n), overlays=sum(1 for n in nodes if "note" in n),
-        drifts=drifts, punchs=len(cam) - drifts, titre_derriere=behind_rep, mots=mots_rep, couleur_mots=macc if mots_rep is not None else None, outils=stack_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
+        drifts=drifts, punchs=len(cam) - drifts, sous_titres_visage=face_rep, titre_derriere=behind_rep, mots=mots_rep, couleur_mots=macc if mots_rep is not None else None, outils=stack_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
         suite="npx hyperframes check, puis snapshot / preview")
 
 

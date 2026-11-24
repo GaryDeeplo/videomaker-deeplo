@@ -1,0 +1,24 @@
+{
+ "name": "avatar-cloud",
+ "type": "registre",
+ "title": "Avatar Cloud",
+ "description": "Lettermark avatars populate a loose elliptical cloud while fine SVG links draw between the community and its central proof label.",
+ "when_to_use": "Registre HyperFrames (composant) : effects, avatars, community, network, social-proof, prove",
+ "tags": [
+  "effects",
+  "avatars",
+  "community",
+  "network",
+  "social-proof",
+  "prove"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add avatar-cloud   (variables : avatarCount, showLinks, label)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

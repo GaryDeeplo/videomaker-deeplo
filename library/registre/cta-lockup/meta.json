@@ -1,0 +1,24 @@
+{
+ "name": "cta-lockup",
+ "type": "registre",
+ "title": "CTA Lockup",
+ "description": "A canonical closing lockup that reveals an action line, pops in an accent CTA capsule, settles supporting microcopy, and holds with confidence.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, ui-props, cta, end-card, lockup, ask",
+ "tags": [
+  "motion-primitive",
+  "ui-props",
+  "cta",
+  "end-card",
+  "lockup",
+  "ask"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add cta-lockup   (variables : action_line, button_label, microcopy, accent)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -1,0 +1,23 @@
+{
+ "name": "caption-parallax-layers",
+ "type": "registre",
+ "title": "Parallax Layers",
+ "description": "Behind-subject 3D text layering with vertical stretch effect",
+ "when_to_use": "Registre HyperFrames (composant) : captions, caption-style, parallax, 3d, depth",
+ "tags": [
+  "captions",
+  "caption-style",
+  "parallax",
+  "3d",
+  "depth"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add caption-parallax-layers   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

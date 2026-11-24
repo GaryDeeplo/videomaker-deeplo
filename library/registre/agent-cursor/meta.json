@@ -1,0 +1,24 @@
+{
+ "name": "agent-cursor",
+ "type": "registre",
+ "title": "Agent Cursor",
+ "description": "An AI agent operating a UI: a cursor with an accent name label that types out each step, clicks each target with a small ring, and ends on a check.",
+ "when_to_use": "Registre HyperFrames (composant) : cursor, motion-primitive, agent, ai, status, click",
+ "tags": [
+  "cursor",
+  "motion-primitive",
+  "agent",
+  "ai",
+  "status",
+  "click"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add agent-cursor   (variables : agent_name, steps, targets, accent)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

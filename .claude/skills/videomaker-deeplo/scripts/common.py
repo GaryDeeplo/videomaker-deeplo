@@ -68,16 +68,109 @@ def sh(cmd, what=None):
     return r.stdout
 
 
+def _rate(s):
+    """« 30000/1001 » -> 29.97 ; « 0/0 » ou vide -> None."""
+    try:
+        n, _, d = str(s or "").partition("/")
+        v = float(n) / float(d or 1)
+        return v if v > 0 else None
+    except (ValueError, ZeroDivisionError):
+        return None
+
+
+def rotation_of(stream):
+    """Rotation d'affichage d'un flux vidéo ffprobe (0, 90, 180, 270) : tag « rotate » des anciens ffmpeg, sinon matrice
+    d'affichage (side_data_list, seul endroit où ffmpeg 6+ la met : un rush de téléphone en portrait)."""
+    rot = 0
+    for sd in stream.get("side_data_list") or []:
+        if "rotation" in sd:
+            try:
+                rot = int(round(float(sd["rotation"])))
+            except (TypeError, ValueError):
+                pass
+    tag = (stream.get("tags") or {}).get("rotate")
+    if tag not in (None, ""):
+        try:
+            rot = int(tag)
+        except ValueError:
+            pass
+    return rot % 360
+
+
+STD_FPS = (23.976, 24, 25, 29.97, 30, 48, 50, 59.94, 60)
+
+
+def round_fps(fps, nominal=None):
+    """Cadence ramenée à la cadence standard la plus proche (à 3 % près) : un rush VFR à 29,6 i/s de moyenne est un 30.
+    Trop loin de tout standard (téléphone qui a perdu des images) : cadence nominale du fichier si elle est standard, sinon 30."""
+    def snap(x):
+        best = min(STD_FPS, key=lambda r: abs(r - x)) if x else None
+        return best if best and abs(best - x) / best < 0.03 else None
+    r = snap(fps) or snap(nominal) or 30
+    return {23.976: "24000/1001", 29.97: "30000/1001", 59.94: "60000/1001"}.get(r, f"{r:g}")
+
+
 def probe(src):
-    d = json.loads(sh(["ffprobe", "-v", "error", "-show_entries",
-                       "stream=codec_type,width,height:stream_tags=rotate:format=duration",
-                       "-of", "json", str(src)], "ffprobe"))
-    v = next((s for s in d.get("streams", []) if s.get("codec_type") == "video"), {})
+    """Mesure d'un média. Clés historiques : duration, width, height (taille affichée, rotation comprise), has_audio.
+    En plus, pour les rushs de téléphone : fps (moyenne), fps_nominal, vfr (cadence variable), rotation, hdr (PQ, HLG ou Dolby Vision),
+    hdr_format, pix_fmt, codec, color (tags), video_duration, audio (codec, sample_rate, channels, duration) ou None.
+    vfr, rotation et hdr d'après ffmpeg-skill (MIT), scripts/_common/probe.py."""
+    d = json.loads(sh(["ffprobe", "-v", "error", "-show_streams", "-show_format", "-of", "json", str(src)], "ffprobe"))
+    streams = d.get("streams", [])
+    v = next((s for s in streams if s.get("codec_type") == "video"
+              and not (s.get("disposition") or {}).get("attached_pic")), {})
+    a = next((s for s in streams if s.get("codec_type") == "audio"), None)
     w, h = v.get("width"), v.get("height")
-    if str((v.get("tags") or {}).get("rotate", "0")) in ("90", "270", "-90"):
+    rot = rotation_of(v) if v else 0
+    if rot in (90, 270):
         w, h = h, w
-    return {"duration": float(d["format"].get("duration") or 0), "width": w, "height": h,
-            "has_audio": any(s.get("codec_type") == "audio" for s in d.get("streams", []))}
+    r_rate, avg = _rate(v.get("r_frame_rate")), _rate(v.get("avg_frame_rate"))
+    fps = avg or r_rate
+    trc = v.get("color_transfer") or ""
+    dovi = any("dv_profile" in sd or "DOVI" in str(sd.get("side_data_type", "")) for sd in v.get("side_data_list") or [])
+    num = lambda x: float(x) if x not in (None, "", "N/A") else None
+    return {"duration": float(d.get("format", {}).get("duration") or 0), "width": w, "height": h,
+            "has_audio": a is not None,
+            "fps": round(fps, 3) if fps else None, "fps_nominal": round(r_rate, 3) if r_rate else None,
+            # cadence variable : cadence nominale ≠ cadence moyenne (téléphones, enregistrements d'écran)
+            "vfr": bool(r_rate and avg and abs(r_rate - avg) > 0.01),
+            "rotation": rot,
+            "hdr": trc in ("smpte2084", "arib-std-b67") or dovi,
+            "hdr_format": "Dolby Vision" if dovi else "HDR10/PQ" if trc == "smpte2084" else "HLG" if trc == "arib-std-b67" else None,
+            "pix_fmt": v.get("pix_fmt"), "codec": v.get("codec_name"),
+            "color": {"primaries": v.get("color_primaries"), "transfer": v.get("color_transfer"),
+                      "space": v.get("color_space"), "range": v.get("color_range")},
+            "video_duration": num(v.get("duration")),
+            "audio": {"codec": a.get("codec_name"), "sample_rate": int(a.get("sample_rate") or 0),
+                      "channels": a.get("channels"), "duration": num(a.get("duration"))} if a else None}
+
+
+_FILTERS = {}
+
+
+def ffmpeg_has(name):
+    """Le ffmpeg installé a-t-il ce filtre (zscale manque aux builds « essentials ») ?"""
+    if name not in _FILTERS:
+        r = subprocess.run(["ffmpeg", "-hide_banner", "-filters"], capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
+        _FILTERS[name] = bool(re.search(rf"^\s*\S+\s+{re.escape(name)}\s", r.stdout, re.M))
+    return _FILTERS[name]
+
+
+def hdr_to_sdr(info):
+    """Chaîne PQ / HLG / Dolby Vision -> SDR BT.709 (tonemap hable). Linéarisé à 100 nits par unité (blanc SDR = 1,0),
+    crête de la source : 1000 nits (HLG décodé par zimg pour un écran de 1000 nits). D'après ffmpeg-skill (MIT),
+    scripts/_common/color.py hdr_to_sdr_chain."""
+    c = info.get("color") or {}
+    trc, prim, space = c.get("transfer") or "smpte2084", c.get("primaries") or "bt2020", c.get("space") or "bt2020nc"
+    if trc not in ("smpte2084", "arib-std-b67"):  # Dolby Vision sans tag de transfert : base PQ
+        trc = "smpte2084"
+    label = [] if (c.get("transfer") and c.get("primaries") and c.get("space")) else \
+        [f"setparams=color_primaries={prim}:color_trc={trc}:colorspace={space}"]  # zscale exige des tags
+    return ",".join(label + [
+        f"zscale=tin={trc}:pin={prim}:min={space}:rin={c.get('range') or 'tv'}:t=linear:npl=100",
+        "format=gbrpf32le", "zscale=p=bt709", "tonemap=tonemap=hable:desat=0:peak=10",
+        "zscale=t=bt709:m=bt709:r=tv", "format=yuv420p"])
 
 
 FORMATS = {"9:16": (1080, 1920), "1:1": (1080, 1080), "4:5": (1080, 1350), "16:9": (1920, 1080)}

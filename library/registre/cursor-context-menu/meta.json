@@ -1,0 +1,24 @@
+{
+ "name": "cursor-context-menu",
+ "type": "registre",
+ "title": "Context Menu Cursor",
+ "description": "A cursor right-clicks a file, a context menu blooms from its tip, the hover highlight tracks the item under it, and the chosen action plays out: duplicate, rename, move to trash, or a confirmation toast.",
+ "when_to_use": "Registre HyperFrames (composant) : cursor, motion-primitive, menu, right-click, desktop, files",
+ "tags": [
+  "cursor",
+  "motion-primitive",
+  "menu",
+  "right-click",
+  "desktop",
+  "files"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add cursor-context-menu   (variables : items, pick, tone)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

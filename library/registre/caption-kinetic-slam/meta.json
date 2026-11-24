@@ -1,0 +1,23 @@
+{
+ "name": "caption-kinetic-slam",
+ "type": "registre",
+ "title": "Kinetic Slam",
+ "description": "Full-screen single-word display with alternating entrance directions",
+ "when_to_use": "Registre HyperFrames (composant) : captions, caption-style, kinetic, typography, slam",
+ "tags": [
+  "captions",
+  "caption-style",
+  "kinetic",
+  "typography",
+  "slam"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add caption-kinetic-slam   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

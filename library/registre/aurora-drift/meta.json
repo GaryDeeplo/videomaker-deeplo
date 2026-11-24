@@ -1,0 +1,24 @@
+{
+ "name": "aurora-drift",
+ "type": "registre",
+ "title": "Aurora Drift",
+ "description": "Three soft accent-derived aurora fields drift in an exact ambient loop over a deep base and faint vignette.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, background, aurora, gradient, ambient, loopable",
+ "tags": [
+  "motion-primitive",
+  "background",
+  "aurora",
+  "gradient",
+  "ambient",
+  "loopable"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add aurora-drift   (variables : accent, mood)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

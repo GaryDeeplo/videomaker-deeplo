@@ -1,0 +1,22 @@
+{
+ "name": "bottom-up-letters",
+ "type": "registre",
+ "title": "Bottom Up Letters",
+ "description": "Splits text into letters and reveals each glyph from below with deterministic staggered timing",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, text, letters, reveal",
+ "tags": [
+  "motion-primitive",
+  "text",
+  "letters",
+  "reveal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add bottom-up-letters   (variables : unit, direction, travel)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

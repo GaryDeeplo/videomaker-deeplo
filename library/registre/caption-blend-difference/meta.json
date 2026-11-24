@@ -1,0 +1,24 @@
+{
+ "name": "caption-blend-difference",
+ "type": "registre",
+ "title": "Blend Difference",
+ "description": "Auto-inverting text using mix-blend-mode: difference — flips between white and black per-pixel against the background",
+ "when_to_use": "Registre HyperFrames (composant) : text, text-effect, effect, blend-mode, contrast, inversion",
+ "tags": [
+  "text",
+  "text-effect",
+  "effect",
+  "blend-mode",
+  "contrast",
+  "inversion"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add caption-blend-difference   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

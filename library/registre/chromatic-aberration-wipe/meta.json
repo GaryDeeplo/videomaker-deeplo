@@ -1,0 +1,20 @@
+{
+ "name": "chromatic-aberration-wipe",
+ "type": "registre",
+ "title": "Chromatic Aberration Wipe",
+ "description": "A fast slide wipe with RGB channel split on peak frames.",
+ "when_to_use": "Registre HyperFrames (composant) : video-primitive, transition-primitive",
+ "tags": [
+  "video-primitive",
+  "transition-primitive"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add chromatic-aberration-wipe   (variables : direction, accent, aberration)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

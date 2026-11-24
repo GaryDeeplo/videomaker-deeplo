@@ -68,6 +68,10 @@ print("outils")
 for tool in ("ffmpeg", "ffprobe"):
     path = shutil.which(tool)
     line(bool(path), tool, run([tool, "-version"]).splitlines()[0][:50] if path else "absent du PATH")
+if shutil.which("ffmpeg"):  # rushs HDR d'iPhone ramenés en SDR (build_cut) : filtre zscale, absent des builds réduits
+    zs = re.search(r"^\s*\S+\s+zscale\s", run(["ffmpeg", "-hide_banner", "-filters"]), re.M)
+    line(bool(zs), "ffmpeg zscale (HDR)", "présent" if zs else "absent : vidéos HDR délavées (prendre le build « full »)",
+         required=False)
 node = run(["node", "-v"])
 m = re.match(r"v(\d+)", node)
 line(bool(m) and int(m.group(1)) >= 22, "node >= 22", node)

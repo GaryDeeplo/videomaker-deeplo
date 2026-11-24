@@ -1,0 +1,23 @@
+{
+ "name": "badge-pop",
+ "type": "registre",
+ "title": "Badge Pop",
+ "description": "A transitions.dev-inspired notification badge pop with elastic scale and count reveal",
+ "when_to_use": "Registre HyperFrames (composant) : video-primitive, transition-primitive, transitions-dev-port, badge, microinteraction",
+ "tags": [
+  "video-primitive",
+  "transition-primitive",
+  "transitions-dev-port",
+  "badge",
+  "microinteraction"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add badge-pop   (variables : count, accent, surface)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

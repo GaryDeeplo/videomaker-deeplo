@@ -1,0 +1,23 @@
+{
+ "name": "caption-neon-accent",
+ "type": "registre",
+ "title": "Neon Accent",
+ "description": "Multi-color neon glow accents with wiggle drift animation",
+ "when_to_use": "Registre HyperFrames (composant) : captions, caption-style, neon, glow, accent",
+ "tags": [
+  "captions",
+  "caption-style",
+  "neon",
+  "glow",
+  "accent"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add caption-neon-accent   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -1,0 +1,24 @@
+{
+ "name": "comparison-split",
+ "type": "registre",
+ "title": "Comparison Split",
+ "description": "Two full-bleed panels compare before and after states as a persistent divider wipes the vivid after layer over the muted before layer and rests at a configurable split.",
+ "when_to_use": "Registre HyperFrames (composant) : prop, ui-props, compare, holdable, before-after, wipe",
+ "tags": [
+  "prop",
+  "ui-props",
+  "compare",
+  "holdable",
+  "before-after",
+  "wipe"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add comparison-split   (variables : split, orientation, labelA, labelB)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

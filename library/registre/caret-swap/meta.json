@@ -1,0 +1,24 @@
+{
+ "name": "caret-swap",
+ "type": "registre",
+ "title": "Caret Swap",
+ "description": "A gradient caret expands over one phrase, collapses to the left, then types its replacement with a blinking caret.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, text-effects, typography, swap, typewriter, remocn-port",
+ "tags": [
+  "motion-primitive",
+  "text-effects",
+  "typography",
+  "swap",
+  "typewriter",
+  "remocn-port"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add caret-swap   (variables : from_text, to_text, font_size, font_weight, color, caret_color, caret_color_end)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

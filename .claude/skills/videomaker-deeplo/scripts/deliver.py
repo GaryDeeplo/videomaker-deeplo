@@ -10,6 +10,9 @@ L'explainer, le punch et l'infographie ont une vraie mise en page 16:9 (contenu 
 reprend la vidéo 9:16 au centre, sur un fond flouté tiré d'elle-même. Les autres se recomposent à chaque format.
 Pour chaque format : composition à la bonne taille, rendu HyperFrames, master -14 LUFS (finalize.py),
 couverture extraite du MP4. La composition du format principal est reconstruite à la fin (Studio inchangé).
+Chaque fichier livré passe la conformité de qa.py (h264 yuv420p, taille exacte, cadence fixe, AAC 48 kHz stéréo,
+son et image de même longueur, BT.709, poids) : pastille dans livraison.html, « conformite » par format et
+« conforme » dans la réponse.
 Texte du post : work/<slug>_post.json écrit par Claude AVANT la livraison :
   {"caption": "…", "hashtags": ["#lyon", "…"], "cta": "…", "first_comment": "…"}
 """
@@ -24,6 +27,7 @@ import sys
 from pathlib import Path
 
 from common import FORMATS, config, fail, job_dir, out, read_json, sh, size_of
+from qa import conformite, verdict_of
 
 HERE = Path(__file__).resolve().parent
 NPX = ["cmd", "/c", "npx"] if os.name == "nt" else ["npx"]
@@ -40,6 +44,15 @@ def run_py(script, *args):
     if r.returncode != 0 or not res.get("ok", True):
         fail(f"{script} a échoué", out=(r.stdout + r.stderr)[-800:])
     return res
+
+
+def conf_badge(m):
+    """Pastille de conformité pour livraison.html : « Conforme », ou ce qui est à revoir."""
+    c = m.get("conformite") or {}
+    if c.get("verdict") == "OK":
+        return '<span class="conf">Conforme</span>'
+    return ('<span class="conf ko">Conformité à revoir<small>' + "<br>".join(html.escape(x) for x in c.get("a_revoir", []))
+            + "</small></span>")
 
 
 def main():
@@ -144,6 +157,8 @@ def main():
         sh(["ffmpeg", "-y", "-loglevel", "error", *src, "-frames:v", "1", "-q:v", "2", str(cover)], "ffmpeg (couverture)")
         made.append({"format": f, "video": final.name, "cover": cover.name, "lufs": fin["lufs"], "tp": fin["true_peak"],
                      "verdict": fin["verdict"], "mo": round(final.stat().st_size / 1e6, 1)})
+    for m in made:  # conformité de chaque fichier livré (codec, taille, cadence, son, couleurs, poids)
+        m["conformite"] = verdict_of(conformite(dst / m["video"], m["format"], a.fps))
     run_py(builder, str(job), a.slug, "--size", base)  # le Studio retrouve le format principal
 
     credits = (job / "renders" / "credits.txt").read_text(encoding="utf-8") if (job / "renders" / "credits.txt").exists() else ""
@@ -164,7 +179,7 @@ def main():
     bg, ink, acc = vis.get("bgColor", "#f6f4f0"), vis.get("inkColor", "#1a1a1a"), vis["accentColor"]
     cards = "\n".join(
         f'''<figure><video src="{m["video"]}" poster="{m["cover"]}" controls playsinline preload="metadata"></video>
-<figcaption><b>{m["format"]}</b> · {m["mo"]} Mo · {m["lufs"]} LUFS
+<figcaption><b>{m["format"]}</b> · {m["mo"]} Mo · {m["lufs"]} LUFS · {conf_badge(m)}
 <a href="{m["video"]}" download>Télécharger</a> <a href="{m["cover"]}" download>Couverture</a></figcaption></figure>'''
         for m in made)
     esc = html.escape
@@ -180,6 +195,7 @@ h1 {{ margin: 0 0 4px; font-size: 28px; }} .sub {{ opacity: .7; margin: 0 0 28px
 figure {{ margin: 0; flex: 1 1 260px; max-width: 420px; }}
 video {{ width: 100%; border-radius: 10px; background: #000; display: block; }}
 figcaption {{ font-size: 14px; margin-top: 8px; }} figcaption a {{ color: var(--acc); margin-left: 10px; }}
+.conf {{ font-weight: 600; }} .conf.ko {{ color: #b3261e; }} .conf small {{ display: block; font-weight: 400; }}
 h2 {{ font-size: 18px; margin: 36px 0 10px; border-top: 2px solid var(--acc); padding-top: 14px; }}
 pre {{ white-space: pre-wrap; background: rgba(0,0,0,.05); padding: 16px; border-radius: 10px; font: 15px/1.5 inherit; }}
 button {{ background: var(--acc); color: #fff; border: 0; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }}
@@ -192,9 +208,11 @@ button {{ background: var(--acc); color: #fff; border: 0; padding: 10px 16px; bo
 {f'<h2>Premier commentaire</h2><pre>{esc(post["first_comment"])}</pre>' if post.get("first_comment") else ""}
 </main></body></html>"""
     (dst / "livraison.html").write_text(page, encoding="utf-8")
-    qa = run_py("qa.py", str(job), a.slug, "--video", str(dst / made[0]["video"])) if made else {}  # contrôle qualité du format principal
+    fps_qa = ["--fps", str(a.fps)] if a.fps else []
+    qa = run_py("qa.py", str(job), a.slug, "--video", str(dst / made[0]["video"]), *fps_qa) if made else {}  # format principal
     out(ok=all(m["verdict"] == "OK" for m in made), dossier=str(dst), formats=made, couverture_a=cover_t,
         controle={k: qa.get(k) for k in ("verdict", "a_revoir", "infos")},
+        conforme=all(m["conformite"]["verdict"] == "OK" for m in made),
         post="présent" if post else "absent (écris work/<slug>_post.json)", page=str(dst / "livraison.html"))
 
 

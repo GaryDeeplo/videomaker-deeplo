@@ -1,0 +1,24 @@
+{
+ "name": "yt-vertical-fill",
+ "type": "registre",
+ "title": "Vertical Media Filler",
+ "description": "Portrait media filling a widescreen frame via blurred-scale, mirror, or copy side fills; grid texture and foreground contrast lift (images inside the block; keep live footage in the host)",
+ "when_to_use": "Registre HyperFrames (bloc) : placeholder, vertical, media",
+ "tags": [
+  "placeholder",
+  "vertical",
+  "media"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add yt-vertical-fill   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 8,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

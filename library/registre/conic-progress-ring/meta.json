@@ -1,0 +1,24 @@
+{
+ "name": "conic-progress-ring",
+ "type": "registre",
+ "title": "Conic Progress Ring",
+ "description": "A token-driven conic progress ring whose angular fill and center count settle together from one registered percentage.",
+ "when_to_use": "Registre HyperFrames (composant) : data, progress, ring, conic-gradient, prove, demonstrate",
+ "tags": [
+  "data",
+  "progress",
+  "ring",
+  "conic-gradient",
+  "prove",
+  "demonstrate"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add conic-progress-ring   (variables : progress, thickness, label)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

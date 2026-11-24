@@ -21,7 +21,7 @@ from pathlib import Path
 
 import numpy as np
 
-from common import ROOT, fail, job_dir, out, read_json, write_json
+from common import ROOT, fail, job_dir, out, read_json, rotation_of, write_json
 
 VIDEO = {".mp4", ".mov", ".m4v", ".webm", ".mkv", ".avi"}
 FPS = 4
@@ -29,12 +29,12 @@ FPS = 4
 
 def meta(src):
     r = subprocess.run(["ffprobe", "-v", "error", "-show_entries",
-                        "stream=codec_type,width,height,r_frame_rate:stream_tags=rotate:format=duration:format_tags=creation_time",
+                        "stream=codec_type,width,height,r_frame_rate:stream_tags=rotate:stream_side_data_list:format=duration:format_tags=creation_time",
                         "-of", "json", str(src)], capture_output=True, text=True, encoding="utf-8", errors="replace")
     d = json.loads(r.stdout or "{}")
     v = next((s for s in d.get("streams", []) if s.get("codec_type") == "video"), {})
     w, h = v.get("width") or 0, v.get("height") or 0
-    if str((v.get("tags") or {}).get("rotate", "0")) in ("90", "270", "-90"):
+    if rotation_of(v) in (90, 270):  # tag « rotate » ou matrice d'affichage (téléphone en portrait, ffmpeg 6+)
         w, h = h, w
     ct = (d.get("format", {}).get("tags") or {}).get("creation_time")
     when = None

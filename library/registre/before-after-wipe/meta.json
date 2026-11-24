@@ -1,0 +1,27 @@
+{
+ "name": "before-after-wipe",
+ "type": "registre",
+ "title": "Before After Wipe",
+ "description": "Two full-bleed content slots compare before and after states as a persistent divider wipes the after layer over the before layer and rests at a configurable split. Callers fill the named before/after slot panels; token-styled defaults render when a slot is left empty.",
+ "when_to_use": "Registre HyperFrames (composant) : prop, ui-props, compare, comparison, split-screen, holdable",
+ "tags": [
+  "prop",
+  "ui-props",
+  "compare",
+  "comparison",
+  "split-screen",
+  "holdable",
+  "before-after",
+  "wipe",
+  "slots"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add before-after-wipe   (variables : label_a, label_b, rest_split, wipe_at, accent, exit)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

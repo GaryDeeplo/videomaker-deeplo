@@ -1,0 +1,23 @@
+{
+ "name": "avatar-group-hover",
+ "type": "registre",
+ "title": "Avatar Group Hover",
+ "description": "A distance-falloff avatar group lift with bouncy hover return",
+ "when_to_use": "Registre HyperFrames (composant) : video-primitive, transition-primitive, transitions-dev-port, avatar, hover",
+ "tags": [
+  "video-primitive",
+  "transition-primitive",
+  "transitions-dev-port",
+  "avatar",
+  "hover"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add avatar-group-hover   (variables : size, overlap, accent)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

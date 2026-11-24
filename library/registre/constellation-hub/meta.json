@@ -1,0 +1,24 @@
+{
+ "name": "constellation-hub",
+ "type": "registre",
+ "title": "Constellation Hub",
+ "description": "Feature nodes brighten in narration order as real-length SVG connectors draw outward from a fixed central hub, then settle into one lockup.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, feature-tour, hub, nodes, connector, reveal",
+ "tags": [
+  "motion-primitive",
+  "feature-tour",
+  "hub",
+  "nodes",
+  "connector",
+  "reveal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add constellation-hub   (variables : hub_label, nodes, cues, accent, exit)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

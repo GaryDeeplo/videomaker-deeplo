@@ -1,0 +1,26 @@
+{
+ "name": "colorama-wipe",
+ "type": "registre",
+ "title": "Colorama Wipe",
+ "description": "Headline reveal through a feathered, leaning wipe front that is blurred and colour-mapped as it passes, then settles to clean type and wipes off again — the After Effects masked-text + Compound Blur + Colorama 'shiny wipe' as a deterministic canvas effect on any text element",
+ "when_to_use": "Registre HyperFrames (composant) : text, reveal, wipe, colorama, gradient, blur",
+ "tags": [
+  "text",
+  "reveal",
+  "wipe",
+  "colorama",
+  "gradient",
+  "blur",
+  "headline",
+  "saas"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add colorama-wipe   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

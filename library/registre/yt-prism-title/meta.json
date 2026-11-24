@@ -1,0 +1,24 @@
+{
+ "name": "yt-prism-title",
+ "type": "registre",
+ "title": "Chromatic Fringe Title",
+ "description": "Display title on a transparent root: blur-focus entrance, red/blue fringe that settles then breathes, perspective bow, slow scale drift",
+ "when_to_use": "Registre HyperFrames (bloc) : typography, title-card, creator",
+ "tags": [
+  "typography",
+  "title-card",
+  "creator"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add yt-prism-title   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

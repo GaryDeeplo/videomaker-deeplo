@@ -1,0 +1,23 @@
+{
+ "name": "camera-shake",
+ "type": "registre",
+ "title": "Camera Shake",
+ "description": "Procedural handheld, telephoto and rig camera shake for any wrapper: nine measured profiles with per-lens projection, closed-form and seek-safe",
+ "when_to_use": "Registre HyperFrames (composant) : camera, shake, handheld, effect, cinematic",
+ "tags": [
+  "camera",
+  "shake",
+  "handheld",
+  "effect",
+  "cinematic"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add camera-shake   (variables : shakeProfile, shakeIntensity, shakeFrequency, shakeRotation)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -3,7 +3,8 @@
   python package.py --pour equipe     # Deeplo / associés : tout sauf vidéos clients, clés, rendus
   python package.py --pour client     # un client : sans les chartes ni les aperçus tirés de vidéos d'autres clients
 
-Jamais dans un paquet : jobs/ (vidéos et rushs clients), .env (clés), renders, node_modules, caches, dist/.
+Jamais dans un paquet : jobs/ (vidéos et rushs clients), .env (clés), renders, node_modules, caches, dist/, les goûts des
+clients (brands/<client>/gouts.json).
 « client » retire aussi brands/ (sauf _exemple) et, dans library/, les aperçus (preview.mp4, poster.jpg) des entrées
 dont la source est le job d'un client : la scène reste utilisable, ses images d'un autre client ne partent pas.
 Le paquet est ensuite vérifié : décompressé dans un dossier temporaire, setup.py plan doit s'y exécuter.
@@ -20,7 +21,8 @@ from pathlib import Path
 from common import ROOT, out
 
 NEVER_DIRS = {"jobs", "dist", "node_modules", "__pycache__", ".hyperframes", "renders", ".git", "tts_cache"}
-NEVER_FILES = {".env", "PLAN.md", "profil.json"}  # profil : préférences de l'utilisateur de cette machine
+NEVER_FILES = {".env", "PLAN.md", "profil.json", "gouts.json"}  # profil : préférences de l'utilisateur de cette machine ;
+# gouts.json : retours gardés par client (brands/<client>/gouts.json, noms et préférences), même dans le paquet « equipe »
 
 
 def keep(rel, pour):

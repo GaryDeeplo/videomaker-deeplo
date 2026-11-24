@@ -23,7 +23,10 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
 
 1. `python scripts/onboard.py status` (silencieux, une seconde) : installation, clés, marques, projets récents,
    réglages connus (par marque et par parcours), dernières vidéos / photos du dossier Téléchargements. Dès que la
-   marque et le parcours sont connus : `onboard.py status --marque <m> --parcours rush|sans-rush|shorts`.
+   marque et le parcours sont connus : `onboard.py status --marque <m> --parcours rush|sans-rush|shorts`. Sa clé
+   `gouts_client` (retours gardés de ce client) vaut pour tout le projet ; la demande du moment gagne toujours. Un retour
+   qui vaut pour les prochaines vidéos (« jamais de rouge », « musique plus douce ») : propose
+   `gouts.py add <client> "<ses mots>"` (`--from skill` pour une règle tirée de ses retours), seulement avec son accord.
 2. `installe` faux -> propose d'abord l'installation (`INSTALL.md`), rien d'autre.
    `mise_a_jour.maj` vrai -> une ligne (« Une mise à jour du skill est disponible : <2-3 nouveautés> ») et une question à
    choix « Installer maintenant (recommandé) » / « Plus tard » ; si oui : `python scripts/update.py install` puis
@@ -47,7 +50,11 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
      « je choisis pour vous (recommandé) », style dynamique boîte + plans de coupe, style sobre minimal) ·
      **Accroche animée ?** (3 s d'ouverture : « non » · « oui, titre animé » · « oui, avec le sujet dessiné » ; mets en
      premier « recommandé » : « oui, titre animé » pour un reel d'annonce ou un journal de chantier, « non » pour un
-     témoignage ou un ton sobre. Si la marque a déjà un réglage `accroche`, ne pose pas la question).
+     témoignage ou un ton sobre. Si la marque a déjà un réglage `accroche`, ne pose pas la question) ·
+     **Sous-titres sur toute la vidéo ?** (seulement si le rendu part sur les mots dynamiques, qui coupent les
+     sous-titres par défaut : « non, les mots géants et la carte de verre suffisent (recommandé) » · « oui, sous-titres
+     complets en plus » -> `--mode captions` ; recommande « oui » si la vidéo sera surtout vue sans le son, par exemple
+     sur LinkedIn ou pour un public pro. Ne la pose pas si la demande ou les réglages de la marque y répondent).
    - Vidéo sans rush : au tour 2, remplace « Les fichiers ? » par **le message** (« Décrivez en une phrase ce que la
      vidéo doit dire » via « Autre ») et **les photos** (dossier, ou « je n'en ai pas : images d'ambiance Pixabay »).
    - **Tour 3, le brief** (toujours, sauf si la demande y répond déjà) — 4 questions ensemble, chacune avec
@@ -86,7 +93,7 @@ JSON. Config : `config.default.json`, écrasée par `brands/<marque>/brand.json`
    Enregistrement seulement après accord : quand l'utilisateur valide l'aperçu et que ses choix diffèrent des
    réglages connus (ou qu'il n'y en a pas), une question à choix « Je garde ces réglages pour les prochaines vidéos
    <marque> ? » (« Oui, pour <marque> » / « Non, juste pour cette vidéo »). Si oui :
-   `onboard.py profil --marque <m> --parcours <p> format=… style=… reseaux=… musique=… broll=oui|non`.
+   `onboard.py profil --marque <m> --parcours <p> format=… style=… reseaux=… musique=… broll=oui|non sous_titres=oui|non`.
    Une demande ponctuelle (« pour Noël », « juste celle-ci ») ne s'enregistre jamais.
 6. Vidéo sans rush : demande **d'où vient la voix off** (question à choix, sauf si déjà dit) — « voix de synthèse
    naturelle (recommandé) » (Gemini, gratuit) · « j'ai un enregistrement » (mémo vocal, micro, ou une vidéo dont on garde
@@ -161,9 +168,32 @@ cd <job> && npx --yes hyperframes@0.9.71 check                 # 0 erreur exigé
 npx --yes hyperframes@0.9.71 snapshot --at T1,T2,T3            # REGARDE la planche avant de montrer quoi que ce soit
 npx --yes hyperframes@0.9.71 preview                           # Studio pour l'utilisateur
 npx --yes hyperframes@0.9.71 render -q draft -w 8 -f 15 -o renders/<slug>_draft.mp4   # aperçu (15 i/s : -40 %)
+python scripts/review.py <job> --qa                            # page de validation client -> work/review/validation.html
+#   envoyée par l'utilisateur ; changements reçus -> corriger, nouvel aperçu, relancer review.py ; accord -> --valide
+python scripts/review.py <job> --valide                        # work/valide.json, puis seulement le rendu final
 npx --yes hyperframes@0.9.71 render -q delivery -w 8 -o renders/<slug>.mp4        # final, après accord
 python scripts/finalize.py <job> <slug>.mp4                    # master -14 LUFS -> renders/<slug>_final.mp4 + verdict
 ```
+
+- **Rush brut face caméra où le client se reprend** : `transcribe.py <job> <rush> --islands` transcrit chaque îlot de
+  parole seul (VAD, pauses ≥ 0,3 s) : les fausses prises restent écrites au lieu d'être lissées par Whisper (2 à 4x plus
+  lent, local seulement). `cut_plan.py` repère alors les reprises (fillers `restart`, résumé `restarts`) : sûres ->
+  `remove: true`, on garde la dernière prise ; possibles -> `remove: false`, à trancher ; un îlot fait de fausse prise ->
+  `keep: false`. Les îlots courts ont plus de fautes : relis noms et mots coupés avant les sous-titres. Pas de défaut
+  global (config `transcribe.islands`).
+- **Rushs de téléphone** : `build_cut` remet seul les cadences variables (VFR) à cadence fixe et ramène le HDR (iPhone
+  HLG / Dolby Vision) en SDR BT.709 ; la rotation est lue dans la Display Matrix. Regarde `source` dans sa réponse :
+  « ATTENTION » = ffmpeg sans zscale (prendre le build « full »).
+- **Sous-titres qui évitent le visage** (vertical plein cadre, actif dès qu'un visage est vu sur ≥ 15 % des images) :
+  sous le menton, sinon au-dessus de la tête, sinon en bas sur fond sombre, dans la zone sûre de la plateforme
+  (`--plateforme tous|reels|tiktok|shorts` ou `text.platform`). `--no-visage` (ou `text.captionFace: false`) revient à
+  `captionTopPct`. Détections en cache dans `work/<vidéo>_visages.json` (partagé avec `reframe.py`) ; positions des
+  calques dans `work/<slug>_calques.json` ; `face.py <job> <slug> --placer` montre les positions.
+- **Page de validation** (`review.py`) : une image à chaque coupe et temps fort, le texte dit, les sons, les points du
+  contrôle ; le client note ses remarques et copie la liste (`m:ss,d : remarque`) : retrouve les mots visés dans
+  `work/review/review.json`. N'envoie jamais la page toi-même.
+- `finalize` annonce `mode` (linéaire / dynamique / limiteur) et ré-encode seul (256k, 320k, plafond abaissé) si la
+  crête dépasse -1 dBTP après l'AAC ; « À CORRIGER » seulement si tout a échoué.
 
 ### Pack « écran partagé » (layout split) : animation en haut, visage en bas
 Le rendu « pro » des Reels d'experts : la moitié haute est un panneau animé (fond presque noir avec une lueur de
@@ -336,7 +366,9 @@ python scripts/build_footage.py <job> <slug> [--fit blur] [--style boite]   # pu
 calculé seulement là où il sert, haut de la tête mesuré par passage), les petits mots de la phrase posés autour, une carte
 de verre en bas qui reprend la phrase avec un picto, sortie en traînée de flou, transition fouettée + petite secousse à
 chaque coupe du dérush. Un chiffre : `"count": {"to": 50, "icon": "house"}` (grille d'icônes qui s'allument, ≤ 60) ou
-`{"to": 365, "unit": "jours"}` (barre + compteur). Remplace les sous-titres (`--mode captions` pour garder les deux).
+`{"to": 365, "unit": "jours"}` (barre + compteur). Remplace les sous-titres (`--mode captions` pour garder les deux) :
+demande-le à l'accueil (« Sous-titres sur toute la vidéo ? », tour 2), jamais en silence ; avec les deux, les sous-titres
+se posent sous le menton et les mots géants restent en haut.
 Couleur : `mots.couleur` dans la config > accent de la charte du client > tirée de l'image (teinte dominante du rush ; scène très
 colorée -> teinte opposée ; jamais de vert acide), en dégradé clair comme la référence. Proposé dans `work/<slug>_mots.json` (1er lancement) : relis-le (mot fort, satellites, carte, picto), puis relance.
 Plein écran seulement (pas en écran partagé, fond flouté ni suivi du visage). Compter 1 à 4 min de détourage.
@@ -719,8 +751,13 @@ continue, les sous-titres restent au-dessus.
 ### Contrôle avant de montrer
 0. **`python scripts/qa.py <job> <slug>`** sur l'aperçu rendu (le plus récent du job, ou `--video`) : plans trop courts
    (< 0,8 s, coupes confirmées par la couleur ET la structure de l'image), images noires ou figées, volume, trous de son,
-   sous-titres lus trop vite (> 22 car/s), durée vs brief. Verdict « à revoir » = tu corriges avant de montrer ; les
-   « infos » se jugent. `deliver.py` le relance sur la livraison (clé `controle`).
+   sous-titres lus trop vite (> 22 car/s), durée vs brief, micro-coupures du son (« à revoir » si coupure nette),
+   images isolées et première image unie (« info » : nos éclairs de transition sont voulus), **visage couvert** par un
+   calque (`face.py` : « à revoir » dès 25 % du visage ou sur les yeux / la bouche → déplacer la carte ou le bloc, vars
+   `top`, ou passer en plein écran). Verdict « à revoir » = tu corriges avant de montrer ; les
+   « infos » se jugent. `deliver.py` le relance sur la livraison (clé `controle`) et vérifie la **conformité** de chaque
+   fichier (h264 yuv420p, taille exacte, cadence fixe, AAC 48 kHz stéréo, son = image, BT.709) : pastille dans
+   `livraison.html`, `conforme` dans la réponse.
 1. `check` : 0 erreur. Les avertissements `line_unread` sur des groupes mot à mot sont attendus en débit rapide.
 2. `snapshot` : visage non couvert, texte dans la zone sûre (ni tout en haut ni dans le dernier quart), pas de
    sous-titres déjà incrustés dans la source (sinon `--mode overlays` ou pas de texte), cadrage 9:16 qui garde la

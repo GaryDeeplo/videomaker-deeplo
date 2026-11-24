@@ -1,0 +1,23 @@
+{
+ "name": "beat-timeline",
+ "type": "registre",
+ "title": "Beat Timeline",
+ "description": "A paused master-timeline orchestration spine that pins titled beat rows to evenly spaced named labels. Each row enters on its label, holds with the sequence, then exits with the group.",
+ "when_to_use": "Registre HyperFrames (composant) : orchestration, transitions, sequencing, bridge, timeline",
+ "tags": [
+  "orchestration",
+  "transitions",
+  "sequencing",
+  "bridge",
+  "timeline"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add beat-timeline   (variables : beatCount, interval, labels)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

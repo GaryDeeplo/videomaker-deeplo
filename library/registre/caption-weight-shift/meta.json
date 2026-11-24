@@ -1,0 +1,22 @@
+{
+ "name": "caption-weight-shift",
+ "type": "registre",
+ "title": "Weight Shift",
+ "description": "Elegant font-weight transition between caption lines",
+ "when_to_use": "Registre HyperFrames (composant) : captions, caption-style, minimal, typography",
+ "tags": [
+  "captions",
+  "caption-style",
+  "minimal",
+  "typography"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add caption-weight-shift   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

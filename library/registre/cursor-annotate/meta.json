@@ -1,0 +1,24 @@
+{
+ "name": "cursor-annotate",
+ "type": "registre",
+ "title": "Annotate Cursor",
+ "description": "A marker pen glides onto the frame and hand-draws a loose loop, an underline, or an arrow around a region, the ink laid exactly under its nib, then lifts and leaves.",
+ "when_to_use": "Registre HyperFrames (composant) : cursor, motion-primitive, pen, annotation, draw-on, highlight",
+ "tags": [
+  "cursor",
+  "motion-primitive",
+  "pen",
+  "annotation",
+  "draw-on",
+  "highlight"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add cursor-annotate   (variables : shape, color, target_x, target_y, target_w, target_h)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

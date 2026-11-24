@@ -1,0 +1,23 @@
+{
+ "name": "code-terminal-run",
+ "type": "registre",
+ "title": "Code Terminal Run",
+ "description": "A token-chrome terminal panel runs one command: the prompt line types deterministically behind an integer-cycle caret, executes after a beat, and output lines print one per cue before a fresh prompt appears.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, product-demo, terminal, typing, deterministic",
+ "tags": [
+  "motion-primitive",
+  "product-demo",
+  "terminal",
+  "typing",
+  "deterministic"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add code-terminal-run   (variables : prompt_glyph, cadence, cues, accent, exit)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

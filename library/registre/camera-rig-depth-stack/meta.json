@@ -1,0 +1,20 @@
+{
+ "name": "camera-rig-depth-stack",
+ "type": "registre",
+ "title": "Camera Rig Depth Stack",
+ "description": "A 3D camera-rig-style card stack with depth, parallax, and focus shift.",
+ "when_to_use": "Registre HyperFrames (composant) : advanced-motion, hyperframes-native",
+ "tags": [
+  "advanced-motion",
+  "hyperframes-native"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add camera-rig-depth-stack   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

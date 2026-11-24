@@ -1,0 +1,24 @@
+{
+ "name": "beat-accent",
+ "type": "registre",
+ "title": "Beat Accent",
+ "description": "A single music-hit sting: impact flash, micro scale-pulse on the subject, immediate decay.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, effects, burst, sting, emphasize, impact",
+ "tags": [
+  "motion-primitive",
+  "effects",
+  "burst",
+  "sting",
+  "emphasize",
+  "impact"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add beat-accent   (variables : text, flashColor, intensity)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

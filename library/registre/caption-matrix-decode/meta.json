@@ -1,0 +1,23 @@
+{
+ "name": "caption-matrix-decode",
+ "type": "registre",
+ "title": "Matrix Decode",
+ "description": "Character scramble animation before text reveal",
+ "when_to_use": "Registre HyperFrames (composant) : captions, caption-style, matrix, scramble, decode",
+ "tags": [
+  "captions",
+  "caption-style",
+  "matrix",
+  "scramble",
+  "decode"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add caption-matrix-decode   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

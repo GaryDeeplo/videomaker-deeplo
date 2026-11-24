@@ -3,6 +3,16 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.24.2
+- Page de validation client avant le rendu final (`review.py`) : une image à chaque coupe et à chaque temps fort, avec le texte dit, une remarque possible sous chaque image, « Copier la liste des changements » et « Tout est bon » ; l'accord est noté (`--valide`) avant le rendu final.
+- Sous-titres qui évitent le visage (sous le menton, sinon au-dessus de la tête), dans les zones sûres de chaque plateforme ; contrôle « visage couvert » sur les textes, cartes, blocs et mots géants.
+- Rushs de téléphone : cadence variable remise à fixe, rotation lue, HDR converti en SDR.
+- Conformité de chaque fichier livré (h264, taille exacte, cadence, AAC 48 kHz stéréo, couleurs, poids) avec une pastille dans la page de livraison ; master du son plus fiable.
+- Contrôle qualité : micro-coupures, image isolée, première image unie ; reprises cachées repérées au dérush.
+- Retours gardés par client (« jamais de rouge », « musique plus douce »), réutilisés aux vidéos suivantes.
+- Mots dynamiques : l'accueil demande « Sous-titres sur toute la vidéo ? » au lieu de les couper sans prévenir.
+- Registre HyperFrames : 50 blocs et composants de plus avec aperçu (199 au total).
+
 ## 2026.11.24
 - Mots dynamiques : un mot géant par idée, qui passe derrière la personne quand le cadrage le permet (sinon devant), petits mots autour, carte de verre qui reprend la phrase, compteur en grille d'icônes ou en barre, transition fouettée aux coupes ; couleur tirée de l'image si la charte n'en impose pas.
 - Vitrine « Brut / Montage » (le rush d'origine à côté du montage, coupes visibles), démo dans une appli d'agent (objection épinglée, effets cochés, téléchargement) et vitrine portfolio (3 vidéos en quinconce).

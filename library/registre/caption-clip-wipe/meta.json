@@ -1,0 +1,23 @@
+{
+ "name": "caption-clip-wipe",
+ "type": "registre",
+ "title": "Clip Wipe",
+ "description": "Left-to-right clip-path wipe reveal per word",
+ "when_to_use": "Registre HyperFrames (composant) : captions, caption-style, wipe, clip-path, reveal",
+ "tags": [
+  "captions",
+  "caption-style",
+  "wipe",
+  "clip-path",
+  "reveal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add caption-clip-wipe   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -1,0 +1,25 @@
+{
+ "name": "browser-device-stage",
+ "type": "registre",
+ "title": "Browser Device Stage",
+ "description": "A generic app surface in token-native device chrome (browser, window, or phone). The screen is a slot for caller img/video/HTML with a token-styled skeleton default; one settle entrance, a readable hold, and an optional screen swap.",
+ "when_to_use": "Registre HyperFrames (composant) : stage, product-demo, device, browser, phone, slot",
+ "tags": [
+  "stage",
+  "product-demo",
+  "device",
+  "browser",
+  "phone",
+  "slot",
+  "chrome"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add browser-device-stage   (variables : chrome, title, swap_at, accent, exit)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

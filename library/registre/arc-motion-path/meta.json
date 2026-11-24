@@ -1,0 +1,22 @@
+{
+ "name": "arc-motion-path",
+ "type": "registre",
+ "title": "Arc Motion Path",
+ "description": "A GSAP MotionPath primitive that flies a callout along a curved arc with autorotation.",
+ "when_to_use": "Registre HyperFrames (composant) : video-primitive, motionpath, gsap-plugin, hyperframes-native",
+ "tags": [
+  "video-primitive",
+  "motionpath",
+  "gsap-plugin",
+  "hyperframes-native"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add arc-motion-path   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

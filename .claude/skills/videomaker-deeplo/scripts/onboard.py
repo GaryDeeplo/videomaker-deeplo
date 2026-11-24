@@ -1,7 +1,8 @@
 """ACCUEIL du skill : ce que Claude doit savoir avant de poser ses questions (une ligne JSON)
 
   python onboard.py status [--marque martin] [--parcours rush|sans-rush|shorts]   # installation, clés, marques, projets
-                                                  # récents, préférences connues, fichiers récents de Téléchargements
+                                                  # récents, préférences connues, fichiers récents de Téléchargements,
+                                                  # et avec --marque : les goûts gardés du client (gouts.py prompt)
   python onboard.py profil --marque martin --parcours rush format=9:16 style=boite reseaux=instagram,tiktok musique=upbeat
   python onboard.py brief <job> objectif=vendre public=particuliers duree=30 ton=dynamique cta="Réservez sur le site"                           mentions="-20 % jusqu'au 31/12" eviter="les prix" langues=fr,nl      # -> work/brief.json
 
@@ -25,6 +26,10 @@ def job_state(j):
     r = j / "renders"
     if (r / "livraison").exists() and any((r / "livraison").glob("*.mp4")):
         return "livré"
+    if (j / "work" / "valide.json").exists():
+        return "validé par le client, rendu final à faire"
+    if (j / "work" / "review" / "validation.html").exists():
+        return "page de validation envoyée (review.py)"
     if r.exists() and any(r.glob("*.mp4")):
         return "aperçu fait"
     if (j / "index.html").exists():
@@ -59,11 +64,19 @@ def status(a):
                            "mo": round(p.stat().st_size / 1e6, 1)})
     prof = load()["reglages"]
     key = f"{a.marque or '-'}/{a.parcours or '-'}"
+    gouts = None
+    if a.marque:  # client connu : ses retours gardés (brands/<client>/gouts.json), à garder en tête tout le projet
+        try:
+            from gouts import prompt_text
+            gouts = prompt_text(a.marque) or None
+        except SystemExit:  # nom de marque hors brands/ : pas de goûts
+            pass
     out(ok=True, installe=all(shutil.which(t) for t in ("ffmpeg", "ffprobe", "node")),
         cles={"gemini_voix": bool(env_key("GEMINI_API_KEY")), "fish_audio": bool(env_key("FISH_API_KEY")), "pixabay": bool(env_key("PIXABAY_API_KEY")),
               "groq": bool(env_key("GROQ_API_KEY"))},
         marques=brands, projets_recents=jobs, telechargements_recents=recent,
         reglages_connus=prof.get(key) if (a.marque or a.parcours) else prof,
+        gouts_client=gouts,
         mise_a_jour=__import__("update").check(),
         note="réglages = valeurs par défaut pour CETTE marque et CE parcours ; la demande du moment gagne toujours")
 

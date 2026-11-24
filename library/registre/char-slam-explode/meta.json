@@ -1,0 +1,24 @@
+{
+ "name": "char-slam-explode",
+ "type": "registre",
+ "title": "Char Slam Explode",
+ "description": "Headline glyphs hold in a deterministic scatter, then reassemble with an overshooting slam and a three-frame landing shake.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, typography, text-treatment, scatter, slam, impact",
+ "tags": [
+  "motion-primitive",
+  "typography",
+  "text-treatment",
+  "scatter",
+  "slam",
+  "impact"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add char-slam-explode   (variables : text, accent, spread)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

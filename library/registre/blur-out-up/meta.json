@@ -1,0 +1,20 @@
+{
+ "name": "blur-out-up",
+ "type": "registre",
+ "title": "Blur Out Up",
+ "description": "Words arrive clean and depart upward with increasing blur for airy exits.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, typography",
+ "tags": [
+  "motion-primitive",
+  "typography"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add blur-out-up   (variables : direction, distance, blur, tone)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -211,7 +211,8 @@ def nodes(job, entries, words, dur, W, H, T0, cut_path, acc, family, segments=No
             if cn.get("unit"):
                 js.append(f'  tl.fromTo("#{cid} .cunit", {{ opacity: 0, y: 12 }}, {{ opacity: 1, y: 0, duration: 0.3, immediateRender: false }}, {round(t + 0.3 + span, 3)});')
             js.append(f'  tl.to("#{cid} .cbox, #{cid} .cunit", {{ opacity: 0, duration: 0.15 }}, {round(t1 - 0.15, 3)});')
-        rep.append({"mot": e.get("word"), "a": round(t, 2), "duree": round(t1 - t, 2), "geant": big, "place": "devant (cadrage serré)" if front else "derrière"})
+        rep.append({"mot": e.get("word"), "a": round(t, 2), "duree": round(t1 - t, 2), "geant": big, "place": "devant (cadrage serré)" if front else "derrière",
+                    "box": [round(W * 0.05), top, round(W * 0.95), top + round(S * 1.15)]})  # boîte estimée (face.py)
     # transition fouettée à chaque coupe du dérush (flou + glissé) puis petite secousse
     for sg in (segments or [])[1:]:
         tc = float(sg["out_start"])
