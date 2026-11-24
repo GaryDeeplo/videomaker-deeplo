@@ -13,6 +13,7 @@ couverture extraite du MP4. La composition du format principal est reconstruite 
 Chaque fichier livré passe la conformité de qa.py (h264 yuv420p, taille exacte, cadence fixe, AAC 48 kHz stéréo,
 son et image de même longueur, BT.709, poids) : pastille dans livraison.html, « conformite » par format et
 « conforme » dans la réponse.
+Crédits : credits.txt et page récap, jamais dans le post ; « a_citer » liste ceux sous licence BY (mention exigée).
 Texte du post : work/<slug>_post.json écrit par Claude AVANT la livraison :
   {"caption": "…", "hashtags": ["#lyon", "…"], "cta": "…", "first_comment": "…"}
 """
@@ -21,6 +22,7 @@ import datetime
 import html
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -169,8 +171,9 @@ def main():
         text += "\n\n" + post["cta"]
     if post.get("hashtags"):
         text += "\n\n" + " ".join(post["hashtags"])
-    if credits.strip():
-        text += "\n\n" + credits.strip()
+    # crédits : jamais dans le post (credits.txt + page de livraison) ; une licence BY demande une mention quelque part
+    a_citer = [l_.strip() for l_ in credits.splitlines()
+               if re.search(r"\bBY\b|Attribution", l_, re.I) and not re.search(r"\bCC0\b|domaine public|public domain", l_, re.I)]
     (dst / "post.txt").write_text(text.strip() + "\n", encoding="utf-8")
     if credits:
         (dst / "credits.txt").write_text(credits, encoding="utf-8")
@@ -206,6 +209,7 @@ button {{ background: var(--acc); color: #fff; border: 0; padding: 10px 16px; bo
 <h2>Texte du post</h2><pre id="post">{esc(text.strip()) or "(à écrire : work/" + esc(a.slug) + "_post.json)"}</pre>
 <button onclick="navigator.clipboard.writeText(document.getElementById('post').innerText);this.textContent='Copié'">Copier le texte</button>
 {f'<h2>Premier commentaire</h2><pre>{esc(post["first_comment"])}</pre>' if post.get("first_comment") else ""}
+{f'<h2>Crédits (hors du post)</h2><pre>{esc(credits.strip())}</pre>' if credits.strip() else ""}
 </main></body></html>"""
     (dst / "livraison.html").write_text(page, encoding="utf-8")
     fps_qa = ["--fps", str(a.fps)] if a.fps else []
@@ -213,7 +217,9 @@ button {{ background: var(--acc); color: #fff; border: 0; padding: 10px 16px; bo
     out(ok=all(m["verdict"] == "OK" for m in made), dossier=str(dst), formats=made, couverture_a=cover_t,
         controle={k: qa.get(k) for k in ("verdict", "a_revoir", "infos")},
         conforme=all(m["conformite"]["verdict"] == "OK" for m in made),
-        post="présent" if post else "absent (écris work/<slug>_post.json)", page=str(dst / "livraison.html"))
+        post="présent" if post else "absent (écris work/<slug>_post.json)",
+        a_citer=a_citer or None,  # licence BY : mention exigée (premier commentaire, description YouTube…), à voir avec le client
+        page=str(dst / "livraison.html"))
 
 
 if __name__ == "__main__":

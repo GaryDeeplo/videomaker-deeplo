@@ -673,7 +673,7 @@ toujours à 30 i/s. Ne lance pas plusieurs rendus en parallèle : ça ne va pas 
 2. `python scripts/deliver.py <job> <slug> [--formats 9:16,1:1,16:9] [--quality delivery] [--apercu]` : pour chaque format,
    composition à la bonne taille (texte à gauche et image à droite en carré / paysage ; rush en format différent =
    image entière sur fond flouté), rendu, master -14 LUFS, couverture ; puis `renders/livraison/` avec
-   `livraison.html` (lecteurs, téléchargements, texte du post à copier, crédits), `post.txt`, `credits.txt`.
+   `livraison.html` (lecteurs, téléchargements, texte du post à copier, crédits à part : jamais dans le post ; `a_citer` = licences BY à mentionner ailleurs), `post.txt`, `credits.txt`.
 3. Avant de lancer : `--size 1:1` et `--size 16:9` sur le builder + `snapshot` pour vérifier la mise en page.
    Compter ~3 à 4 min de rendu par format pour 30 s de vidéo.
 4. Ouvre `livraison.html` pour l'utilisateur. N'envoie jamais rien au client toi-même.

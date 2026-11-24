@@ -3,6 +3,10 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.24.3
+- Livraison : les crédits ne vont plus jamais dans le texte du post ; ils restent dans `credits.txt` et dans la page de livraison, et les licences BY (mention obligatoire à la publication) sont signalées à part.
+- Contrôle qualité : plus d'avis sur les sous-titres quand la vidéo n'en a pas (mots dynamiques).
+
 ## 2026.11.24.2
 - Page de validation client avant le rendu final (`review.py`) : une image à chaque coupe et à chaque temps fort, avec le texte dit, une remarque possible sous chaque image, « Copier la liste des changements » et « Tout est bon » ; l'accord est noté (`--valide`) avant le rendu final.
 - Sous-titres qui évitent le visage (sous le menton, sinon au-dessus de la tête), dans les zones sûres de chaque plateforme ; contrôle « visage couvert » sur les textes, cartes, blocs et mots géants.
