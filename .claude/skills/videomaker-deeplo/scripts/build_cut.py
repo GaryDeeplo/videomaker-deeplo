@@ -6,6 +6,8 @@ voix normalisée (loudnorm, derush.voiceLufs), débruitage optionnel.
 Rushs de téléphone : cadence variable (VFR) remise à cadence fixe par le filtre fps en fin de chaîne (sinon l'image
 glisse jusqu'à ~56 ms derrière le son après les coupes) ; vidéo HDR (HLG / PQ / Dolby Vision, iPhone) ramenée en SDR
 BT.709 (zscale + tonemap hable), sans quoi elle sort délavée.
+Clignements : une coupe qui tomberait sur des yeux fermés glisse de quelques images, sans entrer dans un mot (blink.py,
+MediaPipe facultatif ; derush.blinks: false pour couper).
 
   python build_cut.py <job> <slug> [--crf 18] [--denoise]
 """
@@ -59,6 +61,17 @@ def main():
                 segs.append([s, e])
     segs = [(s, e) for s, e in segs if e - s > 0.05]
     n_fill = sum(1 for x in plan.get("fillers", []) if x.get("remove"))
+    blinks = None
+    wj = job / "work" / f"{a.slug}_words.json"
+    if c["derush"].get("blinks", True) is not False and wj.exists():
+        import blink
+        if blink.available():
+            try:  # aucune coupe sur des yeux fermés ; ne bloque jamais un dérush
+                segs, blinks = blink.adjust(src, segs, read_json(wj)["words"])
+            except Exception as e:  # noqa: BLE001
+                blinks = {"erreur": str(e)[:200]}
+        else:
+            blinks = "non vérifiés (pip install --no-deps mediapipe absl-py)"
 
     info = probe(src)
     k = max(W / info["width"], H / info["height"])  # échelle « cover » du format de sortie
@@ -116,7 +129,7 @@ def main():
             enh = enhance(job, a.slug)
         except Exception as e:  # noqa: BLE001 (la retouche ne doit jamais bloquer un dérush)
             enh = {"erreur": str(e)[:200]}
-    out(ok=True, segments=len(segs), avant=round(plan["duration"], 1), apres=round(cur, 1), retouche=enh,
+    out(ok=True, segments=len(segs), avant=round(plan["duration"], 1), apres=round(cur, 1), retouche=enh, clignements=blinks,
         gain_pct=round(100 * (1 - cur / plan["duration"])), jetes=len(plan["islands"]) - len(keep),
         fillers_retires=n_fill, cut=str(dst), source=notes or None)
 

@@ -159,6 +159,8 @@ python scripts/transcribe.py <job> <rush> [--from S --to S]    # local par défa
 python scripts/cut_plan.py <job> <slug> [--min-silence 0.45]   # îlots de parole, bords dans les silences
 #   TU décides : keep / reason dans work/<slug>_plan.json
 python scripts/build_cut.py <job> <slug> [--denoise]           # assets/<slug>_cut.mp4 + map.json (voix à -16 LUFS)
+#   « clignements » : coupe tombée sur des yeux fermés -> glissée de quelques images, sans entrer dans un mot (blink.py) ;
+#   « restantes » non vide -> regarde ces coupes sur la planche
 python scripts/build_text.py <job> <slug>                      # captions + overlays candidats + punchs proposés
 #   TU vérifies : orthographe des captions, keep / punch / reason des overlays
 python scripts/add_music.py <job> <slug> --mood upbeat         # ou --id <piste>, --file <fichier client>, --url <YouTube/SoundCloud>

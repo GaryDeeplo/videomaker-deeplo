@@ -9,6 +9,11 @@
 | Sous-titres qui évitent le visage et zones sûres par plateforme (`face.py`), reprises cachées (`transcribe.py --islands`), page de validation (`review.py`), retours par client (`gouts.py`) | ghost-editor — github.com/kurbaitaev/ghost-editor (logique portée en Python, aucun asset copié) | MIT © 2026 kurbaitaev |
 | Sonde des rushs (VFR, rotation, HDR) et conversion SDR, conformité des livraisons, mode loudnorm et reprise AAC (`finalize.py`), micro-coupures / image isolée / première image (`qa.py`) | ffmpeg-skill — github.com/kajisho5/ffmpeg-skill (idées réécrites dans nos scripts) | MIT © 2026 kajisho5 |
 
+## MediaPipe Face Landmarker (clignements aux coupes)
+`.claude/skills/videomaker-deeplo/vendor/mediapipe/face_landmarker.task` — Google, licence Apache 2.0
+(`vendor/mediapipe/LICENSE`). Utilisé localement par `scripts/blink.py` (score « yeux fermés » aux points de coupe) ;
+aucune image ne quitte la machine. Bibliothèque `mediapipe` (Apache 2.0) installée à part, facultative.
+
 ## YuNet (détection de visage, recadrage qui suit la personne)
 `.claude/skills/videomaker-deeplo/vendor/yunet/face_detection_yunet_2023mar.onnx` — OpenCV Zoo, © 2020 Shiqi Yu, licence MIT
 (`vendor/yunet/LICENSE`). Utilisé localement par `scripts/reframe.py` ; aucune image ne quitte la machine.

@@ -3,6 +3,9 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.25
+- Dérush : aucune coupe ne tombe plus sur des yeux fermés. Si une coupe tombe sur un clignement, elle glisse de quelques images vers des yeux ouverts, sans entrer dans un mot ; le rapport du dérush dit lesquelles ont bougé. Facultatif (MediaPipe, installé par `setup.py install` ; `check.py` dit s'il manque).
+
 ## 2026.11.24.3
 - Livraison : les crédits ne vont plus jamais dans le texte du post ; ils restent dans `credits.txt` et dans la page de livraison, et les licences BY (mention obligatoire à la publication) sont signalées à part.
 - Contrôle qualité : plus d'avis sur les sous-titres quand la vidéo n'en a pas (mots dynamiques).

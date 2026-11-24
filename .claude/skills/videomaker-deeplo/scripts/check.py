@@ -87,6 +87,11 @@ for mod in ("requests", "numpy", "scipy", "librosa", "matplotlib"):
         line(True, mod)
     except ImportError:
         line(False, mod, f"python -m pip install --user {mod}")
+try:  # facultatif : aucune coupe sur des yeux fermés (blink.py) ; --no-deps garde l'OpenCV installé
+    importlib.import_module("mediapipe")
+    line(True, "mediapipe (clignements aux coupes)", required=False)
+except ImportError:
+    line(False, "mediapipe (clignements aux coupes)", "python -m pip install --user --no-deps mediapipe absl-py", required=False)
 
 print("skills (~/.claude/skills)")
 for s, req in (("hyperframes", True), ("hyperframes-cli", True), ("hyperframes-registry", True),

@@ -97,6 +97,10 @@ def install():
     if miss_py:
         code, o = run([sys.executable, "-m", "pip", "install", "--user", "-q", *miss_py])
         steps.append({"pip": miss_py, "ok": code == 0, "log": o[-300:] if code else ""})
+    if importlib.util.find_spec("mediapipe") is None:  # facultatif (clignements aux coupes) ; --no-deps : sinon il
+        # ajoute opencv-contrib par-dessus opencv-python-headless (deux paquets dans le même dossier cv2)
+        code, o = run([sys.executable, "-m", "pip", "install", "--user", "-q", "--no-deps", "mediapipe", "absl-py", "flatbuffers", "protobuf"])
+        steps.append({"mediapipe (facultatif)": "pip --no-deps", "ok": code == 0, "log": o[-300:] if code else ""})
     if not all(s["skills"][k] for k in ("hyperframes", "hyperframes-cli", "hyperframes-registry", "media-use")):
         tmp = Path(tempfile.mkdtemp())
         code, o = run(NPX + ["--yes", HF, "init", "hf-skills", "--example", "blank", "--non-interactive"], cwd=tmp)
