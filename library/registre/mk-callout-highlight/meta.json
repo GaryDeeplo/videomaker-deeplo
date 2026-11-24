@@ -1,0 +1,25 @@
+{
+ "name": "mk-callout-highlight",
+ "type": "registre",
+ "title": "Word-Sweep Highlight",
+ "description": "A sentence whose word-by-word emphasis is driven by a single scalar — tween it to sync the highlight with a voiceover",
+ "when_to_use": "Registre HyperFrames (bloc) : typography, karaoke, captions, minimal",
+ "tags": [
+  "typography",
+  "karaoke",
+  "captions",
+  "minimal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add mk-callout-highlight   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 8,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

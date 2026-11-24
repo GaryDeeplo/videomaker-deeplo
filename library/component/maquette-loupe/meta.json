@@ -1,0 +1,20 @@
+{
+ "name": "maquette-loupe",
+ "type": "component",
+ "title": "Mur de texte + loupe",
+ "description": "Mur de texte illisible ; une loupe le parcourt et s'arrête sur la phrase qui compte, qui passe en couleur avec une étiquette.",
+ "when_to_use": "Le problème caché rendu visible : CGU, contrat, devis, petites lignes.",
+ "tags": [
+  "interface",
+  "loupe",
+  "texte",
+  "probleme",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"loupe\", \"word\": \"<mot dit>\", \"title\": \"Conditions générales\", \"find\": \"non remboursables\", \"label\": \"Le piège\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

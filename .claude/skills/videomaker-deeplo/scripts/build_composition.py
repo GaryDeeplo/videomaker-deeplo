@@ -1,7 +1,7 @@
 """COMPOSITION HyperFrames -> <job>/index.html   (base reel-cut, étendue)
 
 - Vidéo dérushée + caméra (doctrine reel-cut : drifts imperceptibles de 3 %, punch-in +7,5 % rare).
-- Texte selon text.mode : "captions" (sous-titres complets, styles pop | karaoke | minimal | boite | impact | duo,
+- Texte selon text.mode : "captions" (sous-titres complets, styles pop | karaoke | minimal | boite | impact | duo | mono | bulle | souligne,
   emoji automatique sur les mots-clés avec text.captionEmoji ou --emoji),
   "overlays" (phrases rares verbatim de reel-cut), ou "both".
 - SFX réels de la banque sounds/ (real-sfx) : whoosh calé par son pic sur chaque punch, tick sur les jointures.
@@ -21,7 +21,7 @@ import re
 from zooms import strong_words, zoom_js
 import sound_design
 from common import (REAL_SFX_INDEX, ROOT, SOUNDS, add_credit, block_file, brand_info, config, fail, job_dir, motion_nodes,
-                    mount, out, probe, read_json, size_of, word_hit)
+                    mount, out, probe, read_json, size_of, word_hit, write_json)
 
 S_MIN, S_MAX = 1.0, 1.13
 PUNCH_JUMP, PUNCH_SETTLE, PUNCH_DUR = 0.075, 0.055, 3.0
@@ -147,7 +147,7 @@ EMOJI_CHAR = {"valide": "✅", "coeur": "❤️", "etoile": "⭐", "pouce": "�
               "regard": "👀", "waouh": "🤩", "adore": "😍", "cent": "💯", "bravo": "🙌", "applaudir": "👏", "eclat": "✨",
               "cloche": "🔔", "alarme": "🚨", "trophee": "🏆", "force": "💪", "reflexion": "🤔", "rire": "😂", "doigt": "👉",
               "cible": "🎯", "feu": "🔥", "fete": "🎉"}
-STYLES = ["pop", "karaoke", "minimal", "boite", "impact", "duo", "seam", "mono"]
+STYLES = ["pop", "karaoke", "minimal", "boite", "impact", "duo", "seam", "mono", "bulle", "souligne"]
 
 
 def emoji_for(word):
@@ -170,7 +170,7 @@ def key_word(words):
 
 def caption_spans(words, style, use_emoji, st, last_emo):
     """HTML des mots d'un groupe selon le style (+ emoji collé à son mot). -> (html, instant de l'emoji ou None, last_emo)"""
-    keyw = key_word(words) if style in ("duo", "seam") else set()
+    keyw = key_word(words) if style in ("duo", "seam", "bulle", "souligne") else set()
     parts, emo = [], None
     for j, w in enumerate(words):
         inner = ('<i class="bx"></i>' if style == "boite" else "") + esc(w["w"])
@@ -185,6 +185,12 @@ def caption_spans(words, style, use_emoji, st, last_emo):
 def emoji_tween(gid, emo):
     return (f'  tl.fromTo("#{gid} .em", {{ opacity: 0, scale: 0.2, rotation: -25 }}, {{ opacity: 1, scale: 1, rotation: 0, '
             f'duration: 0.35, ease: "back.out(3)", immediateRender: false }}, {emo});')
+
+
+def bubble_ink(accent):
+    """Accent lisible sur une bulle blanche : un accent clair (jaune, citron) est assombri."""
+    import panel as pn
+    return pn._mix(accent, "#111111", 0.45) if pn._lum(accent) > 165 else accent
 
 
 def caption_css(style, accent, shadow=SHADOW):
@@ -204,6 +210,24 @@ def caption_css(style, accent, shadow=SHADOW):
         css += """
   .cap .in { font-family: 'IBM Plex Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0; text-shadow: none; }
   .cap .w { background: #111; color: #fff; padding: 0.02em 0.26em; margin: 0 0.02em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }"""
+    if style == "souligne":  # éditorial : petits, casse normale, mots à venir en gris, le mot dit en blanc, le mot fort souligné
+        css += f"""
+  .cap .in {{ text-transform: none; font-weight: 700; letter-spacing: -0.005em; }}
+  .cap .w {{ color: rgba(255,255,255,.42); }}
+  .cap .w.k {{ color: rgba(255,255,255,.42); font-size: 1em; }}
+  .cap .w.k::after {{ content: ""; position: absolute; left: 0; right: 0; bottom: -0.04em; height: 0.08em; border-radius: 0.04em; background: {accent};
+                     transform: scaleX(var(--u, 0)); transform-origin: 0 50%; }}"""
+    if style == "bulle":  # bulle blanche arrondie (message), le mot-clé en couleur d'accent, pas de majuscules
+        kc = bubble_ink(accent)
+        css += f"""
+  .cap {{ text-align: center; }}
+  .cap .in {{ display: inline-block; position: relative; max-width: 80%; margin: 0 auto; padding: 0.3em 0.6em 0.36em; border-radius: 0.55em;
+             background: #fff; color: #111; text-transform: none; letter-spacing: -0.01em; font-weight: 800; line-height: 1.12;
+             text-shadow: none; -webkit-text-stroke: 0; box-shadow: 0 0.12em 0.5em rgba(0,0,0,.35); transform-origin: 18% 100%; white-space: normal; }}
+  .cap .in::after {{ content: ""; position: absolute; left: 14%; bottom: -0.3em; width: 0.7em; height: 0.7em; background: #fff;
+                    border-radius: 0 0 0.5em 0; transform: skewX(-28deg); z-index: -1; }}
+  .cap .w {{ opacity: 1; }}
+  .cap .w.k {{ color: {kc}; font-size: 1em; background: none; padding: 0; }}"""
     return css
 
 
@@ -266,6 +290,27 @@ def caption_js(style):
     tl.to(g + " .in", { opacity: 0, duration: 0.08 }, en - 0.08);
     tl.set(g + " .in", { opacity: 0 }, en);
   }"""
+    if style == "souligne":
+        return """
+  function cap(id, st, en, ws) {
+    const g = "#" + id, spans = document.querySelectorAll(g + " .w");
+    tl.fromTo(g + " .in", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.14, ease: "power2.out", immediateRender: false }, st);
+    ws.forEach(function (t, i) {
+      const on = Math.max(st, t[0] - 0.03), k = spans[i].classList.contains("k");
+      tl.to(spans[i], { color: k ? ACCENT : "#ffffff", duration: 0.08 }, on);
+      if (k) tl.fromTo(spans[i], { "--u": 0 }, { "--u": 1, duration: 0.25, ease: "power2.out", immediateRender: false }, on);
+    });
+    tl.to(g + " .in", { opacity: 0, duration: 0.1, ease: "power2.in" }, en - 0.1);
+    tl.set(g + " .in", { opacity: 0 }, en);
+  }"""
+    if style == "bulle":  # la bulle arrive comme un message reçu, d'un coup, et repart
+        return """
+  function cap(id, st, en, ws) {
+    const g = "#" + id;
+    tl.fromTo(g + " .in", { opacity: 0, scale: 0.55, y: 18 }, { opacity: 1, scale: 1, y: 0, duration: 0.24, ease: "back.out(2.2)", immediateRender: false }, st);
+    tl.to(g + " .in", { opacity: 0, scale: 0.92, duration: 0.1, ease: "power2.in" }, en - 0.1);
+    tl.set(g + " .in", { opacity: 0 }, en);
+  }"""
     if style == "minimal":
         return """
   function cap(id, st, en, ws) {
@@ -294,6 +339,7 @@ def main():
     ap.add_argument("--no-sfx", action="store_true")
     ap.add_argument("--derriere", help="titre géant DERRIÈRE la personne détourée (cutout.py), 2,6 s ; ou config behind.text")
     ap.add_argument("--derriere-mot", help="mot dit où le titre derrière apparaît (sinon au début)")
+    ap.add_argument("--mots", action="store_true", help="mots dynamiques : mot géant derrière la personne + satellites + carte de verre (mots.py)")
     ap.add_argument("--zooms", action="store_true", help="zooms sur les mots appuyés (zooms.py ; ou camera.zooms dans la config)")
     ap.add_argument("--size", help="9:16 | 1:1 | 4:5 | 16:9 | LxH (défaut : config)")
     ap.add_argument("--layout", choices=["full", "split", "cards"],
@@ -313,6 +359,9 @@ def main():
     vis, txt, sfxc = c["visual"], c["text"], c["sfx"]
     W, H = size_of(a.size, vis)
     mode = "none" if a.no_captions else ("captions" if a.lang else (a.mode or txt["mode"]))
+    mots_on = bool(a.mots or (job / "work" / f"{a.slug}_mots.json").exists() or c.get("mots"))
+    if mots_on and not a.mode and not a.lang:
+        mode = "none"  # le mot géant et la carte de verre remplacent les sous-titres (--mode captions pour garder les deux)
     sfx_lang = f"_{a.lang}" if a.lang else ""
     style = a.style or txt["captionStyle"]
     family, ink, accent = vis["fontFamily"], vis["textColor"], vis["accentColor"]
@@ -365,7 +414,7 @@ def main():
     r = W / 1920.0
     k = float(vis.get("sizeScale") or (1.5 if H > W else 1.0))
     SZ = {"side": round(88 * r * k), "center": round(97 * r * k), "topline": round(110 * r * k)}
-    cap_size = round({"minimal": 58, "impact": 96, "seam": 62, "mono": 52}.get(style, 84) * (W / 1080 if H > W else H / 1080))
+    cap_size = round({"minimal": 58, "impact": 96, "seam": 62, "mono": 52, "souligne": 56}.get(style, 84) * (W / 1080 if H > W else H / 1080))
     use_emoji = a.emoji or txt.get("captionEmoji", False)
 
     nodes, tw = [], []
@@ -557,6 +606,23 @@ def main():
                       f'ease: "power3.out", immediateRender: false }}, {round(b0, 3)});')
             tw.append(f'  tl.to("#bh .bl", {{ opacity: 0, y: -30, duration: 0.25, stagger: 0.05, ease: "power2.in" }}, {round(b0 + bd - 0.3, 3)});')
             behind_rep = {"texte": bh["text"], "a": round(b0, 2), "duree": bd, "detourage": rel}
+    mots_css, mots_rep, macc = "", None, None
+    if mots_on and not (track or fill or split or cards):  # mots dynamiques derrière la personne (mots.py)
+        import mots as mo
+        import panel as pn_m
+        mf = job / "work" / f"{a.slug}_mots.json"
+        if not mf.exists():
+            write_json(mf, mo.suggest(cap_words))
+        mcfg = c.get("mots") if isinstance(c.get("mots"), dict) else {}
+        default_acc = read_json(Path(__file__).resolve().parent.parent / "config.default.json")["visual"]["accentColor"]
+        # couleur des mots : imposée (mots.couleur) > accent de la charte > tirée de l'image
+        macc = mcfg.get("couleur") or (accent if accent.lower() != default_acc.lower() else mo.scene_color(job / "assets" / cut))
+        mh_, mo_over, mjs, mots_css, mots_rep = mo.nodes(job, read_json(mf), cap_words, dur, W, H, T0, job / "assets" / cut, macc, family,
+                                                         segments=m["segments"], icon=pn_m.icon, mix=pn_m._mix)
+        behind_html += "\n" + mh_
+        mots_css += f"\n  .acut {{ object-position: {vis['focusX']}% 50%; }}"  # même recadrage que la vidéo
+        nodes += mo_over
+        tw += mjs
     bj = job / "work" / f"{a.slug}_broll.json"
     broll_rep = []
     if bj.exists():  # plans de coupe : photos / vidéos du client ou images libres, calés sur des mots dits
@@ -619,15 +685,27 @@ def main():
         font_face += " " + pn.fonts(job)
         seam_h = round(cap_size * 2.1)
         base_css = pn.css_light(W, PH, family, vis, cards=cards) if theme != "dark" else pn.css(W, PH, family, vis)
+        kbox = "" if style in ("bulle", "souligne") else f".cap .w.k {{ background: {accent}; color: {hook_ink}; padding: 0 .2em; border-radius: .14em; font-size: 1em; }}"
         split_css = base_css if cards else base_css + f"""
   .zw {{ inset: auto; left: 0; top: {PH}px; width: {W}px; height: {H - PH}px; }}
   #a-roll {{ height: {H - PH}px; object-fit: cover; object-position: {vis["focusX"]}% 32%; }}
   .seam {{ position: absolute; left: 0; right: 0; top: {PH - seam_h // 2}px; height: {seam_h}px; z-index: 40;
           background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.9) 28%, rgba(0,0,0,.9) 72%, transparent 100%); }}
   .cap {{ top: {PH - round(cap_size * 0.62)}px; }}
-  .cap .in {{ {"" if style == "mono" else "text-transform: none; font-weight: 800; letter-spacing: -0.01em; "}text-shadow: 0 2px 10px rgba(0,0,0,.6); white-space: nowrap; }}
-  .cap .w.k {{ background: {accent}; color: {hook_ink}; padding: 0 .2em; border-radius: .14em; font-size: 1em; }}
+  .cap .in {{ {"" if style == "mono" else "text-transform: none; font-weight: 800; letter-spacing: -0.01em; "}{"" if style == "bulle" else "text-shadow: 0 2px 10px rgba(0,0,0,.6); "}white-space: nowrap; }}
+  {kbox}
   .broll {{ inset: auto; left: 0; top: 0; width: {W}px; height: {PH}px; }}"""
+        faces = [r_ for r_ in panel_rep if r_.get("type") == "face"]
+        if split and faces:  # alternance : temps forts « face » -> visage plein écran (coupe franche), le panneau revient au suivant
+            cap_split, cap_full = PH - round(cap_size * 0.62), round(H * cap_top / 100)
+            for f_ in faces:
+                for t_, full in ((f_["a"], True), (round(f_["a"] + f_["duree"], 3), False)):
+                    if not full and t_ >= dur - 0.05:
+                        continue
+                    tw.append(f'  tl.set("#panel, .seam", {{ autoAlpha: {0 if full else 1} }}, {t_});')
+                    tw.append(f'  tl.set(".zw", {{ top: {0 if full else PH}, height: {H if full else H - PH} }}, {t_});')
+                    tw.append(f'  tl.set("#a-roll", {{ height: {H if full else H - PH}, objectPosition: "{vis["focusX"]}% {50 if full else 32}%" }}, {t_});')
+                    tw.append(f'  tl.set(".cap", {{ top: {cap_full if full else cap_split} }}, {t_});')
     if style == "mono" and not (split or cards):  # police machine à écrire du style « mono »
         import panel as pn
         font_face += " " + pn.fonts(job)
@@ -662,6 +740,7 @@ def main():
   .cap .w {{ display: inline-block; margin: 0 0.07em; transform-origin: 50% 70%; {"opacity: 0;" if style in ("pop", "duo", "mono") else ""} }}
 {caption_css(style, accent)}
 {ts_css}
+{mots_css}
   .broll {{ position: absolute; inset: 0; z-index: 30; overflow: hidden; }}
   .broll .bw {{ position: absolute; inset: 0; overflow: hidden; opacity: 0; }}
   .broll .bri {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
@@ -750,7 +829,7 @@ def main():
         cadrage="écran partagé" if split else ("suit le visage" if track else ("image entière, fond flouté" if fill else "recadré")),
         panneau=panel_rep or None,
         captions=sum(1 for n in nodes if 'class="clip cap"' in n), overlays=sum(1 for n in nodes if "note" in n),
-        drifts=drifts, punchs=len(cam) - drifts, titre_derriere=behind_rep, outils=stack_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
+        drifts=drifts, punchs=len(cam) - drifts, titre_derriere=behind_rep, mots=mots_rep, couleur_mots=macc if mots_rep is not None else None, outils=stack_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
         suite="npx hyperframes check, puis snapshot / preview")
 
 

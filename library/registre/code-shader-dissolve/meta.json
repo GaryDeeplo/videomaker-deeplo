@@ -1,0 +1,26 @@
+{
+ "name": "code-shader-dissolve",
+ "type": "registre",
+ "title": "Code Shader Dissolve",
+ "description": "The code compiles into existence: a GPU fragment shader resolves it out of seeded noise with a chromatic dissolve front and edge glow, then holds crisp.",
+ "when_to_use": "Registre HyperFrames (bloc) : code, code-animation, shader, webgl, developer",
+ "tags": [
+  "code",
+  "code-animation",
+  "shader",
+  "webgl",
+  "developer"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add code-shader-dissolve   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 7,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

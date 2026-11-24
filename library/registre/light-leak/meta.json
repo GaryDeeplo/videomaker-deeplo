@@ -1,0 +1,23 @@
+{
+ "name": "light-leak",
+ "type": "registre",
+ "title": "Light Leak",
+ "description": "Shader transition with cinematic light leak overlay",
+ "when_to_use": "Registre HyperFrames (bloc) : transition, shader",
+ "tags": [
+  "transition",
+  "shader"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add light-leak   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 4,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

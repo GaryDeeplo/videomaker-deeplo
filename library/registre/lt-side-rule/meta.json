@@ -1,0 +1,26 @@
+{
+ "name": "lt-side-rule",
+ "type": "registre",
+ "title": "Lower Third — Side Rule",
+ "description": "Cardless lower third with a vertical accent bar; condensed display name + mono role, text-shadowed for footage",
+ "when_to_use": "Registre HyperFrames (bloc) : lower-third, overlay, podcast, interview, minimal",
+ "tags": [
+  "lower-third",
+  "overlay",
+  "podcast",
+  "interview",
+  "minimal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add lt-side-rule   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 4.8,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

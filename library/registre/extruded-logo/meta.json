@@ -1,0 +1,28 @@
+{
+ "name": "extruded-logo",
+ "type": "registre",
+ "title": "Extruded Logo",
+ "description": "Beveled 3D letters flip up one by one, the word swings so light runs across the bevels, then settles for a readable hold. Chrome, gold or matte.",
+ "when_to_use": "Registre HyperFrames (bloc) : 3d-object, three-js, webgl, logo, text, extruded",
+ "tags": [
+  "3d-object",
+  "three-js",
+  "webgl",
+  "logo",
+  "text",
+  "extruded",
+  "title-card"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add extruded-logo   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 5,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

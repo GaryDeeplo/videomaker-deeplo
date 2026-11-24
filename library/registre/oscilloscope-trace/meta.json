@@ -1,0 +1,25 @@
+{
+ "name": "oscilloscope-trace",
+ "type": "registre",
+ "title": "Oscilloscope Trace",
+ "description": "CRT oscilloscope beam sweeping a waveform across a 10x8 graticule, with closed-form phosphor persistence: the tail decays as exp(-age/tau) and brightens where the beam slows",
+ "when_to_use": "Registre HyperFrames (bloc) : instrument, data, showcase, retro",
+ "tags": [
+  "instrument",
+  "data",
+  "showcase",
+  "retro"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add oscilloscope-trace   (variables : waveform, frequency, amplitude, persistenceMs, phosphorColor, sweepRate, dataSeries)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

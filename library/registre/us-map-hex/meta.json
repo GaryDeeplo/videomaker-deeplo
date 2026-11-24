@@ -1,0 +1,27 @@
+{
+ "name": "us-map-hex",
+ "type": "registre",
+ "title": "US Hex Grid Map",
+ "description": "Animated hexagonal tile grid map — each state as an equal-weight hex with data fill and abbreviation label",
+ "when_to_use": "Registre HyperFrames (bloc) : data, map, geography, usa, hexgrid, tilegrid",
+ "tags": [
+  "data",
+  "map",
+  "geography",
+  "usa",
+  "hexgrid",
+  "tilegrid"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add us-map-hex   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 10,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

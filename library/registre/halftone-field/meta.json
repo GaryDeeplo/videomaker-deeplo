@@ -1,0 +1,26 @@
+{
+ "name": "halftone-field",
+ "type": "registre",
+ "title": "Halftone Field",
+ "description": "A full-bleed halftone light field: a grid of dots whose size and colour track a slow flowing simplex-noise field, so broad bands of light sweep across a mostly-black frame like a giant LED wall showing a plasma. Built to run under type.",
+ "when_to_use": "Registre HyperFrames (bloc) : webgl, shader, background, texture, halftone",
+ "tags": [
+  "webgl",
+  "shader",
+  "background",
+  "texture",
+  "halftone"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add halftone-field   (variables : frequency, speed, cellSize, gamma, paletteBias, palette1, palette2, palette3, palette4, background, quantize)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 10,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

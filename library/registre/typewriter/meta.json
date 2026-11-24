@@ -1,0 +1,21 @@
+{
+ "name": "typewriter",
+ "type": "registre",
+ "title": "Typewriter",
+ "description": "Character-by-character text reveal with a deterministic blinking cursor.",
+ "when_to_use": "Registre HyperFrames (composant) : video-primitive, motion-primitive, typography",
+ "tags": [
+  "video-primitive",
+  "motion-primitive",
+  "typography"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add typewriter   (variables : text, tone, caret)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

@@ -9,22 +9,26 @@ work/<slug>_footage.json (premier jet : footage.py plan) :
   {"title": "On rénove notre futur resto",                      (titre des premières secondes, facultatif)
    "series": {"label": "Journal de chantier", "n": 4, "of": 12, "unit": "Semaine"},   (facultatif)
    "items": [{"clip": "IMG_0412.mp4", "seg": 0, "keep": true, "dur": 2.5, "label": "JOUR 12", "caption": "La cuisine",
-              "timelapse": false, "speed": 1, "word": "<mot de la voix off où ce plan commence>"}],
+              "timelapse": false, "speed": 1, "word": "<mot de la voix off où ce plan commence>",
+              "bubble": "On dirait que tes vidéos sont faites *par IA*"}],
    "compare": [{"before": "IMG_0101.mp4", "after": "IMG_0990.mp4", "label": "Avant / Après", "dur": 3.2, "after_item": 5}]}
 seg = n° du passage mesuré (0 = le meilleur) ; timelapse = accéléré du clip entier (caméra posée) ; dur = durée à l'écran.
 Voix off : storyboard -> voice.py (Gemini, Fish ou --file) -> build_text.py avec le même slug : les plans changent alors sur
 les débuts de phrases (ou sur "word"), la vidéo dure le temps de la voix et les sous-titres s'affichent.
 Sans voix : musique (add_music.py) et durées du plan. Le son des clips n'est pas gardé (machines, vent).
+Reel sans parole (musique + texte) : "bubble" (texte ou liste de textes) sur un plan -> bulles blanches qui arrivent comme
+des messages, sur les temps de la musique ; *mot* en couleur d'accent. Regardable sans le son, traduisible par le seul texte.
 """
 import argparse
 import hashlib
 import html
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
 
-from build_composition import caption_css, caption_js, caption_spans
+from build_composition import bubble_ink, caption_css, caption_js, caption_spans
 import numpy as np
 
 from footage import camera_jitter, motion_profile, subject_x
@@ -119,6 +123,7 @@ def main():
     vis = c["visual"]
     W, H = size_of(a.size, vis)
     u = W / 1080
+    G_ = lambda x: round(x * u)
     pj, fj = job / "work" / f"{a.slug}_footage.json", job / "work" / "footage.json"
     if not pj.exists() or not fj.exists():
         fail("footage.py scan puis footage.py plan d'abord")
@@ -178,6 +183,7 @@ def main():
         starts = new
         ends = starts[1:] + [ends[-1]]
     vids, labels, js, rep = [], [], [], []
+    n_bub = 0
     for i, ((kind, o), s0, s1) in enumerate(zip(seq, starts, ends)):
         d = round(s1 - s0, 3)
         if d < 0.3:
@@ -261,7 +267,25 @@ def main():
             lt = s0 + 0.1 + (min(3.2, d) - 0.2 if i == 0 and plan.get("title") else 0)  # pas sous le titre d'ouverture
             js.append(f'  tl.set("#{lid} > *", {{ opacity: 0 }}, {round(s0, 3)});')
             js.append(f'  tl.fromTo("#{lid} > *", {{ opacity: 0, x: -24 }}, {{ opacity: 1, x: 0, duration: 0.35, stagger: 0.08, ease: "power3.out", immediateRender: false }}, {round(lt, 3)});')
-        rep.append({"type": "accéléré" if o.get("timelapse") else "plan", "clip": o["clip"], "a": round(s0, 2), "duree": d, "vitesse": round(speed, 2), **{k: v for k, v in rep_shot.items() if v}})
+        bubs = o.get("bubble") or []
+        bubs = [bubs] if isinstance(bubs, str) else list(bubs)[:3]
+        if bubs:  # reel sans parole : bulles posées sur les temps de la musique, empilées comme des messages
+            bid = f"bb{i}"
+            step = max(0.5, (d - 0.5) / len(bubs))
+            html_ = []
+            for j, tx in enumerate(bubs):
+                parts = re.split(r"\*([^*]+)\*", esc(tx))
+                html_.append(f'<div class="bub b{j}">' + "".join(f'<span class="k">{x}</span>' if m % 2 else x for m, x in enumerate(parts)) + '</div>')
+                tj = s0 + 0.12 + j * step
+                if beats and j:
+                    tj = snap_beat(tj + T0e, beats, 0.22, lo=s0 + T0e + 0.3) - T0e
+                js.append(f'  tl.fromTo("#{bid} .b{j}", {{ opacity: 0, scale: 0.55, y: {G_(24)} }}, {{ opacity: 1, scale: 1, y: 0, duration: 0.26, '
+                          f'ease: "back.out(2.2)", immediateRender: false }}, {round(min(tj, s1 - 0.4), 3)});')
+            labels.append(f'    <div class="clip bubs" id="{bid}" data-start="{round(s0, 3)}" data-duration="{d}" data-track-index="{22 + i % 2}">'
+                          + "".join(html_) + '</div>')
+            n_bub += len(bubs)
+        rep.append({"type": "accéléré" if o.get("timelapse") else "plan", "clip": o["clip"], "a": round(s0, 2), "duree": d, "vitesse": round(speed, 2),
+                    **{k: v for k, v in rep_shot.items() if v}, **({"bulles": len(bubs)} if bubs else {})})
 
     # titre d'ouverture et série
     over = []
@@ -398,6 +422,16 @@ def main():
   .ctag.r {{ right: {G(40)}px; background: {acc}; color: {on_acc}; }}
   .clab {{ position: absolute; left: 0; right: 0; top: {round(H * 0.5)}px; z-index: 4; text-align: center; font-size: {G(70)}px; font-weight: 900;
           text-shadow: 0 {G(6)}px {G(24)}px rgba(0,0,0,.7); }}
+  .bubs {{ position: absolute; left: {G(70)}px; right: {G(70)}px; top: {round(H * 0.2)}px; z-index: 22; display: flex; flex-direction: column;
+          align-items: flex-start; gap: {G(26)}px; }}
+  .bub {{ position: relative; max-width: 86%; padding: {G(24)}px {G(34)}px {G(26)}px; border-radius: {G(40)}px; background: #fff; color: #111;
+         font-size: {G(58)}px; font-weight: 800; line-height: 1.15; letter-spacing: -.01em; box-shadow: 0 {G(10)}px {G(36)}px rgba(0,0,0,.35);
+         transform-origin: 12% 100%; opacity: 0; }}
+  .bub::after {{ content: ""; position: absolute; left: {G(34)}px; bottom: -{G(14)}px; width: {G(34)}px; height: {G(34)}px; background: #fff;
+                border-radius: 0 0 {G(26)}px 0; transform: skewX(-28deg); z-index: -1; }}
+  .bub:nth-child(2) {{ align-self: flex-end; transform-origin: 88% 100%; }}
+  .bub:nth-child(2)::after {{ left: auto; right: {G(34)}px; transform: skewX(28deg); border-radius: 0 0 0 {G(26)}px; }}
+  .bub .k {{ color: {bubble_ink(acc)}; }}
   .cap {{ position: absolute; left: 0; right: 0; top: {round(H * 0.72)}px; text-align: center; z-index: 40; }}
   .cap .in {{ display: inline-block; max-width: 86%; font-weight: 800; font-size: {cap_size}px; line-height: 1.12; color: #fff;
              text-shadow: 0 {G(4)}px {G(16)}px rgba(0,0,0,.7); }}
@@ -429,7 +463,7 @@ def main():
     (job / "index.html").write_text(doc, encoding="utf-8")
     if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
         sound_design.auto(job)
-    out(ok=True, format=f"{W}x{H}", duree=total, plans=rep, voix=bool(voice), sous_titres=len(caps),
+    out(ok=True, format=f"{W}x{H}", duree=total, plans=rep, voix=bool(voice), sous_titres=len(caps), bulles=n_bub,
         coupes_sur_la_musique=f"{snapped}/{max(0, len(starts) - 1)}" if beats else "pas de musique analysée",
         suite="npx hyperframes check, puis snapshot pendant quelques plans")
 

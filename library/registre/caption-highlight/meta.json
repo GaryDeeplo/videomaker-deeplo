@@ -1,0 +1,23 @@
+{
+ "name": "caption-highlight",
+ "type": "registre",
+ "title": "Highlight",
+ "description": "Red background sweep behind each active word, TikTok-style",
+ "when_to_use": "Registre HyperFrames (composant) : captions, caption-style, highlight, social, tiktok",
+ "tags": [
+  "captions",
+  "caption-style",
+  "highlight",
+  "social",
+  "tiktok"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add caption-highlight   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

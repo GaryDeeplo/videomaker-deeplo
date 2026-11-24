@@ -1,0 +1,26 @@
+{
+ "name": "slack-notification-ad",
+ "type": "registre",
+ "title": "Slack Notification Ad",
+ "description": "A portrait lock screen fills with escalating Slack video requests before HeyGen delivers the payoff",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, mock-ui, notification, vertical, ad-template",
+ "tags": [
+  "showcase",
+  "mock-ui",
+  "notification",
+  "vertical",
+  "ad-template"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add slack-notification-ad   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1080,
+  "height": 1920
+ },
+ "duration": 12,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

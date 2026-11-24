@@ -1,0 +1,24 @@
+{
+ "name": "instagram-follow",
+ "type": "registre",
+ "title": "Instagram Follow",
+ "description": "Animated Instagram follow overlay with profile card and follow button",
+ "when_to_use": "Registre HyperFrames (bloc) : social, overlay, instagram",
+ "tags": [
+  "social",
+  "overlay",
+  "instagram"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add instagram-follow   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1080,
+  "height": 1920
+ },
+ "duration": 4.5,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

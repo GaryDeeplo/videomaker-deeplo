@@ -1,0 +1,26 @@
+{
+ "name": "us-map",
+ "type": "registre",
+ "title": "US Map",
+ "description": "Animated US choropleth map with staggered state reveals, value labels, and gradient legend — pure inline SVG with GSAP",
+ "when_to_use": "Registre HyperFrames (bloc) : data, map, geography, usa, choropleth",
+ "tags": [
+  "data",
+  "map",
+  "geography",
+  "usa",
+  "choropleth"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add us-map   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 12,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

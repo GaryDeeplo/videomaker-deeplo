@@ -1,0 +1,28 @@
+{
+ "name": "freeze-frame-dressing",
+ "type": "registre",
+ "title": "Freeze-Frame Dressing",
+ "description": "Timeline-driven paper, tape, and flash dressing for a freeze-frame or background-removed subject",
+ "when_to_use": "Registre HyperFrames (bloc) : freeze-frame, cutout, scrapbook, paper, social, overlay",
+ "tags": [
+  "freeze-frame",
+  "cutout",
+  "scrapbook",
+  "paper",
+  "social",
+  "overlay",
+  "media-treatment-overlay"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add freeze-frame-dressing   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 4,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

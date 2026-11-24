@@ -1,0 +1,24 @@
+{
+ "name": "hw-frame",
+ "type": "registre",
+ "title": "Sketched Frame",
+ "description": "Media in a hand-drawn border with corner doodles and a handwritten caption; the unit tilts slightly and boils (images inside the block; keep live footage in the host)",
+ "when_to_use": "Registre HyperFrames (bloc) : handwritten, frame, media",
+ "tags": [
+  "handwritten",
+  "frame",
+  "media"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add hw-frame   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 8,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

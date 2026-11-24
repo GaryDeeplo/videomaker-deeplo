@@ -1,0 +1,26 @@
+{
+ "name": "weight-wave",
+ "type": "registre",
+ "title": "Weight Wave",
+ "description": "A crest of thickness travels along a headline: each character swells from light to black and leans forward as the wave passes, driven by the wght and slnt variable-font axes rather than by transforms.",
+ "when_to_use": "Registre HyperFrames (bloc) : typography, kinetic-type, title, variable-font, text",
+ "tags": [
+  "typography",
+  "kinetic-type",
+  "title",
+  "variable-font",
+  "text"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add weight-wave   (variables : text, color, background, weightFrom, weightTo, crestWidth, sweepSpeed, slant, direction)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

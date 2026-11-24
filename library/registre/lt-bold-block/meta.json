@@ -1,0 +1,26 @@
+{
+ "name": "lt-bold-block",
+ "type": "registre",
+ "title": "Lower Third — Bold Block",
+ "description": "High-energy podcast lower third: solid dark block wipes in, uppercase name slams up, accent tag pops",
+ "when_to_use": "Registre HyperFrames (bloc) : lower-third, overlay, podcast, interview, bold",
+ "tags": [
+  "lower-third",
+  "overlay",
+  "podcast",
+  "interview",
+  "bold"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add lt-bold-block   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 4.8,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

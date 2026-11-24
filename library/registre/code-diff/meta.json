@@ -1,0 +1,25 @@
+{
+ "name": "code-diff",
+ "type": "registre",
+ "title": "Code Diff",
+ "description": "An edit shown as a colored diff — removed lines collapse in red, added lines expand in green.",
+ "when_to_use": "Registre HyperFrames (bloc) : code, code-animation, diff, developer",
+ "tags": [
+  "code",
+  "code-animation",
+  "diff",
+  "developer"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add code-diff   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

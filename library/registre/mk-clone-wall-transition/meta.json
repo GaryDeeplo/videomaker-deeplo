@@ -1,0 +1,24 @@
+{
+ "name": "mk-clone-wall-transition",
+ "type": "registre",
+ "title": "Text Clone Wall Transition",
+ "description": "Overlay transition: a tiled word wall covers the frame, inverts via difference blending, and clears — hard-cut the content beneath while covered",
+ "when_to_use": "Registre HyperFrames (bloc) : transition, typography, wipe",
+ "tags": [
+  "transition",
+  "typography",
+  "wipe"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add mk-clone-wall-transition   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 2.4,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -1,0 +1,24 @@
+{
+ "name": "mk-progress-stat",
+ "type": "registre",
+ "title": "Count-Up Stat Card",
+ "description": "Big-numeral statistic with count-up, label, thin progress track filling to value/max, and caption; light and dark schemes",
+ "when_to_use": "Registre HyperFrames (bloc) : data-viz, stat, minimal",
+ "tags": [
+  "data-viz",
+  "stat",
+  "minimal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add mk-progress-stat   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 7,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

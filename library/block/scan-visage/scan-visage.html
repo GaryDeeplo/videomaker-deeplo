@@ -1,0 +1,81 @@
+<!-- deeplo-library-block: scan-visage · scan du visage : coins de cadrage, image désaturée dans le cadre, ligne qui balaie, pourcentage 0 -> 100 %, verdict -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="scan-visage" data-composition-id="scan-visage" data-start="0" data-duration="3.0" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "label", "type": "string", "label": "Verdict à la fin", "default": "Généré par IA"}, {"id": "titre", "type": "string", "label": "Titre pendant le scan", "default": "Analyse du visage"}, {"id": "x", "type": "number", "label": "Cadre : gauche (% de la largeur)", "default": 22, "min": 0, "max": 90}, {"id": "y", "type": "number", "label": "Cadre : haut (% de la hauteur)", "default": 16, "min": 0, "max": 90}, {"id": "w", "type": "number", "label": "Cadre : largeur (%)", "default": 56, "min": 10, "max": 100}, {"id": "h", "type": "number", "label": "Cadre : hauteur (%)", "default": 30, "min": 5, "max": 100}, {"id": "accent", "type": "color", "label": "Accent", "default": "#e8703a"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}]'>
+      <div class="sv-box">
+        <div class="sv-gray"></div><div class="sv-grid"></div><i class="sv-line"></i>
+        <b class="sv-c tl"></b><b class="sv-c tr"></b><b class="sv-c bl"></b><b class="sv-c br"></b>
+        <div class="sv-tag"><span class="sv-t" data-var-text="titre">Analyse du visage</span><span class="sv-pct">0 %</span></div>
+        <div class="sv-ok"><span>✓</span> <span data-var-text="label">Généré par IA</span></div>
+      </div>
+      <style>
+        #scan-visage { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: #fff; }
+        #scan-visage .sv-box { position: absolute; left: calc(var(--x, 22) * 1%); top: calc(var(--y, 16) * 1%); width: calc(var(--w, 56) * 1%);
+                               height: calc(var(--h, 30) * 1%); }
+        #scan-visage .sv-gray { position: absolute; inset: 0; backdrop-filter: grayscale(1) contrast(1.15) brightness(1.05);
+                                -webkit-backdrop-filter: grayscale(1) contrast(1.15) brightness(1.05); opacity: 0; }
+        #scan-visage .sv-grid { position: absolute; inset: 0; opacity: 0;
+                                background-image: linear-gradient(rgba(255,255,255,.14) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.14) 1px, transparent 1px);
+                                background-size: 6% 6%; }
+        #scan-visage .sv-line { position: absolute; left: -2%; right: -2%; top: 0; height: 0.6vmin; background: var(--accent, #e8703a); opacity: 0;
+                                box-shadow: 0 0 3vmin var(--accent, #e8703a), 0 0 8vmin var(--accent, #e8703a); }
+        #scan-visage .sv-c { position: absolute; width: 14%; height: 14%; border: 0 solid #fff; opacity: 0; }
+        #scan-visage .sv-c.tl { left: 0; top: 0; border-left-width: 0.7vmin; border-top-width: 0.7vmin; }
+        #scan-visage .sv-c.tr { right: 0; top: 0; border-right-width: 0.7vmin; border-top-width: 0.7vmin; }
+        #scan-visage .sv-c.bl { left: 0; bottom: 0; border-left-width: 0.7vmin; border-bottom-width: 0.7vmin; }
+        #scan-visage .sv-c.br { right: 0; bottom: 0; border-right-width: 0.7vmin; border-bottom-width: 0.7vmin; }
+        #scan-visage .sv-tag { position: absolute; left: 0; bottom: calc(100% + 1.6vmin); display: flex; gap: 2vmin; align-items: center; padding: 1vmin 2vmin;
+                               border-radius: 1vmin; background: rgba(0,0,0,.6); font: 500 2.6vmin "IBM Plex Mono", monospace; letter-spacing: .1em;
+                               text-transform: uppercase; opacity: 0; white-space: nowrap; }
+        #scan-visage .sv-pct { color: var(--accent, #e8703a); font-weight: 700; }
+        #scan-visage .sv-ok { position: absolute; left: 50%; top: calc(100% + 2vmin); transform: translateX(-50%); padding: 1.6vmin 3.4vmin; border-radius: 99px;
+                              background: var(--accent, #e8703a); color: #fff; font-size: 4.4vmin; font-weight: 800; white-space: nowrap; opacity: 0;
+                              box-shadow: 0 1.6vmin 4vmin rgba(0,0,0,.35); }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("scan-visage");
+        const r = '[data-composition-id="scan-visage"] ';
+        const root = document.getElementById("scan-visage");
+        ["x", "y", "w", "h", "accent", "font"].forEach(function (k) { if (v[k] !== undefined && v[k] !== "") root.style.setProperty("--" + k, v[k]); });
+        if (!v.label) root.querySelector(".sv-ok").style.display = "none";
+        const m = String(v.accent || "").match(/^#?([0-9a-f]{6})$/i);  // accent clair (jaune…) : verdict en encre sombre
+        if (m) { const n = parseInt(m[1], 16), L = 0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+                 if (L > 150) root.querySelector(".sv-ok").style.color = "#111"; }
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.0;
+        const S = Math.max(0.8, D - 1.1);  // durée du balayage
+        const tl = gsap.timeline({ paused: true });
+        tl.fromTo(r + ".sv-c", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.3, stagger: 0.05, ease: "back.out(2)" }, 0);
+        tl.to(r + ".sv-gray", { opacity: 1, duration: 0.25 }, 0.15);
+        tl.to(r + ".sv-grid", { opacity: 1, duration: 0.25 }, 0.2);
+        tl.fromTo(r + ".sv-tag", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25 }, 0.2);
+        tl.set(r + ".sv-line", { opacity: 1 }, 0.3);
+        const BH = root.querySelector(".sv-box").offsetHeight;  // balayage en transform (pas de « top » animé)
+        tl.fromTo(r + ".sv-line", { y: 0 }, { y: BH, duration: S / 2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.3);
+        tl.set(r + ".sv-line", { opacity: 0 }, 0.3 + S);
+        const pct = root.querySelector(".sv-pct"), o = { v: 0 };
+        tl.fromTo(o, { v: 0 }, { v: 100, duration: S, ease: "power1.inOut", onUpdate: function () { pct.textContent = Math.round(o.v) + " %"; } }, 0.3);
+        tl.to(r + ".sv-grid", { opacity: 0, duration: 0.2 }, 0.3 + S);
+        tl.fromTo(r + ".sv-ok", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2.4)" }, 0.35 + S);
+        tl.to(r + ".sv-box > *", { opacity: 0, duration: 0.25 }, D - 0.27);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["scan-visage"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

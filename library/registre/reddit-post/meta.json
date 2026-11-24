@@ -1,0 +1,24 @@
+{
+ "name": "reddit-post",
+ "type": "registre",
+ "title": "Reddit Post Card",
+ "description": "Animated Reddit post card overlay with upvotes and comments",
+ "when_to_use": "Registre HyperFrames (bloc) : social, overlay, reddit",
+ "tags": [
+  "social",
+  "overlay",
+  "reddit"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add reddit-post   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 5,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

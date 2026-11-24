@@ -1,0 +1,28 @@
+{
+ "name": "canopy-part-title",
+ "type": "registre",
+ "title": "Canopy Part Title",
+ "description": "Leaves sweep through the frame and part to reveal the headline.",
+ "when_to_use": "Registre HyperFrames (bloc) : 3d-motion, title-card, leaves, organic, depth-of-field, two-headlines",
+ "tags": [
+  "3d-motion",
+  "title-card",
+  "leaves",
+  "organic",
+  "depth-of-field",
+  "two-headlines",
+  "sweep"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add canopy-part-title   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 12,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

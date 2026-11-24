@@ -175,8 +175,28 @@ def main():
         fail("aucun mot après recalage")
     dur = float(m["out_duration"])
 
+    groups = chunks(ws, c["captionMaxWords"], 0.35)
+    # un groupe affiché trop peu de temps pour être lu (> 30 caractères / s jusqu'au groupe suivant) rejoint son voisin,
+    # tant que le tout reste court (débit rapide : « toutes les semaines » dit en 0,5 s)
+    def rate(g, nxt_start):
+        return len(" ".join(x["w"] for x in g)) / max(0.05, min(nxt_start, g[-1]["end"] + 0.6) - g[0]["start"])
+
+    merged, gi = [], 0
+    while gi < len(groups):
+        ch = groups[gi]
+        nxt = groups[gi + 1][0]["start"] if gi + 1 < len(groups) else ch[-1]["end"] + 0.6
+        if gi + 1 < len(groups) and rate(ch, nxt) > 30 and len(ch) + len(groups[gi + 1]) <= c["captionMaxWords"] + 3:
+            both = ch + groups[gi + 1]
+            nxt2 = groups[gi + 2][0]["start"] if gi + 2 < len(groups) else both[-1]["end"] + 0.6
+            if rate(both, nxt2) <= 30 or rate(both, nxt2) < 0.75 * rate(ch, nxt):  # lisible, ou nettement moins rapide
+                merged.append(both)
+                gi += 2
+                continue
+        merged.append(ch)
+        gi += 1
+    groups = merged
     caps = []
-    for ch in chunks(ws, c["captionMaxWords"], 0.35):
+    for ch in groups:
         caps.append({"id": len(caps), "start": ch[0]["start"], "end": ch[-1]["end"],
                      "words": [{"w": STRIP_END.sub("", x["w"]) or x["w"], "start": x["start"], "end": x["end"]}
                                for x in ch]})

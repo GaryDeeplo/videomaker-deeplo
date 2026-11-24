@@ -26,7 +26,7 @@ from pathlib import Path
 from common import ROOT, fail, job_dir, out, read_json, sh, write_json
 
 LIB = ROOT / "library"
-TYPES = ["block", "component", "scene", "caption", "transition", "intro", "outro", "lower-third", "lottie"]
+TYPES = ["block", "component", "scene", "caption", "transition", "intro", "outro", "lower-third", "lottie", "registre"]
 
 
 def norm(s):
@@ -108,6 +108,14 @@ def use(name, job_arg):
     src = ROOT / e["path"]
     job = job_dir(job_arg)
     copied = []
+    if e["type"] == "registre":  # élément du registre HyperFrames : installé dans le job par la CLI officielle
+        import subprocess, sys as _s
+        npx = ["cmd", "/c", "npx"] if _s.platform == "win32" else ["npx"]
+        r = subprocess.run(npx + ["--yes", "hyperframes@0.9.71", "add", name, "--no-clipboard"], cwd=job, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        if r.returncode:
+            fail(f"hyperframes add {name} a échoué", detail=(r.stderr or r.stdout)[-600:])
+        copied = [ln.strip() for ln in (r.stdout or "").splitlines() if "compositions" in ln][:6]
     sub = {"block": "compositions", "component": "compositions/components"}.get(e["type"])
     if sub:
         (job / sub).mkdir(parents=True, exist_ok=True)
@@ -121,7 +129,8 @@ def use(name, job_arg):
 
 
 def gallery():
-    es = entries()
+    # les plus récentes d'abord (date de création, puis dernière sauvegarde) : les nouveautés sont en haut
+    es = sorted(entries(), key=lambda e: (str(e.get("created", "")), (ROOT / e["path"] / "meta.json").stat().st_mtime), reverse=True)
     esc = html.escape
     cards = []
     for e in es:

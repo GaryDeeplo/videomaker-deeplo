@@ -1,0 +1,26 @@
+{
+ "name": "notification-cascade",
+ "type": "registre",
+ "title": "Notification Cascade",
+ "description": "Phone notifications land one after another and stack up the screen, each banner pushing the pile down as it arrives, before the whole stack lifts away into a closing card",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, mock-ui, notification, vertical, ad-template",
+ "tags": [
+  "showcase",
+  "mock-ui",
+  "notification",
+  "vertical",
+  "ad-template"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add notification-cascade   (variables : notifTitle, message1, message2, message3, message4, appName, headlineTop, headlineAccent, footerText, brandLogo)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1080,
+  "height": 1920
+ },
+ "duration": 14,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

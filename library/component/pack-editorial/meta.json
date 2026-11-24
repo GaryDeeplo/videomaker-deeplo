@@ -1,0 +1,21 @@
+{
+ "name": "pack-editorial",
+ "type": "component",
+ "title": "Pack éditorial",
+ "description": "Sur-titre mono, fond papier quadrillé sur un temps fort, fil conducteur d'accent, repères de coin (nom, timecode, n / N).",
+ "when_to_use": "Ton premium, explicatif ; alterner sombre / papier pour relancer l'attention.",
+ "tags": [
+  "editorial",
+  "kicker",
+  "papier",
+  "fil",
+  "hud",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"stat\", \"word\": \"…\", \"kicker\": \"FORMATS\", \"fond\": \"papier\", …} + visual.panelThread / panelHud",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

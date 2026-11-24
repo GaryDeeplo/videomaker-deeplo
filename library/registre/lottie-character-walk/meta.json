@@ -1,0 +1,30 @@
+{
+ "name": "lottie-character-walk",
+ "type": "registre",
+ "title": "Lottie Character Walk",
+ "description": "A jointed flat character walks in on planted feet, stops and points at a card; the body acting is a Lottie file and the stage is GSAP.",
+ "when_to_use": "Registre HyperFrames (bloc) : character, character-animation, mascot, walk-cycle, gesture, pointing",
+ "tags": [
+  "character",
+  "character-animation",
+  "mascot",
+  "walk-cycle",
+  "gesture",
+  "pointing",
+  "puppet",
+  "lottie",
+  "explainer"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add lottie-character-walk   (variables : title, body)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 7.5,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

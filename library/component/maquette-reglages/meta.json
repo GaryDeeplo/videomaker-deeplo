@@ -1,0 +1,20 @@
+{
+ "name": "maquette-reglages",
+ "type": "component",
+ "title": "Réglages : consigne tapée",
+ "description": "Panneau de réglages d'un outil : la consigne exacte se tape, l'interrupteur s'active, bouton puis « ✓ Enregistré » (ou « Copié »).",
+ "when_to_use": "Ressource copiable (instruction, prompt, réglage) : prétexte du « Commente : MOT ».",
+ "tags": [
+  "interface",
+  "reglages",
+  "prompt",
+  "tech",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"settings\", \"word\": \"<mot dit>\", \"app\": \"ChatGPT\", \"logo\": \"logo:openai\", \"title\": \"Instructions personnalisées\", \"label\": \"…\", \"text\": \"<consigne exacte>\", \"toggle\": \"Activer\", \"action\": \"save|copy\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

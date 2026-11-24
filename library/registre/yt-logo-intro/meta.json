@@ -1,0 +1,24 @@
+{
+ "name": "yt-logo-intro",
+ "type": "registre",
+ "title": "Logo Intro Sequence",
+ "description": "Logo stamp pops on a lined board, a kicker line gives way to the title with an accent arrow chip; seeded line distortion",
+ "when_to_use": "Registre HyperFrames (bloc) : logo, intro, creator",
+ "tags": [
+  "logo",
+  "intro",
+  "creator"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add yt-logo-intro   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

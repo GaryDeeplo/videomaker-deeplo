@@ -1,0 +1,25 @@
+{
+ "name": "news-ticker",
+ "type": "registre",
+ "title": "News Ticker",
+ "description": "Premium broadcast-style lower-third ticker with live label, headline ribbon, and scrolling news crawl.",
+ "when_to_use": "Registre HyperFrames (bloc) : lower-third, overlay, news, ticker",
+ "tags": [
+  "lower-third",
+  "overlay",
+  "news",
+  "ticker"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add news-ticker   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 7,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

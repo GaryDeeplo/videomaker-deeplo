@@ -1,0 +1,26 @@
+{
+ "name": "north-korea-locked-down",
+ "type": "registre",
+ "title": "North Korea Locked Down",
+ "description": "Realistic map zoom into North Korea with a red scribble circle, locked-down pop-up label, and reddish editorial wash.",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, map, annotation, youtube, kinetic",
+ "tags": [
+  "showcase",
+  "map",
+  "annotation",
+  "youtube",
+  "kinetic"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add north-korea-locked-down   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 7,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

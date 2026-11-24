@@ -1,0 +1,23 @@
+{
+ "name": "transitions-radial",
+ "type": "registre",
+ "title": "Radial Transitions",
+ "description": "Showcase of radial wipe and reveal transitions",
+ "when_to_use": "Registre HyperFrames (bloc) : transition, showcase",
+ "tags": [
+  "transition",
+  "showcase"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add transitions-radial   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 20,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

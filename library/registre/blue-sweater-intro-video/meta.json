@@ -1,0 +1,25 @@
+{
+ "name": "blue-sweater-intro-video",
+ "type": "registre",
+ "title": "Blue Sweater Intro Video",
+ "description": "Warm AI creator intro sequence that resolves into an X follow card for @_blue_sweater_.",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, ai, creator, sfx",
+ "tags": [
+  "showcase",
+  "ai",
+  "creator",
+  "sfx"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add blue-sweater-intro-video   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 12,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

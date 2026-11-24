@@ -1,0 +1,26 @@
+{
+ "name": "code-3d-extrude",
+ "type": "registre",
+ "title": "Code 3D Extrude",
+ "description": "Syntax-highlighted code on a lit, beveled 3D slab that rotates through real space and settles to a readable rest — true WebGL depth and lighting, not a 2D transform.",
+ "when_to_use": "Registre HyperFrames (bloc) : code, code-animation, 3d, webgl, developer",
+ "tags": [
+  "code",
+  "code-animation",
+  "3d",
+  "webgl",
+  "developer"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add code-3d-extrude   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 8,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

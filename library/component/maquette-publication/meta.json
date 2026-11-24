@@ -1,0 +1,20 @@
+{
+ "name": "maquette-publication",
+ "type": "component",
+ "title": "Publication recréée",
+ "description": "Publication X / LinkedIn / Threads : le texte se révèle, les compteurs montent, le cœur s'allume.",
+ "when_to_use": "Citer une source réelle et datée (annonce, phrase d'un patron d'outil) ; jamais une citation inventée.",
+ "tags": [
+  "interface",
+  "tweet",
+  "source",
+  "citation",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"post\", \"word\": \"<mot dit>\", \"platform\": \"x\", \"name\": \"…\", \"handle\": \"@…\", \"verified\": true, \"date\": \"…\", \"text\": \"<texte exact>\", \"likes\": 12400}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

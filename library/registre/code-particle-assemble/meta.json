@@ -1,0 +1,27 @@
+{
+ "name": "code-particle-assemble",
+ "type": "registre",
+ "title": "Code Particle Assemble",
+ "description": "Thousands of GPU points scatter through space and fly to the exact glyph pixels of the code, resolving into readable syntax-highlighted text — a particle system, not a token tween.",
+ "when_to_use": "Registre HyperFrames (bloc) : code, code-animation, particles, gpu, webgl, developer",
+ "tags": [
+  "code",
+  "code-animation",
+  "particles",
+  "gpu",
+  "webgl",
+  "developer"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add code-particle-assemble   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 8,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

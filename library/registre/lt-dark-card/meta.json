@@ -1,0 +1,26 @@
+{
+ "name": "lt-dark-card",
+ "type": "registre",
+ "title": "Lower Third — Dark Card",
+ "description": "Charcoal card lower third for bright footage: name, drawn accent underline, role; slide-up entrance",
+ "when_to_use": "Registre HyperFrames (bloc) : lower-third, overlay, podcast, interview, dark",
+ "tags": [
+  "lower-third",
+  "overlay",
+  "podcast",
+  "interview",
+  "dark"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add lt-dark-card   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 4.8,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

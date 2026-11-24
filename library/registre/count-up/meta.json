@@ -1,0 +1,25 @@
+{
+ "name": "count-up",
+ "type": "registre",
+ "title": "Count Up",
+ "description": "A token-native stat counter that eases between values, counting up or down, and lands with a restrained scale pulse.",
+ "when_to_use": "Registre HyperFrames (composant) : motion-primitive, proof, stats, counter, number, countdown",
+ "tags": [
+  "motion-primitive",
+  "proof",
+  "stats",
+  "counter",
+  "number",
+  "countdown",
+  "deterministic"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add count-up   (variables : start, end, prefix, suffix, accent, glow, exit)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "component",
+ "dimensions": null,
+ "duration": null,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

@@ -1,0 +1,19 @@
+{
+ "name": "tableau-palettes",
+ "type": "component",
+ "title": "Tableau à palettes",
+ "description": "Tableau d'affichage à palettes : les caractères défilent puis se posent de gauche à droite (2 à 4 lignes).",
+ "when_to_use": "Un chiffre ou un mot à faire claquer (résultat, nom, date).",
+ "tags": [
+  "chiffre",
+  "palettes",
+  "split-flap",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"flap\", \"word\": \"<mot dit>\", \"title\": \"…\", \"rows\": [\"+312 %\", \"EN 30 JOURS\"], \"sub\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

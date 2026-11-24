@@ -1,0 +1,20 @@
+{
+ "name": "objet-carte-monde",
+ "type": "component",
+ "title": "Carte du monde",
+ "description": "Pays qui s'allument un par un, arcs depuis un pays, zoom facultatif, notes.",
+ "when_to_use": "Une communauté, des clients, une présence dans plusieurs pays.",
+ "tags": [
+  "carte",
+  "monde",
+  "pays",
+  "communaute",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"map\", \"word\": \"…\", \"countries\": [\"France\", \"Belgique\"], \"from\": \"France\", \"zoom\": true, \"label\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

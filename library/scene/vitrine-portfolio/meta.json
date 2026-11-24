@@ -1,0 +1,19 @@
+{
+ "name": "vitrine-portfolio",
+ "type": "scene",
+ "title": "Vitrine portfolio (3 écrans)",
+ "description": "3 vidéos verticales en quinconce qui jouent en même temps, décalées, sous un titre fixe en serif italique + gras.",
+ "when_to_use": "Montrer plusieurs créations d'un coup (ta bibliothèque, les réalisations d'un client).",
+ "tags": [
+  "portfolio",
+  "vitrine",
+  "showreel",
+  "promo"
+ ],
+ "files": [],
+ "usage": "python scripts/showcase.py portfolio <job> <slug> --lib a,b,c | --videos renders/x.mp4,… --entete \"*Premium* Motion Design\" --render draft",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

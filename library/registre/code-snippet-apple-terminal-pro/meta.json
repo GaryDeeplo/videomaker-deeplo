@@ -1,0 +1,27 @@
+{
+ "name": "code-snippet-apple-terminal-pro",
+ "type": "registre",
+ "title": "Code Snippet - Apple Terminal Pro",
+ "description": "Apple Terminal Pro profile: black background with grey text and lime green cursor, per-character typing animation of a shell session.",
+ "when_to_use": "Registre HyperFrames (bloc) : code, developer, showcase, terminal, apple, apple-terminal",
+ "tags": [
+  "code",
+  "developer",
+  "showcase",
+  "terminal",
+  "apple",
+  "apple-terminal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add code-snippet-apple-terminal-pro   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 12,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

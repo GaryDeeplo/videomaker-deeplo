@@ -1,0 +1,25 @@
+{
+ "name": "code-scroll",
+ "type": "registre",
+ "title": "Code Scroll To Line",
+ "description": "The camera scrolls a long file to bring a target line to center and spotlights it — for walking through real modules.",
+ "when_to_use": "Registre HyperFrames (bloc) : code, code-animation, scroll, developer",
+ "tags": [
+  "code",
+  "code-animation",
+  "scroll",
+  "developer"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add code-scroll   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

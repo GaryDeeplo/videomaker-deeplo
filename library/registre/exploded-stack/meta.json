@@ -1,0 +1,29 @@
+{
+ "name": "exploded-stack",
+ "type": "registre",
+ "title": "Exploded Stack",
+ "description": "Isometric layer plates explode apart with a label beside each layer, hold, then collapse back into one stack. Built for architecture and system diagrams.",
+ "when_to_use": "Registre HyperFrames (bloc) : 3d-object, three-js, webgl, isometric, exploded-view, layers",
+ "tags": [
+  "3d-object",
+  "three-js",
+  "webgl",
+  "isometric",
+  "exploded-view",
+  "layers",
+  "diagram",
+  "architecture"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add exploded-stack   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 5,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

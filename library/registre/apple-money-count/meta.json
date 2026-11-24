@@ -1,0 +1,26 @@
+{
+ "name": "apple-money-count",
+ "type": "registre",
+ "title": "Apple Money Count",
+ "description": "Apple-style finance counter that counts from $0 to $10,000, flashes green, and bursts money icons with sound.",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, finance, kinetic, youtube, sfx",
+ "tags": [
+  "showcase",
+  "finance",
+  "kinetic",
+  "youtube",
+  "sfx"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add apple-money-count   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 5,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

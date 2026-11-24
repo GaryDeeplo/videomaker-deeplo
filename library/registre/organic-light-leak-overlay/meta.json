@@ -1,0 +1,27 @@
+{
+ "name": "organic-light-leak-overlay",
+ "type": "registre",
+ "title": "Organic Light Leak Overlay",
+ "description": "Finite CSS light-leak overlay for memory beats and motivated transitions",
+ "when_to_use": "Registre HyperFrames (bloc) : light-leak, film, memory, transition, overlay, media-treatment-overlay",
+ "tags": [
+  "light-leak",
+  "film",
+  "memory",
+  "transition",
+  "overlay",
+  "media-treatment-overlay"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add organic-light-leak-overlay   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 4,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

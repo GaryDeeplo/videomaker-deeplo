@@ -1,0 +1,24 @@
+{
+ "name": "hw-scribble-transition",
+ "type": "registre",
+ "title": "Scribble Transition",
+ "description": "Overlay transition: scribble bands accumulate to cover the frame with a solid backstop, the host cuts beneath, and the scribble clears",
+ "when_to_use": "Registre HyperFrames (bloc) : handwritten, transition, wipe",
+ "tags": [
+  "handwritten",
+  "transition",
+  "wipe"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add hw-scribble-transition   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 2.2,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -1,0 +1,28 @@
+{
+ "name": "cuboid-carousel",
+ "type": "registre",
+ "title": "Cuboid Carousel",
+ "description": "A chain of bevelled cuboids rides a travelling wave as a content carousel.",
+ "when_to_use": "Registre HyperFrames (bloc) : 3d-motion, carousel, cards, travelling-wave, pbr, shadows",
+ "tags": [
+  "3d-motion",
+  "carousel",
+  "cards",
+  "travelling-wave",
+  "pbr",
+  "shadows",
+  "room-environment"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add cuboid-carousel   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6.67,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

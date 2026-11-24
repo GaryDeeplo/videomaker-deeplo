@@ -1,0 +1,24 @@
+{
+ "name": "x-post",
+ "type": "registre",
+ "title": "X Post Card",
+ "description": "Animated X/Twitter post card overlay with engagement metrics",
+ "when_to_use": "Registre HyperFrames (bloc) : social, overlay, twitter",
+ "tags": [
+  "social",
+  "overlay",
+  "twitter"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add x-post   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 5,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -1,0 +1,26 @@
+{
+ "name": "macos-tahoe-liquid-glass",
+ "type": "registre",
+ "title": "macOS Tahoe Liquid Glass Desktop",
+ "description": "3D MacBook with a macOS Tahoe-style desktop, glass menu bar, Finder window, dock, and cinematic device camera move.",
+ "when_to_use": "Registre HyperFrames (bloc) : html-in-canvas, 3d, macos, tahoe, gltf",
+ "tags": [
+  "html-in-canvas",
+  "3d",
+  "macos",
+  "tahoe",
+  "gltf"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add macos-tahoe-liquid-glass   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 15,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

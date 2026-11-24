@@ -1,0 +1,26 @@
+{
+ "name": "mk-background",
+ "type": "registre",
+ "title": "Minimal Gradient Background",
+ "description": "Procedural soft-blob gradient backdrop in a minimalist presentation style: two radial blobs drifting over a base color, with an animatable rounded-card bar mask and optional frosted-glass mode",
+ "when_to_use": "Registre HyperFrames (bloc) : background, gradient, minimal, professional, presentation",
+ "tags": [
+  "background",
+  "gradient",
+  "minimal",
+  "professional",
+  "presentation"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add mk-background   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 10,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

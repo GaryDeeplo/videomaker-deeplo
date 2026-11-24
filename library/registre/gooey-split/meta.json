@@ -1,0 +1,28 @@
+{
+ "name": "gooey-split",
+ "type": "registre",
+ "title": "Gooey Split",
+ "description": "A dot splits into a three-dot menu with a gooey metaball neck, spins into a swirl mark under directional shutter motion blur, then breaks back into three dots and merges into one. The goo is an SVG blur-and-threshold filter on the dots; the blur integrates each part along its real trajectory, so the smear follows the direction and speed of the spin.",
+ "when_to_use": "Registre HyperFrames (bloc) : effect, gooey, metaball, motion-blur, morph, logo",
+ "tags": [
+  "effect",
+  "gooey",
+  "metaball",
+  "motion-blur",
+  "morph",
+  "logo",
+  "icon"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add gooey-split   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 4.7,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

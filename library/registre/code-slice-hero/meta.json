@@ -1,0 +1,29 @@
+{
+ "name": "code-slice-hero",
+ "type": "registre",
+ "title": "Code Slice Hero",
+ "description": "A tiled headline surface flips cell by cell under a sweeping depth field to reveal the rear headline.",
+ "when_to_use": "Registre HyperFrames (bloc) : 3d-motion, transition, typography, tiles, flip, webgl2",
+ "tags": [
+  "3d-motion",
+  "transition",
+  "typography",
+  "tiles",
+  "flip",
+  "webgl2",
+  "shadows",
+  "two-headlines"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add code-slice-hero   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 8,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

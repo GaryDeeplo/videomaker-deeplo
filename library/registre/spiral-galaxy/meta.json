@@ -1,0 +1,26 @@
+{
+ "name": "spiral-galaxy",
+ "type": "registre",
+ "title": "Spiral Galaxy",
+ "description": "A spiral galaxy seen from outside, turning with real differential rotation: inner stars orbit faster than outer ones, so the arms wind up over the shot instead of spinning rigidly. 20,000 additive GPU sprites, seeded once and solved directly from time, so any frame can be rendered on its own.",
+ "when_to_use": "Registre HyperFrames (bloc) : hero, space, particles, webgl, background",
+ "tags": [
+  "hero",
+  "space",
+  "particles",
+  "webgl",
+  "background"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add spiral-galaxy   (variables : stars, arms, rate, glow, size, core, rim)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 10,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -1,0 +1,27 @@
+{
+ "name": "gallery-tunnel",
+ "type": "registre",
+ "title": "Gallery Tunnel",
+ "description": "An infinite corridor of panels: a square tunnel receding to a vanishing point, its floor, ceiling and walls tiled with saturated colour slabs and caller-supplied images that swell toward camera and exit past you, the far end dissolving into fog.",
+ "when_to_use": "Registre HyperFrames (bloc) : webgl, 3d, background, showcase, depth, loop",
+ "tags": [
+  "webgl",
+  "3d",
+  "background",
+  "showcase",
+  "depth",
+  "loop"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add gallery-tunnel   (variables : images, imageMix, speed, palette, grid, fill, fog, edgeColor, edgeOpacity, backdrop)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 12,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

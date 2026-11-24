@@ -1,0 +1,25 @@
+{
+ "name": "heygen-avatar-promo-card",
+ "type": "registre",
+ "title": "HeyGen Avatar Promo Card",
+ "description": "A portrait HeyGen offer card pairs a moving avatar mosaic with bold promotional typography and a branded callout",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, avatar, promotion, vertical",
+ "tags": [
+  "showcase",
+  "avatar",
+  "promotion",
+  "vertical"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add heygen-avatar-promo-card   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1080,
+  "height": 1920
+ },
+ "duration": 10,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

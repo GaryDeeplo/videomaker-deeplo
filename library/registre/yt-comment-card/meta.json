@@ -1,0 +1,25 @@
+{
+ "name": "yt-comment-card",
+ "type": "registre",
+ "title": "Comment Cards",
+ "description": "Social comments typing on over footage: avatar pop, username and time, per-character typewriter, likes row; image avatars or initials chips",
+ "when_to_use": "Registre HyperFrames (bloc) : social, comments, creator, overlay",
+ "tags": [
+  "social",
+  "comments",
+  "creator",
+  "overlay"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add yt-comment-card   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 8,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

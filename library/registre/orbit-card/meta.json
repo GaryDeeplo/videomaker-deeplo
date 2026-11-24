@@ -1,0 +1,28 @@
+{
+ "name": "orbit-card",
+ "type": "registre",
+ "title": "Orbit Card",
+ "description": "A single feature card orbits a dot sphere on approved Blender camera motion.",
+ "when_to_use": "Registre HyperFrames (bloc) : 3d-motion, cards, feature-reveal, dots, orbit, blender-motion",
+ "tags": [
+  "3d-motion",
+  "cards",
+  "feature-reveal",
+  "dots",
+  "orbit",
+  "blender-motion",
+  "sphere"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add orbit-card   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 10,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

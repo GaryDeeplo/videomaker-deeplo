@@ -1,0 +1,18 @@
+{
+ "name": "bulle-message",
+ "type": "caption",
+ "title": "Bulles de message",
+ "description": "Chaque groupe dans une bulle blanche arrondie qui arrive comme un message ; mot fort en couleur d'accent (assombrie si trop claire).",
+ "when_to_use": "Ton conversation, objection, citation ; plein écran ou écran partagé.",
+ "tags": [
+  "sous-titres",
+  "bulle",
+  "message"
+ ],
+ "files": [],
+ "usage": "build_composition.py --style bulle (ou text.captionStyle: bulle)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

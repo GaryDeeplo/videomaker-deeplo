@@ -329,6 +329,9 @@ UI_WORDS = [
     ("repo", r"\b(github|depot|repo|open source|etoiles)\b"),
     ("code", r"\b(lignes de code|ton code|votre code|refactor\w*|du code)\b"),
     ("paths", r"\b(le plus simple|la plus simple|plus simple que)\b"),
+    ("settings", r"\b(reglages|parametres|instructions personnalisees|prompt systeme|colle\w* (cette|la) (ligne|phrase|consigne))\b"),
+    ("post", r"\b(tweet\w*|a poste|a publie|sur x|sur linkedin)\b"),
+    ("loupe", r"\b(petites lignes|en tout petit|personne ne lit|cache\w* dans)\b"),
 ]
 FORM = [("reserv", "Réservation", "Créneau", "Réserver", "Réservé"), ("command", "Commande", "Produit", "Commander", "Commandé"),
         ("devis", "Demande de devis", "Projet", "Envoyer", "Envoyé"), ("inscri", "Inscription", "E-mail", "S'inscrire", "Inscrit"),
@@ -529,6 +532,14 @@ def draft_panels(sents, words, chapters, brand=None):
                 return {"type": "code", "word": w, "occurrence": n, "file": "TODO", "before": ["TODO"], "after": ["TODO"]}
             if typ == "paths":
                 return {"type": "paths", "word": w, "occurrence": n, "count": 6, "label": "Le plus simple", "start": "TODO"}
+            if typ == "settings":
+                return {"type": "settings", "word": w, "occurrence": n, "app": "TODO", "title": "Instructions personnalisées",
+                        "text": "TODO : la consigne exacte", "action": "save"}
+            if typ == "post":
+                return {"type": "post", "word": w, "occurrence": n, "platform": "x", "name": "TODO", "handle": "TODO",
+                        "text": "TODO : texte exact de la publication (source réelle)", "date": "TODO"}
+            if typ == "loupe":
+                return {"type": "loupe", "word": w, "occurrence": n, "title": "TODO", "find": clean(short(ws, 4)) or "TODO", "label": "TODO"}
             return {"type": "browser", "word": w, "occurrence": n, "url": site,
                     "site": {"title": brand.get("tagline") or bname, "sub": "", "button": "TODO", "tiles": []}, "notes": []}
         return None

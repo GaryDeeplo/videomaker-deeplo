@@ -1,0 +1,27 @@
+{
+ "name": "rack-focus",
+ "type": "registre",
+ "title": "Rack Focus",
+ "description": "A focus pull with real aperture bokeh: the focal plane travels from a near subject to a far one, so one resolves as the other blows into hard-edged polygon discs that clip to a cat's eye toward the corners. A focus pull only reads against content at two clearly separated depths, so this block carries its own depth-layered night exterior and puts both subject depths on variables.",
+ "when_to_use": "Registre HyperFrames (bloc) : webgl, shader, camera, depth, cinematic, showcase",
+ "tags": [
+  "webgl",
+  "shader",
+  "camera",
+  "depth",
+  "cinematic",
+  "showcase"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add rack-focus   (variables : nearfocus, farfocus, focallength, aperture, blades, catseye, pullstart, pullduration, pullease, bokeh, backdrop)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

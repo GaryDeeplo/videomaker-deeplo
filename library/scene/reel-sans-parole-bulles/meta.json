@@ -1,0 +1,19 @@
+{
+ "name": "reel-sans-parole-bulles",
+ "type": "scene",
+ "title": "Reel sans parole : bulles",
+ "description": "Clips sur la musique, bulles blanches qui arrivent comme des messages (la 2e de l'autre côté), *mot* en couleur.",
+ "when_to_use": "Regardable sans le son, traduisible par le seul texte : liste, objection, coulisses.",
+ "tags": [
+  "sans-parole",
+  "bulle",
+  "musique",
+  "footage"
+ ],
+ "files": [],
+ "usage": "work/<slug>_footage.json : \"bubble\": \"texte *mot*\" (ou liste de 2-3) sur un plan, puis build_footage.py",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

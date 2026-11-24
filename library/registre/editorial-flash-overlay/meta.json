@@ -1,0 +1,28 @@
+{
+ "name": "editorial-flash-overlay",
+ "type": "registre",
+ "title": "Editorial Flash Overlay",
+ "description": "Finite neutral-warm light layers for a seek-safe camera-flash cut or social reveal",
+ "when_to_use": "Registre HyperFrames (bloc) : flash, editorial, social, light, transition, overlay",
+ "tags": [
+  "flash",
+  "editorial",
+  "social",
+  "light",
+  "transition",
+  "overlay",
+  "media-treatment-overlay"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add editorial-flash-overlay   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 4,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

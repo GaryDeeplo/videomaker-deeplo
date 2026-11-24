@@ -117,9 +117,11 @@ def cmd_make(a):
             islands.append({"id": k, "text": s["text"], "speech_start": s["start"], "speech_end": s["end"],
                             "cut_start": cs, "cut_end": ce, "keep": True, "reason": p.get("why", "")})
         span = islands[-1]["cut_end"] - islands[0]["cut_start"]
+        from cut_plan import fillers  # « euh », mots doublés, blancs dans la phrase, tics et reformulations, comme un rush
+        fl = fillers(islands, [words[ss[k]["w0"]:ss[k]["w1"] + 1] for k in ids])
         write_json(child / "work" / f"{sl}_plan.json", {"slug": sl, "source": words_d["source"], "duration": round(span, 3),
                                                        "range": [islands[0]["cut_start"], islands[-1]["cut_end"]],
-                                                       "islands": islands, "from_long": job.name})
+                                                       "islands": islands, "fillers": fl, "from_long": job.name})
         if p.get("hook"):
             write_json(child / "work" / f"{sl}_hook.json", {"text": p["hook"]})
         if p.get("post"):

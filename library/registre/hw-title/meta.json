@@ -1,0 +1,25 @@
+{
+ "name": "hw-title",
+ "type": "registre",
+ "title": "Handwritten Title",
+ "description": "Handwritten display text with a scalar-driven word-by-word highlight sweep and a seeded squiggle underline sized to the text; boils",
+ "when_to_use": "Registre HyperFrames (bloc) : handwritten, typography, title-card, overlay",
+ "tags": [
+  "handwritten",
+  "typography",
+  "title-card",
+  "overlay"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add hw-title   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

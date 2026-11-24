@@ -1,0 +1,19 @@
+{
+ "name": "objet-calendrier",
+ "type": "component",
+ "title": "Calendrier du mois",
+ "description": "Mois qui apparaît case par case, jours marqués qui s'allument, cartes à côté.",
+ "when_to_use": "« Chaque semaine », un rythme, un planning.",
+ "tags": [
+  "calendrier",
+  "mois",
+  "planning",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"calendar\", \"word\": \"…\", \"month\": 10, \"year\": 2026, \"marks\": [5, 12, 19, 26], \"title\": \"chaque semaine.\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

@@ -156,7 +156,7 @@ python scripts/build_text.py <job> <slug>                      # captions + over
 #   TU vérifies : orthographe des captions, keep / punch / reason des overlays
 python scripts/add_music.py <job> <slug> --mood upbeat         # ou --id <piste>, --file <fichier client>, --url <YouTube/SoundCloud>
 python scripts/broll.py moments <job> <slug>                  # plans de coupe : moments candidats (facultatif, voir plus bas)
-python scripts/build_composition.py <job> <slug> [--style pop|karaoke|minimal|boite|impact|duo|mono] [--emoji] [--mode captions|overlays|both]
+python scripts/build_composition.py <job> <slug> [--style pop|karaoke|minimal|boite|impact|duo|mono|bulle|souligne] [--emoji] [--mode captions|overlays|both]
 cd <job> && npx --yes hyperframes@0.9.71 check                 # 0 erreur exigée
 npx --yes hyperframes@0.9.71 snapshot --at T1,T2,T3            # REGARDE la planche avant de montrer quoi que ce soit
 npx --yes hyperframes@0.9.71 preview                           # Studio pour l'utilisateur
@@ -220,6 +220,27 @@ en plus (détails et exemple JSON dans `scripts/panel.py`) :
 - Contenu tech (tes propres vidéos aussi) : `repo` (carte de dépôt GitHub, étoiles lues en direct), `code` (avant / après,
   lignes barrées puis nouvelles en vert), `paths` (lignes emmêlées, le chemin simple en accent). **Vrais logos d'outils** :
   `"icon": "logo:claude"` (Simple Icons, CC0 ; usage informatif des marques, jamais pour faire croire à un partenariat).
+- `settings` : panneau de réglages d'un outil (« Instructions personnalisées ») où la consigne exacte se tape, interrupteur,
+  bouton puis « ✓ Enregistré » (`"action": "copy"` -> « Copié ») : la ressource copiable, prétexte du « Commente : MOT ».
+- `post` : publication recréée (X, LinkedIn, Threads) comme source : texte qui se révèle, compteurs, cœur. **Texte exact
+  et daté d'une vraie publication** uniquement, jamais une citation inventée ni prêtée à quelqu'un.
+- `loupe` : mur de texte illisible (CGU, contrat, devis, ou `text` du client) ; une loupe le parcourt et s'arrête sur `find`,
+  qui passe en couleur + étiquette (`label`) : le problème rendu visible.
+- Objets (`scripts/objets.py`, même JSON) : `map` (carte du monde, pays qui s'allument, arcs depuis `from`, `zoom`),
+  `calendar` (mois qui se remplit, jours marqués, cartes), `timeline` (pistes de logiciel de montage qui se remplissent,
+  tête de lecture), `invoice` (devis dont le total monte, tampon), `revenue` (montant qui monte, courbe, paiements reçus qui
+  s'empilent), `clock` (`"unit": "minutes"` chronomètre « 30 minutes. » ; `"jours"` horloge qui tourne « J+30 »).
+  Bloc plein écran `scan-visage` (motions) : coins de cadrage, visage désaturé, ligne qui balaie, 0 -> 100 %, verdict.
+- `flap` : tableau d'affichage à palettes (2 à 4 lignes de 14 caractères) : chiffres ou mots qui défilent puis se posent.
+- **Pack éditorial** (ton premium, inspiré des pubs « montage fait par IA ») : `"kicker": "TEMPS DE CRÉATION"` sur un
+  temps fort -> sur-titre mono en capitales au-dessus ; titres courts à point final (« Le montage *automatisé.* ») ;
+  `"fond": "papier"` -> ce temps fort sur papier quadrillé clair (alternance sombre / papier, relance l'attention) ;
+  `visual.panelThread: true` -> fil conducteur : une courbe d'accent traverse tout le panneau et avance avec la vidéo ;
+  `visual.panelHud: true` -> repères mono dans les coins (nom `hudLabel`, timecode, temps fort n / N, `hudNote`) ;
+  avec les sous-titres `souligne`.
+- **Alternance plein écran / écran partagé** : `{"type": "face", "word": "…"}` -> visage plein écran (coupe franche)
+  jusqu'au temps fort suivant, qui ramène le panneau. Une phrase perso, une émotion, une conclusion : face ; une preuve,
+  une liste, un outil : panneau. Les sous-titres suivent (jointure / bas de l'image).
 - Ces maquettes marchent aussi dans l'**infographie** (`build_data.py`) : même JSON dans `work/<slug>_data.json`.
 - **Format liste** : `"list": {"n": 1, "of": 5, "name": "Perplexity", "icon": "search"}` sur les temps forts d'un même élément ->
   en-tête fixe « 1 SUR 5 · Nom » relié par un trait (top conseils, erreurs, outils, étapes) ; `"style": "tabs"` -> rangée
@@ -301,11 +322,68 @@ python scripts/build_footage.py <job> <slug> [--fit blur] [--style boite]   # pu
   qui bouge ET est net (la personne qui peint, la main qui pétrit) ; plan large sans sujet net : milieu. `"focus": 0.3`
   (0 = gauche, 1 = droite) sur un plan pour imposer, `"focus": false` dans le plan pour recadrer au milieu. Vérifie sur le snapshot.
 - **Avant / après** : `compare` avec deux clips filmés du même endroit -> volet qui découvre l'après.
+- **Reel sans parole (musique + texte)** : `"bubble": "On dirait que tes vidéos sont faites *par IA*"` (ou une liste de 2-3)
+  sur un plan -> bulles blanches qui arrivent comme des messages sur les temps de la musique, la 2e de l'autre côté ;
+  `*mot*` en couleur. Pas de voix : regardable sans le son, traduisible par le seul texte. Fin : bloc `commente-mot`.
 - **Série** : `series` (« Journal de chantier · Semaine 4 sur 12 ») en haut, barre de progression ; un job par épisode.
 - **Voix off** : les plans changent sur les débuts de phrases (ou sur `word`), sous-titres au style choisi. Sinon musique.
 - Un clip où quelqu'un parle (`parole` dans le scan, voix détectée) : `transcribe.py` pour en faire une prise de parole
   ou un repère (« jour 12, on casse le mur »). Le son des clips n'est pas gardé (machines, vent).
 - Avant que le client filme : `guide.py --metier chantier` (points fixes, plans de 10 s, accéléré posé, phrase repère).
+
+### Mots dynamiques (rush plein écran, style « dynamic word reels »)
+`python scripts/build_composition.py <job> <slug> --mots` : un mot géant par idée DERRIÈRE la personne (détourage local,
+calculé seulement là où il sert, haut de la tête mesuré par passage), les petits mots de la phrase posés autour, une carte
+de verre en bas qui reprend la phrase avec un picto, sortie en traînée de flou, transition fouettée + petite secousse à
+chaque coupe du dérush. Un chiffre : `"count": {"to": 50, "icon": "house"}` (grille d'icônes qui s'allument, ≤ 60) ou
+`{"to": 365, "unit": "jours"}` (barre + compteur). Remplace les sous-titres (`--mode captions` pour garder les deux).
+Couleur : `mots.couleur` dans la config > accent de la charte du client > tirée de l'image (teinte dominante du rush ; scène très
+colorée -> teinte opposée ; jamais de vert acide), en dégradé clair comme la référence. Proposé dans `work/<slug>_mots.json` (1er lancement) : relis-le (mot fort, satellites, carte, picto), puis relance.
+Plein écran seulement (pas en écran partagé, fond flouté ni suivi du visage). Compter 1 à 4 min de détourage.
+Cadrage : le mot ne passe DERRIÈRE la tête que s'il y a de la place au-dessus (plan large, tête sous le haut du cadre,
+comme les références filmées en pied) ; en plan serré (tête collée au haut), il se met devant, en haut, sinon le visage
+le cache. Rapport : `"place": "derrière" | "devant (cadrage serré)"`. Rush paysage : `visual.fit: "cover"` +
+`visual.focusX` (ex. 30) pour centrer la personne, vérifie sur le snapshot.
+
+### Collage éditorial (motion design pur, sur musique, sans voix)
+`python scripts/build_collage.py <job> <slug>` (work/<slug>_collage.json, format dans l'en-tête du script ; musique par
+add_music.py, les écrans tombent sur ses temps) : papier crème vignetté / crème / noir, titres en serif Didone (Bodoni
+Moda, OFL), une couleur d'accent, objets photo détourés en local (`"query"` Pixabay ou `"image"` du client), mots qui
+arrivent un par un ou lettres qui tombent (`"anim": "lettres"`), `"titre2"` en accent à mi-écran, étiquette dont le mot
+change (`"Certains le [dépensent|gaspillent]"`), objet qui se fend en morceaux étiquetés (`"pieces"`), formes d'accent
+(`"forme": "rayon | fleches | bande | disque"`), petites silhouettes (`"gens": 6`), décor (`"deco": ["codebarre",
+"trame", "texte"]`). Une idée par écran, 2,5 à 3 s. Regarde le snapshot de chaque écran : si Pixabay donne un objet
+à côté du sujet, change la recherche ou `"n": 1` (2e résultat). Crédits Pixabay dans renders/credits.txt.
+
+### Registre HyperFrames (environ 400 blocs et composants officiels, aperçus dans la bibliothèque)
+Avant de créer un motion, cherche aussi dans le registre : `python scripts/library.py search "…"` couvre
+`library/registre/` (type `registre`, aperçu rendu en local depuis la démo de chaque élément ; titres et descriptions en
+anglais). Familles utiles : styles de sous-titres (`caption-*`), bandeaux nom (`lt-*`, `lower-third-bild`), curseurs et
+démos d'interface (`cursor-*`, `agent-cursor`, `typed-prompt`), échanges IA (`claude-exchange`, `chatgpt-exchange`),
+code (`code-*`, `terminal-simulator`), annotations dessinées à la main (`hw-*`, `marker-highlight`), effets de texte
+(`scramble-reveal`, `kinetic-type-swap`, `weight-wave`…), transitions (`whip-pan-cut`, `match-cut`, `cinematic-zoom`…),
+données (`bar-chart-race`, `chart-story`, `count-up`, `world-map`), réseaux sociaux (`x-post`, `yt-comment-card`,
+`instagram-follow`), appareils (`vfx-iphone-device`, `multi-device-splay`).
+Installer dans le job : `python scripts/library.py use <nom> <job>` (= `npx hyperframes add <nom>` : le fichier arrive dans
+`compositions/`), puis monter le bloc comme les autres (motions / scène) en remplissant ses variables (liste dans
+l'usage). Les shaders WebGPU du registre (orbes, fonds animés) ne se rendent pas en local : écartés.
+
+### Vitrine « Brut / Montage » et démo dans l'appli (montrer ce que fait le skill)
+Pour tes propres Reels (ou pour présenter le skill à un client), autour d'un montage DÉJÀ rendu :
+```bash
+python scripts/showcase.py vitrine <job> <slug> [--par "Claude"] [--cta "Clique sur le *lien en bas*"] [--render draft]
+python scripts/showcase.py demo <job> <slug> --objection "un_monteur: Claude sait pas monter." [--effets "a;b;c"] [--render draft]
+```
+- `vitrine` : « Brut » (le rush d'origine, calé sur le montage : il saute à chaque coupe, « ✂ −0,5 s », timecode et barre
+  de lecture) à côté de « Montage fait par “Claude” » (avec son son) ; pied d'appel à l'action. Vertical : côte à côte ;
+  paysage : l'un sous l'autre. La preuve du travail vaut mieux qu'un discours.
+- `demo` : fausse appli d'agent : l'objection d'un sceptique épinglée en haut (accroche), la demande (vignette du rush +
+  skill + phrase), « Voilà ton reel ✓ », le montage qui joue, les effets qui se cochent (lus dans le job), Télécharger
+  cliqué -> « Enregistré ». Une objection réelle ou plausible et générique, jamais attribuée à une vraie personne.
+- `portfolio` : `showcase.py portfolio <job> <slug> --lib nom1,nom2,… | --videos renders/a.mp4,… --entete "*Premium* Motion
+  Design"` -> 3 écrans verticaux en quinconce qui jouent en même temps, décalés (toujours quelque chose qui bouge), titre
+  fixe ; idéal pour montrer la bibliothèque ou les réalisations d'un client.
+- Projets dans `work/vitrine/` et `work/demo/` (check + snapshot là-bas), rendus dans `renders/<slug>_vitrine.mp4` / `_demo.mp4`.
 
 ### Avec un script écrit (texte prévu avant de filmer)
 ```bash
@@ -571,6 +649,8 @@ toujours à 30 i/s. Ne lance pas plusieurs rendus en parallèle : ça ne va pas 
 ### Décider le dérush (`plan.json`)
 - **Script connu** : aligne les îlots sur le script, garde la meilleure prise de chaque phrase.
 - **Script inconnu** : reconstitue le texte voulu, garde la **dernière prise complète** de chaque phrase.
+- Fillers du plan : relis les « reformulation » (même idée redite) et les « tic » : remove: true seulement si ça
+  n'enlève aucune idée (« des vidéos …, et des photos … » porte une idée : on garde). Les shorts ont aussi leurs fillers.
 - Jette : faux départs, phrases interrompues, mots isolés, hésitations seules, consignes dites à la caméra
   (« celle-là est ratée, je la refais »), hors-sujet par rapport au but de la vidéo.
 - Ne jette jamais un îlot que tu n'as pas lu. Remplis `reason` pour chaque îlot jeté.
@@ -594,6 +674,10 @@ toujours à 30 i/s. Ne lance pas plusieurs rendus en parallèle : ça ne va pas 
   Chaque punch reçoit un whoosh calé sur son pic.
 
 - `mono` : majuscules machine à écrire, chaque mot dans sa boîte noire, le mot dit en couleur d'accent (ton tech / expert).
+- `souligne` (éditorial) : petits, casse normale, les mots à venir en gris, le mot dit en blanc, le mot fort en couleur et
+  souligné d'un trait qui se dessine. Ton premium, explicatif.
+- `bulle` : chaque groupe dans une bulle blanche arrondie qui arrive comme un message, le mot fort en couleur d'accent
+  (assombrie si l'accent est trop clair pour le blanc). Ton conversation, objection, citation.
 - Styles en plus : `boite` (le mot dit passe dans une boîte couleur d'accent, style CapCut), `impact` (gros, contour
   noir, le mot dit grossit en couleur d'accent, style Hormozi ; mettre `text.captionMaxWords` à 2 ou 3), `duo` (les
   nombres ou le mot fort du groupe en couleur d'accent). `--emoji` (ou `text.captionEmoji: true`) : un emoji après les

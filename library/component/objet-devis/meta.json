@@ -1,0 +1,19 @@
+{
+ "name": "objet-devis",
+ "type": "component",
+ "title": "Devis",
+ "description": "Devis papier : lignes qui arrivent, total qui monte, tampon « ACCEPTÉ ».",
+ "when_to_use": "Ce que coûte une prestation (réelle ou annoncée comme exemple).",
+ "tags": [
+  "devis",
+  "facture",
+  "prix",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"invoice\", \"word\": \"…\", \"title\": \"…\", \"items\": [{\"label\": \"…\", \"value\": 1850}], \"stamp\": \"ACCEPTÉ\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

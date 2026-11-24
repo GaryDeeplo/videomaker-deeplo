@@ -1,0 +1,20 @@
+{
+ "name": "objet-chrono",
+ "type": "component",
+ "title": "Chronomètre / horloge J+",
+ "description": "Chronomètre qui se remplit (« 30 minutes. ») ou horloge qui tourne (« J+30 »).",
+ "when_to_use": "Un temps de création, un délai, une urgence.",
+ "tags": [
+  "horloge",
+  "chrono",
+  "temps",
+  "urgence",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"clock\", \"word\": \"…\", \"to\": 30, \"unit\": \"minutes|jours\", \"label\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

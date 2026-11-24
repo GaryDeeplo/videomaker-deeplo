@@ -68,6 +68,30 @@ def cuts(v, dur):
     return ts
 
 
+def zone_changes(v, dur, zone, fps=4):
+    """Changements d'image dans une moitié seulement (écran partagé : le panneau change, le visage non). Les transitions
+    animées (fondus, glissés) échappent au détecteur de coupes : on compare la structure de l'image à 0,5 s d'écart."""
+    crop = "crop=iw:ih/2:0:0" if zone == "haut" else "crop=iw:ih/2:0:ih/2"
+    p = subprocess.run(["ffmpeg", "-v", "error", "-i", str(v), "-vf", f"{crop},fps={fps},scale=64:-2,format=gray", "-f", "rawvideo", "-"],
+                       capture_output=True)
+    info = vinfo(v)
+    h = round(info["hauteur"] / 2 * 64 / info["largeur"] / 2) * 2 or 2
+    n = len(p.stdout) // (64 * h)
+    if n < 4:
+        return []
+    f = np.frombuffer(p.stdout[:n * 64 * h], np.uint8).reshape(n, -1).astype(np.float32)
+    lag = max(1, fps // 2)
+    ts, last = [], -9.0
+    for k in range(lag, n):
+        a, b = f[k - lag], f[k]
+        c = float(np.corrcoef(a, b)[0, 1]) if a.std() > 1 and b.std() > 1 else 1.0
+        t = k / fps
+        if c < 0.75 and t - last >= 1.0:  # la structure a changé : nouvelle maquette / nouveau plan
+            ts.append(round(t, 2))
+            last = t
+    return ts
+
+
 def speech(v):
     """Mots horodatés (langue détectée), sur le CPU."""
     import os
@@ -139,6 +163,9 @@ def analyse(src, nom):
         "parole": {"langue": lang, "premier_mot": words[0]["start"] if words else None,
                    "mots_par_seconde": round(len(words) / talk, 2) if talk else None,
                    "part_de_parole": round(talk / dur, 2), "debut": " ".join(w["w"] for w in words if w["start"] < 3.5)[:200]},
+        "zones": {z: (lambda ts: {"changements_par_minute": round(len(ts) / dur * 60, 1),
+                                   "intervalle_median_s": round(float(np.median(np.diff([0.0] + ts))), 2) if ts else None})(zone_changes(v, dur, z))
+                  for z in ("haut", "bas")},
         "musique": {"tempo_bpm": tempo, "coupes_sur_le_temps": on_beat},
         "volume_lufs": loudness(v),
         "mouvement_moyen": round(float(mot.mean()), 2) if len(mot) else None,
@@ -214,14 +241,55 @@ def apply(job_name, slug, nom):
 
 # dispositifs repérés dans les références -> ce que le skill sait déjà faire (mots-clés -> capacité)
 CAPACITES = [
+    (("toutes petites silhouettes",), "petites silhouettes (build_collage gens)"),
+    (("vitrine de 3", "portfolio"), "vitrine portfolio (showcase.py portfolio)"),
+    (("collage", "didone", "objets photo détourés"), "collage éditorial (build_collage.py)"),
+    (("se fend",), "objet qui se fend en morceaux étiquetés (build_collage pieces)"),
+    (("étiquette rouge", "échangé"), "étiquette dont le mot change (build_collage etiquette [A|B])"),
+    (("lettres qui tombent", "mots qui s'ajoutent"), "titres mot à mot / lettres qui tombent (build_collage anim)"),
+    (("formes d'accent", "rayon depuis"), "formes d'accent (build_collage forme)"),
+    (("code-barres", "trame de points"), "décor éditorial (build_collage deco)"),
+    (("aucune voix", "motion design pur"), "motion design sur musique (build_collage, build_scenes)"),
+    (("brut / montage",), "vitrine brut / montage (showcase.py vitrine)"),
+    (("fausse appli", "objection épinglée"), "démo dans l'appli + objection épinglée (showcase.py demo)"),
+    (("satellites", "carte de verre", "traînée de flou", "fouettée", "grille d'icônes", "compteur de jours"), "mots dynamiques (build_composition --mots)"),
+    (("sur-titre", "repères mono", "fil conducteur", "deux univers", "gris -> blanc"), "pack éditorial (kicker, fond papier, panelThread, panelHud, souligne)"),
+    (("carte du monde",), "carte du monde (objets map)"),
+    (("calendrier",), "calendrier (objets calendar)"),
+    (("timeline",), "timeline de montage (objets timeline)"),
+    (("devis", "facture"), "devis (objets invoice)"),
+    (("revenus", "paiements"), "revenus + paiements (objets revenue)"),
+    (("chronomètre", "horloge"), "horloge / chrono (objets clock)"),
+    (("scan du visage",), "scan du visage (bloc scan-visage)"),
+    (("checklist",), "checklist (panel check)"),
+    (("téléphones",), "téléphone (scène telephone-capture)"),
+    (("néon",), "néon (accroche-neon)"),
+    (("logos",), "logos d'outils (logo:…) + tarif"),
+    (("silhouettes", "foule"), "foule (infographie-foule)"),
+    (("courbe",), "courbe (panel chart)"),
+    (("anneau",), "jauge (bloc jauge)"),
+    (("barre de saisie",), "saisie (panel search / settings)"),
+    (("mur de vidéos",), "mosaïque (accroche-mosaique) + titre"),
+    (("bouton cliqué",), "bouton cliqué (bouton-cta)"),
+    (("colonnes numérotées",), "étapes numérotées (panel steps)"),
+    (("vidéo dans la vidéo",), "vidéo dans la vidéo (panel image vidéo + bouton-cta)"),
     (("série numérotée", "liste numérotée", "épisode"), "liste « 1 sur 5 » / série (panel list, footage series)"),
-    (("alternance",), None),
+    (("alternance",), "alternance plein écran / écran partagé (temps fort face)"),
     (("écran partagé", "split"), "écran partagé (layout split)"),
     (("illustration", "plan d'ambiance", "b-roll", "banque d'images"), "plans de coupe (broll.py)"),
     (("piles de cartes", "cartes"), "piles de cartes d'outils (tools_stack)"),
+    (("fausse interface",), "fin « Commente : MOT » (bloc commente-mot)"),
     (("commentaire", "commente"), "fin « Commente : MOT » (bloc commente-mot)"),
-    (("sans parole",), None),
-    (("bulles de texte", "bulle"), None),
+    (("sans parole",), "reel sans parole : clips sur la musique + bulles (build_footage, bubble)"),
+    (("bulles de texte", "bulle"), "sous-titres en bulles (style bulle)"),
+    (("fenêtre d'appli", "chat qui écrit"), "maquette chat (panel ui chat)"),
+    (("palettes", "tableau d'affichage"), "tableau à palettes (panel ui flap)"),
+    (("mur de texte", "loupe"), "mur de texte + loupe (panel ui loupe)"),
+    (("réglages",), "panneau de réglages (panel ui settings)"),
+    (("carte de publication", "tweet"), "publication recréée (panel ui post)"),
+    (("icônes de produits",), "logos d'outils (logo:…)"),
+    (("mono",), "sous-titres mono (style mono)"),
+    (("changement de maquette",), "écran partagé + temps forts (panel)"),
     (("maquette",), "maquettes d'interface (panel ui)"),
     (("avant / après", "avant-après"), "avant / après (compare)"),
     (("zoom",), "zooms sur les mots forts"),

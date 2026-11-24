@@ -1,0 +1,27 @@
+{
+ "name": "us-map-bubble",
+ "type": "registre",
+ "title": "US Bubble Map",
+ "description": "Animated US bubble map with proportional city markers, value callouts, and connection lines — composable with us-map",
+ "when_to_use": "Registre HyperFrames (bloc) : data, map, geography, usa, bubble, cities",
+ "tags": [
+  "data",
+  "map",
+  "geography",
+  "usa",
+  "bubble",
+  "cities"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add us-map-bubble   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 12,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

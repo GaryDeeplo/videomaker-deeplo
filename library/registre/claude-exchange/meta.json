@@ -1,0 +1,27 @@
+{
+ "name": "claude-exchange",
+ "type": "registre",
+ "title": "Claude Exchange",
+ "description": "A portrait Claude-style exchange types a prompt, works through search and reasoning steps, then streams a detailed answer with citations and actions",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, mock-ui, ai, chat, vertical, ad-template",
+ "tags": [
+  "showcase",
+  "mock-ui",
+  "ai",
+  "chat",
+  "vertical",
+  "ad-template"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add claude-exchange   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1080,
+  "height": 1920
+ },
+ "duration": 21.4,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

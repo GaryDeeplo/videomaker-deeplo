@@ -3,6 +3,14 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.24
+- Mots dynamiques : un mot géant par idée, qui passe derrière la personne quand le cadrage le permet (sinon devant), petits mots autour, carte de verre qui reprend la phrase, compteur en grille d'icônes ou en barre, transition fouettée aux coupes ; couleur tirée de l'image si la charte n'en impose pas.
+- Vitrine « Brut / Montage » (le rush d'origine à côté du montage, coupes visibles), démo dans une appli d'agent (objection épinglée, effets cochés, téléchargement) et vitrine portfolio (3 vidéos en quinconce).
+- Collage éditorial sans voix, sur la musique : papier crème, serif Didone, objets photo détourés, étiquette dont le mot change, objet qui se fend en morceaux étiquetés, formes d'accent, petites silhouettes.
+- Écran partagé : nouvelles maquettes (réglages avec consigne tapée, publication recréée, mur de texte + loupe, tableau à palettes, carte du monde, calendrier, timeline de montage, devis, revenus, horloge), alternance plein écran / écran partagé, pack éditorial (sur-titres, fond papier, fil conducteur, repères de coin).
+- Sous-titres : styles « bulle » (message) et « souligne » (éditorial) ; reel sans parole avec bulles posées sur la musique.
+- Bloc « scan du visage » ; registre officiel HyperFrames dans la bibliothèque (149 blocs et composants avec aperçu, installables en une commande) ; galerie : nouveautés en premier.
+
 ## 2026.11.23.5
 - Piles de cartes d'outils : captures des sites prises en local, présentées par 3 sur votre vidéo floutée, au rythme de la musique.
 - Fin « Commente : MOT » : le mot s'écrit, un commentaire arrive, puis le message reçu.

@@ -1,0 +1,25 @@
+{
+ "name": "vpn-youtube-spot",
+ "type": "registre",
+ "title": "VPN YouTube Spot",
+ "description": "Snappy Apple-style YouTube insert showing a phone finding and installing a friendly VPN app with sound effects.",
+ "when_to_use": "Registre HyperFrames (bloc) : app, showcase, youtube, sfx",
+ "tags": [
+  "app",
+  "showcase",
+  "youtube",
+  "sfx"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add vpn-youtube-spot   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 7,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

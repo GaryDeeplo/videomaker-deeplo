@@ -1,0 +1,20 @@
+{
+ "name": "mots-dynamiques",
+ "type": "scene",
+ "title": "Mots dynamiques",
+ "description": "Mot géant derrière la personne, petits mots autour, carte de verre, compteur en grille d'icônes ou en barre, sortie en flou.",
+ "when_to_use": "Reel face caméra sans sous-titres classiques : une idée = un mot géant.",
+ "tags": [
+  "mots",
+  "derriere",
+  "detourage",
+  "compteur",
+  "dynamic-words"
+ ],
+ "files": [],
+ "usage": "build_composition.py <job> <slug> --mots (work/<slug>_mots.json)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

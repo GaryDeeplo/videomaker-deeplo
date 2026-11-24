@@ -1,0 +1,27 @@
+{
+ "name": "notes-reveal",
+ "type": "registre",
+ "title": "Notes Reveal",
+ "description": "A personal note is typed character by character in a notes app - caret riding every letter, the page scrolling up on measured settle curves as each line lands - then cuts to a hand-lettered paper card with a marker headline and a ticked checklist",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, mock-ui, notes, typing, vertical, ad-template",
+ "tags": [
+  "showcase",
+  "mock-ui",
+  "notes",
+  "typing",
+  "vertical",
+  "ad-template"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add notes-reveal   (variables : titleL1, titleL2, noteLine1, noteLine2, noteLine3, noteLine4, noteLine5, noteLine6, noteLine7, cardTop, cardMid, cardBottom)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1080,
+  "height": 1920
+ },
+ "duration": 24.85,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

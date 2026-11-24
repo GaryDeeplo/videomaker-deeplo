@@ -1,0 +1,23 @@
+{
+ "name": "transitions-light",
+ "type": "registre",
+ "title": "Light Transitions",
+ "description": "Showcase of light-based glow and flash transitions",
+ "when_to_use": "Registre HyperFrames (bloc) : transition, showcase",
+ "tags": [
+  "transition",
+  "showcase"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add transitions-light   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 21,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

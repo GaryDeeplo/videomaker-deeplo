@@ -1,0 +1,26 @@
+{
+ "name": "message-thread-reveal",
+ "type": "registre",
+ "title": "Message Thread Reveal",
+ "description": "A full text conversation plays out on a phone - bubbles popping in, typing indicators, a shared link card, emoji, delivered receipts - with the whole thread scrolling up beat by beat until a closing card lands. The complete chat ad-template, measured message by message",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, mock-ui, chat, vertical, ad-template",
+ "tags": [
+  "showcase",
+  "mock-ui",
+  "chat",
+  "vertical",
+  "ad-template"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add message-thread-reveal   (variables : contactName, questionMessage, teaserMessage, cardImage, cardTitle, cardDomain, reactionMessage, reactionEmoji, benefitMessage, discoveryMessage, sourceMessage, workflowMessage)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1080,
+  "height": 1920
+ },
+ "duration": 25.7667,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

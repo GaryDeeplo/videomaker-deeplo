@@ -1,0 +1,20 @@
+{
+ "name": "demo-appli-agent",
+ "type": "scene",
+ "title": "Démo dans l'appli d'agent",
+ "description": "Objection épinglée, demande (rush + skill), « Voilà ton reel ✓ », montage qui joue, effets cochés, Télécharger cliqué.",
+ "when_to_use": "Réfuter « l'IA sait pas monter » en montrant la demande et le résultat.",
+ "tags": [
+  "demo",
+  "appli",
+  "objection",
+  "skill",
+  "promo"
+ ],
+ "files": [],
+ "usage": "python scripts/showcase.py demo <job> <slug> --objection \"pseudo: phrase\" --render draft",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

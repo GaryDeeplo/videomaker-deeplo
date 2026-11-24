@@ -1,0 +1,28 @@
+{
+ "name": "us-map-flow",
+ "type": "registre",
+ "title": "US Flow Map",
+ "description": "Animated connection arcs between US cities over a base map — composable origin-destination flow visualization",
+ "when_to_use": "Registre HyperFrames (bloc) : data, map, geography, usa, flow, connections",
+ "tags": [
+  "data",
+  "map",
+  "geography",
+  "usa",
+  "flow",
+  "connections",
+  "arcs"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add us-map-flow   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 12,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

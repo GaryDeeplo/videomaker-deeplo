@@ -1,0 +1,27 @@
+{
+ "name": "carousel-orbit-1",
+ "type": "registre",
+ "title": "Orbit Carousel 1",
+ "description": "Image cards on a spinning 3D Fibonacci sphere, billboarded to the camera, sized by camera distance (Orbit style 1); 24 image slots.",
+ "when_to_use": "Registre HyperFrames (bloc) : carousel, gallery, images, showcase, orbit, 3d",
+ "tags": [
+  "carousel",
+  "gallery",
+  "images",
+  "showcase",
+  "orbit",
+  "3d"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add carousel-orbit-1   (variables : image1, image2, image3, image4, image5, image6, image7, image8, image9, image10, image11, image12)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

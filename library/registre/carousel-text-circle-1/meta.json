@@ -1,0 +1,27 @@
+{
+ "name": "carousel-text-circle-1",
+ "type": "registre",
+ "title": "Text + Circle Carousel 1",
+ "description": "A headline mask-reveals word by word while a circle carousel converges from off-frame and threads the line, collapses to centre, hard-cuts to a second line that arrives at 1.4× (Circle style 1).",
+ "when_to_use": "Registre HyperFrames (bloc) : carousel, title-card, kinetic-text, images, showcase, circle",
+ "tags": [
+  "carousel",
+  "title-card",
+  "kinetic-text",
+  "images",
+  "showcase",
+  "circle"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add carousel-text-circle-1   (variables : image1, image2, image3, image4, image5, image6, image7, image8, image9, image10, image11, image12)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 5,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

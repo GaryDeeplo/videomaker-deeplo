@@ -1,0 +1,28 @@
+{
+ "name": "product-turntable",
+ "type": "registre",
+ "title": "Product Turntable",
+ "description": "A product turns a full revolution on a studio plinth in a seamless loop. Drop in a GLB or glTF model, or keep the built-in drink can with your own label.",
+ "when_to_use": "Registre HyperFrames (bloc) : 3d-object, three-js, webgl, product, turntable, glb",
+ "tags": [
+  "3d-object",
+  "three-js",
+  "webgl",
+  "product",
+  "turntable",
+  "glb",
+  "loop"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add product-turntable   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 6,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

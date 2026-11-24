@@ -1,0 +1,28 @@
+{
+ "name": "split-flap-board",
+ "type": "registre",
+ "title": "Split-Flap Board",
+ "description": "Solari-style departure board: every cell walks its drum forward through the intervening characters of a fixed alphabet until it lands on its target, so the text resolves as a mechanical cascade instead of a fade.",
+ "when_to_use": "Registre HyperFrames (bloc) : text, kinetic, mechanical, split-flap, solari, departure-board",
+ "tags": [
+  "text",
+  "kinetic",
+  "mechanical",
+  "split-flap",
+  "solari",
+  "departure-board",
+  "reveal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add split-flap-board   (variables : boardText, flapAlphabet, flipDuration, cellStagger, cellCount)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 3.5,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}

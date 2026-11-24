@@ -1,0 +1,25 @@
+{
+ "name": "lt-clean-bar",
+ "type": "registre",
+ "title": "Lower Third — Clean Bar",
+ "description": "Minimal white-card lower third for podcasts/interviews: accent tab, name + role, clip-wipe entrance",
+ "when_to_use": "Registre HyperFrames (bloc) : lower-third, overlay, podcast, interview",
+ "tags": [
+  "lower-third",
+  "overlay",
+  "podcast",
+  "interview"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add lt-clean-bar   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 4.8,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

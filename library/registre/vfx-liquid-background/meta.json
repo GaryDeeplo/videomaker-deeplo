@@ -1,0 +1,26 @@
+{
+ "name": "vfx-liquid-background",
+ "type": "registre",
+ "title": "Liquid Background",
+ "description": "Organic liquid simulation with vertex displacement on a subdivided plane. HTML content floats above rippling fluid surface with real-time wave dynamics.",
+ "when_to_use": "Registre HyperFrames (bloc) : html-in-canvas, liquid, webgl, displacement, background",
+ "tags": [
+  "html-in-canvas",
+  "liquid",
+  "webgl",
+  "displacement",
+  "background"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add vfx-liquid-background   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 12,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

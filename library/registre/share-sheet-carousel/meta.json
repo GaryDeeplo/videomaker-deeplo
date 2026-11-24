@@ -1,0 +1,26 @@
+{
+ "name": "share-sheet-carousel",
+ "type": "registre",
+ "title": "Share-Sheet Carousel",
+ "description": "A share sheet springs up from the bottom of the phone and cycles previews inside its card on a fast cut rhythm while the blurred ground swaps behind it, ending on an accept tap",
+ "when_to_use": "Registre HyperFrames (bloc) : showcase, mock-ui, share-sheet, vertical, ad-template",
+ "tags": [
+  "showcase",
+  "mock-ui",
+  "share-sheet",
+  "vertical",
+  "ad-template"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add share-sheet-carousel   (variables : shareTitle, senderName, itemLabel, stripText, acceptLabel, declineLabel, slideImage1, slideImage2, slideImage3, slideImage4, brandLogo)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1080,
+  "height": 1920
+ },
+ "duration": 7.2333,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

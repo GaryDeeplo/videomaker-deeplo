@@ -1,0 +1,25 @@
+{
+ "name": "mk-line-graph",
+ "type": "registre",
+ "title": "Minimal Line Graph",
+ "description": "One or two SVG series draw on with dots popping and value labels riding the draw front; dim baseline axis, x-labels, color-dot legend",
+ "when_to_use": "Registre HyperFrames (bloc) : data-viz, chart, graph, minimal",
+ "tags": [
+  "data-viz",
+  "chart",
+  "graph",
+  "minimal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add mk-line-graph   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 7,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

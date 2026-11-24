@@ -1,0 +1,24 @@
+{
+ "name": "macos-notification",
+ "type": "registre",
+ "title": "macOS Notification",
+ "description": "Animated macOS-style notification banner with app icon and message",
+ "when_to_use": "Registre HyperFrames (bloc) : social, overlay, notification",
+ "tags": [
+  "social",
+  "overlay",
+  "notification"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add macos-notification   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 5,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

@@ -1,0 +1,25 @@
+{
+ "name": "mk-placeholder-grid",
+ "type": "registre",
+ "title": "Rounded Media Grid",
+ "description": "N-up rounded-corner media grid (2-up, 3-up, 4-up, 3x2, hero plus two): per-cell inside-scale framing, staggered box-in entrance, slow settle",
+ "when_to_use": "Registre HyperFrames (bloc) : placeholder, media, grid, minimal",
+ "tags": [
+  "placeholder",
+  "media",
+  "grid",
+  "minimal"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add mk-placeholder-grid   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 8,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

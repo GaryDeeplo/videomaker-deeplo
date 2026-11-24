@@ -11,6 +11,8 @@ Dans chaque îlot gardé, l'outil repère aussi (champ "fillers" du plan) :
   repetition  « je je », « le le » (mot répété collé)      -> remove: true (on garde la 2e occurrence)
   pause       blanc de 0,6 s et plus au milieu d'une phrase -> remove: true (on garde 0,12 s de chaque côté)
   tic         « du coup », « en fait », « voilà », « genre » -> remove: false : Claude décide selon la phrase
+  reformulation  même suite de 3 mots ou plus redite juste après -> remove: false : retirer si la 2e version
+                 n'ajoute rien (« qu'on réalise toutes les semaines, qu'on prend toutes les semaines »)
 Claude peut basculer "remove" (jamais les temps). Prudence : on ne retire jamais un mot qui porte le sens.
 
 --pad : marge maximale gardée avant / après la parole (bruit de fond, pièce qui résonne : le silence mesuré peut
@@ -58,6 +60,30 @@ def fillers(islands, isl_words):
                          "tic de langage : à retirer seulement s'il n'apporte rien à la phrase")
                     k += len(t) - 1
                     break
+            k += 1
+        # reformulation : une même suite de 3 mots ou plus redite juste après (« qu'on réalise toutes les semaines,
+        # qu'on prend toutes les semaines ») -> on propose de retirer de la fin de la 1re à la fin de la 2e ; remove: false,
+        # car une répétition peut être voulue ou porter une idée nouvelle (« des vidéos …, et des photos … ») : Claude tranche
+        k, seen_r = 0, set()
+        while k < len(ws):
+            best = None
+            for L in range(6, 2, -1):
+                key = tuple(n[k:k + L])
+                if len(key) < L or not all(key):
+                    continue
+                for m in range(k + L, min(len(ws) - L + 1, k + L + 9)):
+                    if tuple(n[m:m + L]) == key:
+                        best = (L, m)
+                        break
+                if best:
+                    break
+            if best and (k, best[1]) not in seen_r:
+                L, m = best
+                seen_r.add((k, m))
+                span(k + L, m + L - 1, "reformulation", " ".join(w["w"] for w in ws[k + L:m + L]), False,
+                     "reformulation : la même idée redite ; à retirer si la 2e version n'ajoute rien")
+                k += L
+                continue
             k += 1
         for k in range(len(ws) - 1):  # blancs au milieu d'une phrase (« euh » muet, recherche du mot)
             gap = ws[k + 1]["start"] - ws[k]["end"]

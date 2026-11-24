@@ -1,0 +1,25 @@
+{
+ "name": "lower-third-bild",
+ "type": "registre",
+ "title": "Lower Third — BILD Style",
+ "description": "News-style lower third with tight-fit text boxes: white headline bar with red drop-shadow, red sub-line with white drop-shadow.",
+ "when_to_use": "Registre HyperFrames (bloc) : broadcast, lower-third, news, overlay",
+ "tags": [
+  "broadcast",
+  "lower-third",
+  "news",
+  "overlay"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add lower-third-bild   (variables : TXT_MAIN_1_Line, TXT_SUB)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 8,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

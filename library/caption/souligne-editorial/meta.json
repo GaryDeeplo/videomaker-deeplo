@@ -1,0 +1,18 @@
+{
+ "name": "souligne-editorial",
+ "type": "caption",
+ "title": "Sous-titres soulignés",
+ "description": "Petits, casse normale : mots à venir en gris, mot dit en blanc, mot fort en couleur souligné d'un trait qui se dessine.",
+ "when_to_use": "Ton éditorial premium, écran partagé ou plein écran.",
+ "tags": [
+  "sous-titres",
+  "souligne",
+  "editorial"
+ ],
+ "files": [],
+ "usage": "build_composition.py --style souligne (ou text.captionStyle: souligne)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

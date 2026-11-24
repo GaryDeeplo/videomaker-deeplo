@@ -1,0 +1,20 @@
+{
+ "name": "vitrine-brut-montage",
+ "type": "scene",
+ "title": "Vitrine Brut / Montage",
+ "description": "Le rush brut (calé sur les coupes, timecode, ✂ −0,5 s) à côté du montage fait par Claude ; pied « Clique sur le lien en bas ».",
+ "when_to_use": "Montrer le travail (promo du skill, avant / après pour un client).",
+ "tags": [
+  "vitrine",
+  "brut",
+  "avant-apres",
+  "promo",
+  "skill"
+ ],
+ "files": [],
+ "usage": "python scripts/showcase.py vitrine <job> <slug> [--par Claude] [--cta …] --render draft",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

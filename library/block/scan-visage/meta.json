@@ -1,0 +1,22 @@
+{
+ "name": "scan-visage",
+ "type": "block",
+ "title": "Scan du visage",
+ "description": "Coins de cadrage, visage désaturé, ligne qui balaie, pourcentage 0 -> 100 %, verdict.",
+ "when_to_use": "Révélation sur la personne ou l'image (« je suis pas réel », « vérifié ») ; plein écran.",
+ "tags": [
+  "scan",
+  "visage",
+  "ia",
+  "revelation",
+  "tech"
+ ],
+ "files": [
+  "scan-visage.html"
+ ],
+ "usage": "motions : {\"block\": \"scan-visage\", \"word\": \"<mot dit>\", \"dur\": 3, \"vars\": {\"label\": \"Généré par IA\", \"x\": 24, \"y\": 15, \"w\": 52, \"h\": 33}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

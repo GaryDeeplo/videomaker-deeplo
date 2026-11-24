@@ -1,0 +1,21 @@
+{
+ "name": "collage-editorial",
+ "type": "scene",
+ "title": "Collage éditorial",
+ "description": "Papier crème vignetté, serif Didone, une couleur d'accent, objets photo détourés, étiquette dont le mot change, objet qui se fend en morceaux étiquetés, rayon / flèches / bande, petites silhouettes, décor éditorial.",
+ "when_to_use": "Motion design pur sur musique : vitrine d'une offre, idées fortes en une image, contenu sans voix.",
+ "tags": [
+  "collage",
+  "editorial",
+  "serif",
+  "detoure",
+  "premium",
+  "musique"
+ ],
+ "files": [],
+ "usage": "python scripts/build_collage.py <job> <slug> (work/<slug>_collage.json : voir l'en-tête)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

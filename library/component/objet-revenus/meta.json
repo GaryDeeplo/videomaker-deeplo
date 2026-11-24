@@ -1,0 +1,19 @@
+{
+ "name": "objet-revenus",
+ "type": "component",
+ "title": "Revenus + paiements",
+ "description": "Montant qui monte, courbe qui se dessine, « Paiement reçu » qui s'empilent.",
+ "when_to_use": "Résultats chiffrés (données réelles).",
+ "tags": [
+  "revenus",
+  "paiements",
+  "courbe",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"revenue\", \"word\": \"…\", \"value\": 8431.65, \"points\": […], \"payments\": [{\"label\": \"Paiement reçu\", \"sub\": \"…\", \"amount\": \"+1 200,00 €\"}]}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

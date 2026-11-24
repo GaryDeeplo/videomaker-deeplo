@@ -1,0 +1,25 @@
+{
+ "name": "week-in-merges",
+ "type": "registre",
+ "title": "Week in Merges",
+ "description": "Each author's avatar bounces across their row at a speed set by how many pull requests they merged",
+ "when_to_use": "Registre HyperFrames (bloc) : data, chart, ranking, leaderboard",
+ "tags": [
+  "data",
+  "chart",
+  "ranking",
+  "leaderboard"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add week-in-merges   (variables : eyebrow, title, period, total, footer, source, rows, rows_max, overflow)",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1080,
+  "height": 1350
+ },
+ "duration": 16,
+ "preview": "preview.mp4",
+ "created": "2026-11-24",
+ "uses": 0
+}

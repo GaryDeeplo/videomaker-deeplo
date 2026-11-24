@@ -1,0 +1,19 @@
+{
+ "name": "objet-timeline",
+ "type": "component",
+ "title": "Timeline de montage",
+ "description": "Pistes d'un logiciel de montage qui se remplissent derrière la tête de lecture.",
+ "when_to_use": "« Tout ce montage… », le travail de montage rendu visible.",
+ "tags": [
+  "timeline",
+  "montage",
+  "pistes",
+  "panneau"
+ ],
+ "files": [],
+ "usage": "{\"type\": \"timeline\", \"word\": \"…\", \"title\": \"reel_final.prproj\", \"tracks\": 4, \"label\": \"…\"}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-23",
+ "uses": 0
+}

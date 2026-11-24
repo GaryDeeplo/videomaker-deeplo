@@ -33,6 +33,17 @@ Maquettes d'interface :
   {"type": "repo", "word": "…", "name": "owner/repo", "badge": "Gratuit"}   (étoiles, description, langage, avatar lus sur GitHub si absents)
   {"type": "code", "word": "…", "file": "formatPrice.js", "before": ["…", "…"], "after": ["…"], "label": "-53 % de code"}
   {"type": "paths", "word": "…", "count": 6, "label": "Le plus simple", "start": "Reels d'essai"}   (lignes emmêlées, une droite en accent)
+  {"type": "settings", "word": "…", "app": "ChatGPT", "logo": "logo:openai", "title": "Instructions personnalisées",
+   "label": "Comment doit-il répondre ?", "text": "<la consigne exacte>", "toggle": "Activer", "action": "save|copy", "done": "Enregistré"}
+  {"type": "post", "word": "…", "platform": "x|linkedin|threads", "name": "…", "handle": "@…", "verified": true, "date": "12 nov.",
+   "text": "<texte exact de la publication>", "avatar": "inbox/a.jpg" | "logo": "logo:…", "replies": 830, "reposts": 2100, "likes": 12400}
+   (citation réelle et datée uniquement, jamais inventée ni attribuée à quelqu'un qui ne l'a pas écrite)
+  {"type": "loupe", "word": "…", "title": "Conditions générales", "find": "non remboursables", "label": "Le piège", "text": "<texte du mur>"}
+   (mur de texte illisible ; la loupe le parcourt et s'arrête sur "find", qui passe en couleur)
+  {"type": "flap", "word": "…", "title": "Départs", "rows": ["+312 %", "EN 30 JOURS"], "sub": "…"}   (tableau à palettes, 14 caractères par ligne)
+Alternance : {"type": "face", "word": "…"} -> visage plein écran (coupe franche) jusqu'au temps fort suivant, qui ramène le panneau.
+Objets (objets.py) : map (carte du monde), calendar, timeline (montage), invoice (devis), revenue (revenus + paiements),
+  clock (chrono minutes / horloge J+) — JSON dans objets.py.
 Logos de marques (Simple Icons, CC0) : "icon": "logo:claude" | "logo:github" | "logo:notion"… partout où un picto est accepté
   (hub, listes, en-tête de liste, flux, titres) ; les marques restent à leurs propriétaires (usage informatif).
 Liste : "list": {"n": 1, "of": 5, "name": "…", "icon": "…"} sur les temps forts d'un élément -> en-tête « 1 SUR 5 » ;
@@ -268,7 +279,36 @@ def css(W, ph, fam, vis):
   .ic .cir svg {{ width: 50%; height: 50%; stroke-width: 2; }}
   .ic .lab {{ margin-top: {round(22*u)}px; font-size: {round(46*u)}px; font-weight: 700; line-height: 1.1; }}
   .ihead {{ position: absolute; left: 0; right: 0; top: {round(ph*0.08)}px; text-align: center; font: 500 {round(26*u)}px 'IBM Plex Mono', monospace;
-           letter-spacing: .12em; text-transform: uppercase; opacity: .65; }}""" + css_ui(W, ph, acc, on_acc)
+           letter-spacing: .12em; text-transform: uppercase; opacity: .65; }}
+  .kick {{ font: 500 {round(24*u)}px 'IBM Plex Mono', monospace; letter-spacing: .16em; text-transform: uppercase; color: {acc}; margin-bottom: {round(18*u)}px;
+          opacity: 0; }}
+  .kick.kabs {{ position: absolute; left: {round(70*u)}px; right: {round(70*u)}px; top: {round(ph*0.09)}px; margin: 0; }}
+  .thread {{ position: absolute; left: 0; top: 0; z-index: 4; overflow: visible; pointer-events: none; }}
+  .thread .thp {{ fill: none; stroke: {acc}; stroke-width: {max(2, round(4*u))}; stroke-linecap: round; stroke-dasharray: 1000; opacity: .85; }}
+  .thread .thd {{ fill: {acc}; filter: drop-shadow(0 0 {round(10*u)}px {acc}); }}
+  .hud {{ position: absolute; z-index: 8; font: 500 {round(18*u)}px 'IBM Plex Mono', monospace; letter-spacing: .14em; text-transform: uppercase;
+         color: rgba(140,140,140,.85); }}
+  .hud.tl {{ left: {round(30*u)}px; top: {round(22*u)}px; }}
+  .hud.tr {{ right: {round(30*u)}px; top: {round(22*u)}px; }}
+  .hud.bl {{ left: {round(30*u)}px; bottom: {round(84*u)}px; }}
+  .hud.br {{ right: {round(30*u)}px; bottom: {round(84*u)}px; }}
+  .paperbg {{ position: absolute; inset: 0; z-index: 3; opacity: 0; background-color: #f3f1ec;
+             background-image: linear-gradient(rgba(20,20,20,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(20,20,20,.06) 1px, transparent 1px);
+             background-size: {round(56*u)}px {round(56*u)}px; }}
+  .beat.pb {{ color: #151515; --ui-ink: #151515; --ui-line: rgba(21,21,21,.14); --ui-soft: rgba(21,21,21,.05); --ui-mute: rgba(21,21,21,.6); --ui-solid: #ffffff; }}
+  .beat.pb .card {{ background: #fff; border: 1px solid rgba(21,21,21,.1); box-shadow: 0 {round(18*u)}px {round(50*u)}px rgba(0,0,0,.12); }}
+  .beat.pb .chead, .beat.pb .ihead, .beat.pb .tag, .beat.pb .cap2 {{ color: rgba(21,21,21,.6); opacity: 1; }}
+  .beat.pb .lbl {{ color: #151515; }}
+  .beat.pb .row {{ border-top-color: rgba(21,21,21,.1); }}
+  .beat.pb .box {{ border-color: rgba(21,21,21,.35); }}
+  .beat.pb .stp {{ background: #fff; border-color: rgba(21,21,21,.12); }}
+  .beat.pb .res {{ background: rgba(21,21,21,.04); }}
+  .beat.pb .res small {{ background: rgba(21,21,21,.12); }}
+  .beat.pb .wbar {{ background: rgba(21,21,21,.04); border-bottom-color: rgba(21,21,21,.1); }}
+  .beat.pb .wbar b {{ background: rgba(21,21,21,.25); }}
+  .beat.pb .kick {{ color: {_mix(acc, "#151515", 0.55) if _lum(acc) > 120 else acc}; }}
+  .beat.pb .lbl {{ color: #151515; }}
+  .beat.pb .big .px, .beat.pb .ttl .it {{ color: {_mix(acc, "#151515", 0.25) if _lum(acc) > 165 else acc}; }}""" + css_ui(W, ph, acc, on_acc)
 
 
 def css_ui(W, ph, acc, on_acc):
@@ -428,7 +468,68 @@ def css_ui(W, ph, acc, on_acc):
   .plab {{ position: absolute; padding: {round(8*u)}px {round(18*u)}px; border-radius: {round(10*u)}px; font-weight: 800; font-size: {round(30*u)}px; white-space: nowrap;
           opacity: 0; }}
   .plab.e {{ background: var(--acc); color: var(--on-acc); text-transform: uppercase; }}
-  .plab.s {{ background: var(--ui-solid); color: var(--ui-ink); border: 2px solid var(--ui-ink); font-size: {round(24*u)}px; text-transform: uppercase; }}"""
+  .plab.s {{ background: var(--ui-solid); color: var(--ui-ink); border: 2px solid var(--ui-ink); font-size: {round(24*u)}px; text-transform: uppercase; }}
+  .sgh {{ display: flex; align-items: center; gap: {round(18*u)}px; padding: {round(26*u)}px {round(34*u)}px {round(10*u)}px; }}
+  .sgh .sgl {{ flex: 0 0 auto; width: {round(64*u)}px; height: {round(64*u)}px; border-radius: {round(16*u)}px; background: var(--ui-ink); color: var(--ui-solid);
+              display: flex; align-items: center; justify-content: center; }}
+  .sgh .sgl svg {{ width: 60%; height: 60%; }}
+  .sgn b {{ display: block; font-size: {round(40*u)}px; font-weight: 800; line-height: 1.1; }}
+  .sgn small {{ display: block; font: 500 {round(24*u)}px {mono}; color: var(--ui-mute); letter-spacing: .06em; }}
+  .sgl2 {{ margin: {round(18*u)}px {round(34*u)}px {round(10*u)}px; font-size: {round(30*u)}px; font-weight: 600; color: var(--ui-mute); }}
+  .stx {{ margin: 0 {round(34*u)}px; min-height: {round(160*u)}px; padding: {round(20*u)}px {round(24*u)}px; border-radius: {round(16*u)}px;
+         border: 2px solid var(--ui-line); background: var(--ui-soft); font-size: {round(36*u)}px; font-weight: 500; line-height: 1.3; white-space: pre-wrap; }}
+  .stx.on {{ border-color: var(--acc); box-shadow: 0 0 0 {round(5*u)}px {acc}33; }}
+  .stx .q::after {{ content: ""; display: inline-block; width: {round(4*u)}px; height: .95em; background: var(--acc); margin-left: 3px; vertical-align: -.12em; opacity: 0; }}
+  .stx.on .q::after {{ opacity: 1; }}
+  .sgt {{ display: flex; align-items: center; justify-content: space-between; margin: {round(22*u)}px {round(34*u)}px 0; font-size: {round(32*u)}px; font-weight: 600; }}
+  .sw2 {{ width: {round(84*u)}px; height: {round(46*u)}px; border-radius: 99px; background: var(--ui-line); position: relative; }}
+  .sw2 b {{ position: absolute; left: {round(5*u)}px; top: {round(5*u)}px; width: {round(36*u)}px; height: {round(36*u)}px; border-radius: 50%; background: #fff; }}
+  .sgt.on .sw2 {{ background: var(--acc); }}
+  .sgt.on .sw2 b {{ left: auto; right: {round(5*u)}px; }}
+  .sgf {{ display: flex; justify-content: space-between; align-items: center; margin: {round(24*u)}px {round(34*u)}px {round(30*u)}px; }}
+  .sgb {{ display: inline-flex; align-items: center; gap: {round(12*u)}px; padding: {round(16*u)}px {round(32*u)}px; border-radius: {round(14*u)}px;
+         background: var(--acc); color: var(--on-acc); font-size: {round(36*u)}px; font-weight: 800; }}
+  .sgb svg {{ width: {round(34*u)}px; height: {round(34*u)}px; }}
+  .sgok {{ padding: {round(12*u)}px {round(26*u)}px; border-radius: 99px; background: #1f9d55;
+          color: #fff; font-size: {round(36*u)}px; font-weight: 800; opacity: 0; }}
+  .post {{ padding: {round(32*u)}px {round(36*u)}px; }}
+  .poh {{ display: flex; align-items: center; gap: {round(18*u)}px; }}
+  .pon {{ flex: 1; min-width: 0; }}
+  .pon b {{ display: flex; align-items: center; gap: {round(10*u)}px; font-size: {round(38*u)}px; font-weight: 800; line-height: 1.1; }}
+  .pon small {{ display: block; font-size: {round(28*u)}px; color: var(--ui-mute); }}
+  .pov {{ display: inline-flex; align-items: center; justify-content: center; width: {round(34*u)}px; height: {round(34*u)}px; border-radius: 50%;
+         background: #1d9bf0; color: #fff; font-style: normal; font-size: {round(22*u)}px; font-weight: 900; }}
+  .pol {{ flex: 0 0 auto; width: {round(44*u)}px; height: {round(44*u)}px; color: var(--ui-ink); }}
+  .pot {{ margin-top: {round(24*u)}px; font-size: {round(44*u)}px; font-weight: 500; line-height: 1.28; }}
+  .poi {{ margin-top: {round(20*u)}px; border-radius: {round(18*u)}px; overflow: hidden; border: 1px solid var(--ui-line); }}
+  .poi img {{ display: block; width: 100%; max-height: {round(ph*0.3)}px; object-fit: cover; }}
+  .pos {{ margin-top: {round(26*u)}px; display: flex; gap: {round(40*u)}px; font: 500 {round(28*u)}px {mono}; color: var(--ui-mute); }}
+  .pos span {{ display: inline-flex; align-items: center; gap: {round(10*u)}px; }}
+  .pos svg {{ width: {round(34*u)}px; height: {round(34*u)}px; }}
+  .pos .ps-likes.on {{ color: #f91880; }}
+  .pos .ps-likes.on svg {{ fill: #f91880; }}
+  .loupe .lpt {{ margin: {round(26*u)}px {round(34*u)}px 0; }}
+  .lw {{ position: relative; margin: {round(26*u)}px {round(34*u)}px {round(34*u)}px; }}
+  .lr {{ position: absolute; left: 0; right: 0; height: {round(46*u)}px; line-height: {round(46*u)}px; white-space: nowrap; overflow: hidden;
+        font-size: {round(30*u)}px; color: var(--ui-mute); }}
+  .lr .hit {{ border-radius: {round(6*u)}px; }}
+  .lw.found .hit {{ background: var(--acc); color: var(--on-acc); font-weight: 700; padding: 0 .15em; }}
+  .lens {{ position: absolute; left: 0; top: 0; border-radius: 50%; overflow: hidden; z-index: 3; opacity: 0; background: var(--ui-solid);
+          border: {round(7*u)}px solid var(--acc); box-shadow: 0 {round(20*u)}px {round(50*u)}px rgba(0,0,0,.45), inset 0 0 {round(30*u)}px rgba(0,0,0,.25); }}
+  .lens .lz {{ position: absolute; left: 0; top: 0; }}
+  .lens .lr {{ color: var(--ui-ink); }}
+  .lpl {{ position: absolute; right: {round(30*u)}px; top: {round(16*u)}px; padding: {round(10*u)}px {round(22*u)}px; border-radius: {round(12*u)}px;
+         background: #d62f33; color: #fff; font-size: {round(34*u)}px; font-weight: 800; white-space: nowrap; transform: rotate(-3deg); opacity: 0; z-index: 4; }}
+  .flap {{ position: absolute; left: {round(70*u)}px; right: {round(70*u)}px; top: {round(ph*0.24)}px; display: flex; flex-direction: column; align-items: center;
+          gap: {round(12*u)}px; }}
+  .fr {{ display: flex; gap: {round(8*u)}px; opacity: 0; }}
+  .fc {{ position: relative; display: flex; align-items: center; justify-content: center; border-radius: {round(8*u)}px; overflow: hidden;
+        background: linear-gradient(180deg, #232429 0%, #1a1b1f 50%, #141518 50%, #18191d 100%); font-style: normal;
+        box-shadow: 0 {round(8*u)}px {round(20*u)}px rgba(0,0,0,.45); }}
+  .fc::after {{ content: ""; position: absolute; left: 0; right: 0; top: 50%; height: {max(2, round(3*u))}px; background: rgba(0,0,0,.65); }}
+  .fc b {{ font-family: {mono}; font-weight: 600; color: rgba(244,244,242,.55); line-height: 1; }}
+  .fc.set b {{ color: #f4f4f2; }}
+  .fsub {{ position: absolute; left: 0; right: 0; top: {round(ph*0.72)}px; text-align: center; font-size: {round(46*u)}px; font-weight: 700; opacity: 0; }}""" + __import__("objets").css(W, ph, acc, on_acc)
 
 
 def title_words(text):
@@ -600,6 +701,7 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
         kept.pop()
     placed = kept
     html_, js, rep = [], ([background_js(dur, T0)] if theme == "dark" else []), []
+    paper_on = []
     has_list = any(b.get("list") for _, b in placed)
     if has_list:
         hh, hj = list_heads(placed, dur, T0, W)
@@ -611,11 +713,15 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
             continue
         d, s0 = round(t1 - t0, 3), round(t0, 3)
         sid, typ = f"bt{k}", b.get("type", "title")
+        if typ == "face":  # visage plein écran jusqu'au temps fort suivant (alternance) : build_composition replie le panneau
+            rep.append({"type": "face", "a": s0, "duree": d, "mot": b.get("word")})
+            continue
         tag = f'<div class="tag">{esc(b["tag"])}</div>' if b.get("tag") else ""
+        kick = esc(b.get("kicker", ""))
         inner, bj = "", []
         if typ == "title":
             big = icon(b["icon"]) if b.get("icon") else ""
-            inner = (f'<div class="ttl">{title_words(b.get("text", ""))}</div>'
+            inner = (f'<div class="ttl">' + (f'<div class="kick">{kick}</div>' if kick else "") + f'{title_words(b.get("text", ""))}</div>'
                      + (f'<div class="bigico">{big}</div>' if big else ('<div class="mark"></div>' if b.get("mark") else "")))
             if big:
                 bj.append(f'  tl.fromTo("#{sid} .bigico", {{ opacity: 0, scale: 0.3, rotation: -25 }}, {{ opacity: 1, scale: 1, rotation: 0, '
@@ -733,6 +839,12 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
         else:
             rep.append({"type": typ, "pose": False, "raison": "type inconnu"})
             continue
+        if kick and typ != "title":  # sur-titre posé au-dessus du contenu
+            inner = f'<div class="kick kabs">{kick}</div>' + inner
+        if kick:
+            bj.append(f'  tl.fromTo("#{sid} .kick", {{ opacity: 0, y: 10 }}, {{ opacity: 1, y: 0, duration: 0.3, ease: "power2.out", immediateRender: false }}, {s0 + 0.02});')
+        if b.get("fond") == "papier" and theme == "dark":  # alternance : ce temps fort sur papier quadrillé
+            paper_on.append((s0, t1))
         lo = b.get("lottie")
         if lo:  # emoji animé (library/lottie) posé dans la scène, rejoué en boucle pendant le temps fort
             import math
@@ -753,7 +865,7 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
                     layers.append(f'    <video id="lo{k}_{r_}" class="clip" src="assets/lottie/{meta["webm"]}" data-start="{round(start + T0 + r_ * one, 3)}" '
                                   f'data-duration="{round(min(one, t1 - start - r_ * one), 3)}" data-track-index="{90 + k}" muted playsinline '
                                   f'style="position:absolute;left:{lx}px;top:{ly}px;width:{size}px;height:{size}px;z-index:35"></video>')
-        html_.append(f'      <div class="clip beat" id="{sid}" data-start="{round(s0 + T0, 3)}" data-duration="{d}" data-track-index="{70 + k % 2}">'
+        html_.append(f'      <div class="clip beat{" pb" if b.get("fond") == "papier" and theme == "dark" else ""}" id="{sid}" data-start="{round(s0 + T0, 3)}" data-duration="{d}" data-track-index="{70 + k % 2}">'
                      f'<div class="bi">{tag}{inner}</div></div>')
         js.append(f'  tl.fromTo("#{sid} .bi", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.25, ease: "power1.out", immediateRender: false }}, {s0});')
         if b.get("tag"):
@@ -764,20 +876,50 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
         if k + 1 < len(placed):
             js.append(f'  tl.to("#{sid} .bi", {{ opacity: 0, y: -16, duration: 0.22, ease: "power2.in" }}, {round(t1 - 0.22, 3)});')
         rep.append({"type": typ, "a": s0, "duree": d, "mot": b.get("word")})
-    panel = (f'    <div id="panel"><div class="pbg"></div><div class="floor"><div class="fl"></div></div><div class="sweep"></div>'
+    for a_, b_ in paper_on:  # fond papier allumé pendant ces temps forts (le fil passe par-dessus)
+        js.append(f'  tl.set("#panel .paperbg", {{ opacity: 1 }}, {a_}); tl.set("#panel .paperbg", {{ opacity: 0 }}, {b_});')
+    deco = ""
+    if vis.get("panelThread"):  # fil conducteur : une courbe d'accent qui traverse tout le panneau, sa pointe avance
+        pts = [(-40, 0.66), (W * 0.22, 0.52), (W * 0.48, 0.7), (W * 0.74, 0.5), (W + 40, 0.62)]
+        dpath = f"M {pts[0][0]:.0f} {ph * pts[0][1]:.0f} " + " ".join(
+            f"C {(x0 + x1) / 2:.0f} {ph * y0:.0f}, {(x0 + x1) / 2:.0f} {ph * y1:.0f}, {x1:.0f} {ph * y1:.0f}" for (x0, y0), (x1, y1) in zip(pts, pts[1:]))
+        deco += (f'<svg class="thread" width="{W}" height="{round(ph)}" viewBox="0 0 {W} {round(ph)}"><path class="thp" d="{dpath}" pathLength="1000" />'
+                 f'<circle class="thd" r="{round(9 * u)}" cx="0" cy="0" /></svg>')
+        total = round(dur, 2)
+        js.append(f'  (function () {{ const p = document.querySelector("#panel .thp"), c = document.querySelector("#panel .thd"), L = p.getTotalLength(), o = {{ v: 0 }};'
+                  f' tl.fromTo(o, {{ v: 0 }}, {{ v: 1, duration: {total}, ease: "none", immediateRender: true, onUpdate: function () {{'
+                  f' const k = 0.08 + 0.92 * o.v, q = p.getPointAtLength(L * k); p.style.strokeDashoffset = 1000 * (1 - k);'
+                  f' c.setAttribute("cx", q.x); c.setAttribute("cy", q.y); }} }}, 0); }})();')
+    if vis.get("panelHud"):  # repères mono dans les coins du cadre : nom, timecode qui défile, temps fort n / N
+        nb = len(placed)
+        lab = esc(vis.get("hudLabel") or (read_json(job / "job.json").get("client", "") if (job / "job.json").exists() else ""))
+        deco += (f'<div class="hud tl" data-layout-ignore>{lab}</div><div class="hud tr" data-layout-ignore><span class="htc">00:00:00</span></div>'
+                 f'<div class="hud bl" data-layout-ignore><span class="hn">01</span> / {nb:02d}</div><div class="hud br" data-layout-ignore>{esc(vis.get("hudNote", "4K · 24 i/s"))}</div>')
+        starts = json.dumps([round(t_, 3) for t_, _ in placed])
+        js.append(f'  (function () {{ const tc = document.querySelector("#panel .htc"), hn = document.querySelector("#panel .hn"), S = {starts}, o = {{ v: 0 }};'
+                  f' tl.fromTo(o, {{ v: 0 }}, {{ v: {round(dur, 2)}, duration: {round(dur, 2)}, ease: "none", immediateRender: true, onUpdate: function () {{'
+                  f' const t = o.v, f = Math.floor((t % 1) * 24); tc.textContent = String(Math.floor(t / 60)).padStart(2, "0") + ":" +'
+                  f' String(Math.floor(t % 60)).padStart(2, "0") + ":" + String(f).padStart(2, "0");'
+                  f' let n = 1; S.forEach(function (s, i) {{ if (s <= t) n = i + 1; }}); hn.textContent = String(n).padStart(2, "0"); }} }}, 0); }})();')
+    deco = f'<div class="paperbg"></div>{deco}' if paper_on else deco
+    panel = (f'    <div id="panel"><div class="pbg"></div><div class="floor"><div class="fl"></div></div><div class="sweep"></div>{deco}'
              f'\n{chr(10).join(html_)}\n      <div class="flash"></div><div class="grain"></div><div class="vig"></div></div>')
     hl = " haslist" if has_list else ""
     if theme == "dark" and has_list:
         panel = panel.replace('<div id="panel">', f'<div id="panel" class="{hl.strip()}">', 1)
     if theme == "paper":  # pas de décor sombre : le papier et le motif sont dessinés par build_explainer
-        panel = f'    <div id="panel" class="paper{hl}">\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
+        panel = f'    <div id="panel" class="paper{hl}">{deco}\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
     elif theme in ("light", "cards"):
         cls = "paper light" + (" cards" if theme == "cards" else "") + hl
-        panel = f'    <div id="panel" class="{cls}">\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
+        panel = f'    <div id="panel" class="{cls}">{deco}\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
     return panel, js, rep, layers
 
 
-UI_TYPES = ("form", "chat", "rank", "progress", "hub", "browser", "funnel", "chart", "feed", "palette", "repo", "code", "paths")
+UI_TYPES = ("form", "chat", "rank", "progress", "hub", "browser", "funnel", "chart", "feed", "palette", "repo", "code", "paths",
+            "settings", "post", "loupe", "flap", "map", "calendar", "timeline", "invoice", "revenue", "clock")  # 6 derniers : objets.py
+LOREM_FR = ("En utilisant ce service, vous acceptez que vos données soient traitées conformément aux présentes conditions, "
+            "lesquelles peuvent être modifiées à tout moment sans préavis. Le prestataire décline toute responsabilité en cas "
+            "d'interruption, de perte ou d'usage non conforme. Les sommes versées ne sont pas remboursables sauf mention contraire. ")
 
 
 def github_repo(name):
@@ -809,6 +951,9 @@ def _cls_at(sel, cls, on, at):
 def ui_beat(job, typ, b, sid, s0, d, W, ph):
     """Maquettes d'interface animées -> (html, lignes JS). ph : hauteur utile (sous l'en-tête de liste s'il y en a un)."""
     u = W / 1080
+    import objets
+    if typ in objets.TYPES:  # carte du monde, calendrier, timeline, devis, revenus, horloge
+        return objets.beat(job, typ, b, sid, s0, d, W, ph, u)
     bj = []
     card_in = (f'  tl.fromTo("#{sid} .card", {{ opacity: 0, y: 46, scale: 0.97 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.5, '
                f'ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
@@ -1132,6 +1277,126 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
                   f'immediateRender: true }}, {ta});')
         bj.append(f'  tl.fromTo("#{sid} .plab", {{ opacity: 0, scale: 0.6 }}, {{ opacity: 1, scale: 1, duration: 0.35, stagger: 0.15, ease: "back.out(2.4)", '
                   f'immediateRender: false }}, {round(ta + 0.5, 3)});')
+    elif typ == "settings":  # panneau de réglages : la consigne se tape, on enregistre (ou copie), « ✓ Enregistré »
+        txt = str(b.get("text", ""))[:260]
+        copy = b.get("action") == "copy"
+        head = ((f'<span class="sgl">{icon(b["logo"])}</span>' if b.get("logo") else "")
+                + f'<span class="sgn"><b>{esc(b.get("app", ""))}</b><small>{esc(b.get("title", "Réglages"))}</small></span>')
+        inner = (f'<div class="card win sett">{wbar}<div class="sgh">{head}</div>'
+                 + (f'<div class="sgl2">{esc(b["label"])}</div>' if b.get("label") else "")
+                 + f'<div class="stx"><span class="q"></span></div>'
+                 + (f'<div class="sgt"><span>{esc(b["toggle"])}</span><i class="sw2"><b></b></i></div>' if b.get("toggle") else "")
+                 + f'<div class="sgf"><span class="sgok">✓ {esc(b.get("done", "Copié" if copy else "Enregistré"))}</span>'
+                 f'<span class="sgb">{icon("copy") if copy else ""}{esc(b.get("button", "Copier" if copy else "Enregistrer"))}</span></div></div>')
+        bj.append(card_in)
+        tq = round(max(0.5, min(d * 0.5, 0.03 * len(txt) + 0.2)), 2)
+        bj.append(_cls_at(f"#{sid} .stx", "on", True, round(s0 + 0.4, 3)))
+        bj.append(_typing(f"#{sid} .stx .q", txt, tq, round(s0 + 0.45, 3)))
+        tb = round(s0 + 0.55 + tq, 3)
+        bj.append(_cls_at(f"#{sid} .stx", "on", False, tb))
+        if b.get("toggle"):
+            bj.append(_cls_at(f"#{sid} .sgt", "on", True, tb))
+            tb = round(tb + 0.3, 3)
+        bj.append(f'  tl.fromTo("#{sid} .sgb", {{ scale: 1 }}, {{ scale: 0.92, duration: 0.1, yoyo: true, repeat: 1, immediateRender: false }}, {tb});')
+        bj.append(f'  tl.fromTo("#{sid} .sgok", {{ opacity: 0, y: 24, scale: 0.8 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.32, ease: "back.out(2.4)", '
+                  f'immediateRender: false }}, {round(tb + 0.15, 3)});')
+    elif typ == "post":  # publication recréée (X, LinkedIn, Threads) : la source citée, mot pour mot
+        plat = str(b.get("platform", "x")).lower()
+        av = (icon(b["logo"]) if b.get("logo") else "")
+        if not av and b.get("avatar"):
+            ip = Path(b["avatar"])
+            for base in (job, job / "inbox", ROOT):
+                if (base / ip).exists():
+                    if base != job:
+                        (job / "assets" / "img").mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(base / ip, job / "assets" / "img" / ip.name)
+                        ip = Path("assets/img") / ip.name
+                    av = f'<img src="{esc(ip.as_posix())}" alt="">'
+                    break
+        av = av or esc(str(b.get("name", "?"))[:1].upper())
+        words_ = esc(glue(str(b.get("text", "")))).split(" ")
+        body = " ".join(f'<span class="pw">{w}</span>' for w in words_ if w)
+        stats = [(k, ic) for k, ic in (("replies", "message-circle"), ("reposts", "repeat-2"), ("likes", "heart"), ("views", "eye"))
+                 if b.get(k) is not None]
+        inner = (f'<div class="card post"><div class="poh"><span class="rav">{av}</span><span class="pon"><b>{esc(b.get("name", ""))}'
+                 + ('<i class="pov">✓</i>' if b.get("verified") else "") + f'</b><small>{esc(b.get("handle", ""))}'
+                 + (f' · {esc(b["date"])}' if b.get("date") else "") + f'</small></span><span class="pol">{icon("logo:" + plat)}</span></div>'
+                 f'<div class="pot">{body}</div>'
+                 + (f'<div class="poi"><img src="{esc(b["image"])}" alt=""></div>' if b.get("image") else "")
+                 + '<div class="pos">' + "".join(f'<span class="ps-{k}">{icon(ic)}<b class="pc" data-v="{float(b[k])}">0</b></span>' for k, ic in stats)
+                 + '</div></div>')
+        bj.append(card_in)
+        nw = max(1, len(words_))
+        bj.append(f'  tl.fromTo("#{sid} .pw", {{ opacity: 0.12 }}, {{ opacity: 1, duration: 0.12, stagger: {round(min(0.09, d * 0.45 / nw), 3)}, '
+                  f'immediateRender: false }}, {s0 + 0.35});')
+        tc = round(s0 + 0.45 + min(d * 0.45, nw * 0.09), 3)
+        bj.append(f'  document.querySelectorAll("#{sid} .pc").forEach(function (el) {{ const v = +el.dataset.v, o = {{ v: 0 }};'
+                  f' tl.fromTo(o, {{ v: 0 }}, {{ v: v, duration: {round(min(1.2, d * 0.35), 2)}, ease: "power2.out", immediateRender: false,'
+                  f' onUpdate: function () {{ el.textContent = o.v >= 1e6 ? (o.v / 1e6).toFixed(1).replace(".", ",") + " M" : o.v >= 1e4 ?'
+                  f' Math.round(o.v / 1e3) + " k" : Math.round(o.v).toLocaleString("fr-FR"); }} }}, {tc}); }});')
+        if b.get("likes") is not None:
+            bj.append(_cls_at(f"#{sid} .ps-likes", "on", True, round(tc + 0.5, 3)))
+            bj.append(f'  tl.fromTo("#{sid} .ps-likes svg", {{ scale: 1 }}, {{ scale: 1.35, duration: 0.14, yoyo: true, repeat: 1, ease: "back.out(3)", '
+                      f'immediateRender: false }}, {round(tc + 0.5, 3)});')
+    elif typ == "loupe":  # mur de texte illisible, une loupe le parcourt et s'arrête sur la phrase qui compte
+        fs, rh_ = round(30 * u), round(46 * u)
+        filler = str(b.get("text") or LOREM_FR)
+        n = max(7, min(14, int((ph * 0.5) // rh_)))
+        hi = int(b.get("row", round(n * 0.62)))
+        cpl = int((W - round(220 * u)) / (fs * 0.5))  # caractères par ligne (estimation, la ligne est coupée en CSS)
+        rows_ = [(filler * 4)[(j * cpl) % len(filler):][:cpl + 10] for j in range(n)]
+        find = str(b.get("find", ""))
+        rows_html = "".join(f'<div class="lr" data-layout-allow-overlap style="top:{j * rh_}px">'
+                            + (f'<span class="hit">{esc(find)}</span> ' if j == hi and find else "") + f'{esc(rows_[j])}</div>' for j in range(n))
+        L, S = round(300 * u), 2.2
+        wh = n * rh_
+        ww = W - round(140 * u) - round(2 * 34 * u)  # largeur du mur (carte moins ses marges)
+        inner = (f'<div class="card win loupe">' + (f'{wbar}' if b.get("url") else "")
+                 + (f'<div class="chead lpt">{esc(b["title"])}</div>' if b.get("title") else "")
+                 + f'<div class="lw" style="height:{wh}px">{rows_html}'
+                 f'<div class="lens" data-layout-allow-occlusion style="width:{L}px;height:{L}px"><div class="lz" data-layout-ignore style="width:{ww}px;height:{wh}px">{rows_html}</div></div></div>'
+                 + (f'<span class="lpl">{esc(b["label"])}</span>' if b.get("label") else "") + '</div>')
+        bj.append(card_in)
+        tx = max(L * 0.42, min(ww * 0.8, round(len(find) * fs * 0.27))) if find else ww * 0.5
+        path = [(ww * 0.78, wh * 0.18), (ww * 0.3, wh * 0.4), (ww * 0.62, wh * 0.85), (tx, hi * rh_ + rh_ / 2)]
+        span = max(0.35, (d * 0.6 - 0.4) / len(path))
+        t = s0 + 0.35
+        cx, cy = path[0]
+        bj.append(f'  tl.fromTo("#{sid} .lens", {{ opacity: 0, scale: 0.6, x: {cx - L / 2:.0f}, y: {cy - L / 2:.0f} }}, {{ opacity: 1, scale: 1, duration: 0.3, '
+                  f'ease: "back.out(2)", immediateRender: false }}, {round(t, 3)});')
+        bj.append(f'  tl.fromTo("#{sid} .lz", {{ scale: {S}, transformOrigin: "0 0", x: {L / 2 - S * cx:.0f}, y: {L / 2 - S * cy:.0f} }}, {{ scale: {S}, x: {L / 2 - S * cx:.0f}, '
+                  f'y: {L / 2 - S * cy:.0f}, duration: 0.01, immediateRender: true }}, {round(t, 3)});')
+        for cx, cy in path[1:]:
+            t += span
+            bj.append(f'  tl.to("#{sid} .lens", {{ x: {cx - L / 2:.0f}, y: {cy - L / 2:.0f}, duration: {round(span * 0.85, 3)}, ease: "power2.inOut" }}, {round(t - span * 0.85, 3)});')
+            bj.append(f'  tl.to("#{sid} .lz", {{ x: {L / 2 - S * cx:.0f}, y: {L / 2 - S * cy:.0f}, duration: {round(span * 0.85, 3)}, ease: "power2.inOut" }}, '
+                      f'{round(t - span * 0.85, 3)});')
+        bj.append(_cls_at(f"#{sid} .lw", "found", True, round(t + 0.05, 3)))
+        bj.append(f'  tl.fromTo("#{sid} .lens", {{ scale: 1 }}, {{ scale: 1.12, duration: 0.3, ease: "back.out(2.4)", immediateRender: false }}, {round(t + 0.05, 3)});')
+        if b.get("label"):
+            bj.append(f'  tl.fromTo("#{sid} .lpl", {{ opacity: 0, y: 16, scale: 0.6 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(2.6)", '
+                      f'immediateRender: false }}, {round(t + 0.25, 3)});')
+    elif typ == "flap":  # tableau d'affichage à palettes : les caractères défilent puis se posent, de gauche à droite
+        rows_ = [str(x).upper() for x in (b.get("rows") or [b.get("text", "")])][:4]
+        cols = max(4, min(14, max(len(x) for x in rows_)))
+        rows_ = [x[:cols].ljust(cols) if b.get("align") == "left" else x[:cols].center(cols) for x in rows_]
+        cw_ = (W - round(140 * u) - (cols - 1) * round(8 * u)) // cols
+        chh = round(cw_ * 1.45)
+        cells = "".join(f'<div class="fr">' + "".join(f'<i class="fc" style="width:{cw_}px;height:{chh}px;font-size:{round(cw_ * 0.95)}px">'
+                                                       f'<b data-c="{esc(ch)}"></b></i>' for ch in row) + '</div>' for row in rows_)
+        inner = ((f'<div class="ihead">{esc(b["title"])}</div>' if b.get("title") else "")
+                 + f'<div class="flap">{cells}</div>' + (f'<div class="fsub">{esc(b["sub"])}</div>' if b.get("sub") else ""))
+        tf = round(max(0.9, min(1.6, d * 0.5)), 2)
+        bj.append(f'  tl.fromTo("#{sid} .fr", {{ opacity: 0, y: 30 }}, {{ opacity: 1, y: 0, duration: 0.35, stagger: 0.08, ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
+        bj.append(f'  (function () {{ const els = document.querySelectorAll("#{sid} .fc b"), C = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789%+€", o = {{ v: 0 }};'
+                  f' tl.fromTo(o, {{ v: 0 }}, {{ v: 1, duration: {tf}, ease: "none", immediateRender: true, onUpdate: function () {{'
+                  f' els.forEach(function (el, i) {{ const c = el.dataset.c, col = i % {cols}, row = Math.floor(i / {cols});'
+                  f' const at = 0.25 + 0.6 * col / {cols} + 0.08 * row;'
+                  f' el.textContent = (o.v >= at || c === " ") ? c : C[(i * 7 + Math.floor(o.v * 46)) % C.length];'
+                  f' el.parentNode.classList.toggle("set", o.v >= at && c !== " "); }}); }} }}, {s0 + 0.2}); }})();')
+        if b.get("sub"):
+            bj.append(f'  tl.fromTo("#{sid} .fsub", {{ opacity: 0, y: 14 }}, {{ opacity: 1, y: 0, duration: 0.35, ease: "power2.out", immediateRender: false }}, '
+                      f'{round(s0 + 0.3 + tf, 3)});')
     else:  # browser : site maquette (ou capture) annoté
         notes = b.get("notes", [])[:4]
         on = {n_.get("on"): n_ for n_ in notes if n_.get("on")}

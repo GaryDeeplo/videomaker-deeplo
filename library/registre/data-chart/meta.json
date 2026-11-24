@@ -1,0 +1,24 @@
+{
+ "name": "data-chart",
+ "type": "registre",
+ "title": "Data Chart",
+ "description": "Animated bar + line chart with staggered reveal, NYT-style typography, and value labels",
+ "when_to_use": "Registre HyperFrames (bloc) : data, chart, statistics",
+ "tags": [
+  "data",
+  "chart",
+  "statistics"
+ ],
+ "files": [],
+ "usage": "cd <job> && npx --yes hyperframes@0.9.71 add data-chart   (variables : )",
+ "source_job": "registre HyperFrames",
+ "registry_type": "block",
+ "dimensions": {
+  "width": 1920,
+  "height": 1080
+ },
+ "duration": 15,
+ "preview": "preview.mp4",
+ "created": "2026-11-23",
+ "uses": 0
+}
