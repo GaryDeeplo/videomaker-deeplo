@@ -3,6 +3,16 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.26
+- Style TikTok « tuto » : sous-titres `geant` (un mot énorme à la fois, mots déjà dits en petit), mot en escalier de syllabes (« IN- / CRO- / YABLE »), cartes au milieu sur vidéo floutée (qui reste nette entre deux cartes), vraie capture d'écran en carte, carte « Suivre » en fin.
+- Pack immobilier / luxe : sous-titres `editorial` (petits mots en sans fine, mot fort en serif italique), mots géants dans le décor (serif, ou posés au sol), blocs en verre (recherche qui se tape, carte du lieu avec épingle, cartes photo en 3D, chiffre géant qui compte avec cote fléchée, fin sur le logo), barre de progression.
+- Accueil : en 3 séries de questions au plus ; analyse du contenu puis propositions d'habillage en choix multiple (carte et distances, chiffres et calculs, pictos et emojis animés, accroche dessinée…).
+- Son : bruitages enfin au bon niveau et calés sur leur pic, nouveaux sons (sub-drop, verre, souffle doux, tap, page), variété d'une vidéo à l'autre, bruitage de caisse sur les prix ; voix travaillée (EQ, de-esser, compresseur) ; musique choisie et calée automatiquement ; master plus propre.
+- Image : dérush quasi sans perte, petites sources (WhatsApp) agrandies proprement et sans zoom, couleurs BT.709, HDR sans bandes, cadence 24 / 25 respectée.
+- Livraison identique à l'aperçu validé (les options du montage sont reprises pour chaque format) ; crédits jamais dans le texte du post.
+- Sous-titres : taille mesurée, ? et ! gardés, nombres et petits mots jamais coupés, encre sombre automatique sur fond clair ; cartes : thème verre, entrées variées, cartes limitées à 4 s ; plusieurs bugs de maquettes corrigés.
+- Contrôle `tools/selftest.py` avant chaque version ; SKILL.md allégé (détails dans references/).
+
 ## 2026.11.25
 - Dérush : aucune coupe ne tombe plus sur des yeux fermés. Si une coupe tombe sur un clignement, elle glisse de quelques images vers des yeux ouverts, sans entrer dans un mot ; le rapport du dérush dit lesquelles ont bougé. Facultatif (MediaPipe, installé par `setup.py install` ; `check.py` dit s'il manque).
 

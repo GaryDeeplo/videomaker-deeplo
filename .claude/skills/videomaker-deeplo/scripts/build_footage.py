@@ -28,7 +28,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from build_composition import bubble_ink, caption_css, caption_js, caption_spans
+from build_composition import STYLES, bubble_ink, caption_css, caption_js, caption_spans
 import numpy as np
 
 from footage import camera_jitter, motion_profile, subject_x
@@ -111,7 +111,7 @@ def main():
     ap.add_argument("job")
     ap.add_argument("slug")
     ap.add_argument("--size")
-    ap.add_argument("--style", default="boite")
+    ap.add_argument("--style", choices=STYLES, default=None, help="style des sous-titres (défaut : text.captionStyle)")
     ap.add_argument("--fit", choices=["cover", "blur"])
     ap.add_argument("--no-outro", action="store_true")
     ap.add_argument("--lang", help="sous-titres traduits (translate.py apply) : nl, en…")
@@ -120,6 +120,7 @@ def main():
     a = ap.parse_args()
     job = job_dir(a.job)
     c = config(job)
+    a.style = a.style or c["text"].get("captionStyle") or "boite"
     vis = c["visual"]
     W, H = size_of(a.size, vis)
     u = W / 1080
@@ -372,14 +373,9 @@ def main():
     content_js = "\n".join([caption_js(a.style)] + capjs + js)
     if T0:  # le contenu dans sa propre timeline, décalée de la durée de l'accroche
         content_js = "  const ct = gsap.timeline();\n" + content_js.replace("tl.", "ct.") + f"\n  tl.add(ct, {T0});"
-    faces = []
-    for f in vis.get("fonts", []):
-        ff = ROOT / f["file"] if not Path(f["file"]).is_absolute() else Path(f["file"])
-        (job / "assets" / "fonts").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ff, job / "assets" / "fonts" / ff.name)
-        faces.append(f"@font-face {{ font-family: '{fam}'; src: url('assets/fonts/{ff.name}'); font-weight: {f.get('weight', 400)}; }}")
     import panel as pn
-    faces.append(pn.fonts(job))
+    from fonts import brand_faces
+    faces = [brand_faces(job, vis), pn.fonts(job)]  # fonts + fontFile + titleFont
     cap_size = round((84 if a.style not in ("minimal", "mono") else 56) * u)
     G = lambda x: round(x * u)
     on_acc = "#111" if pn._lum(acc) > 150 else "#fff"
@@ -435,7 +431,7 @@ def main():
   .cap {{ position: absolute; left: 0; right: 0; top: {round(H * 0.72)}px; text-align: center; z-index: 40; }}
   .cap .in {{ display: inline-block; max-width: 86%; font-weight: 800; font-size: {cap_size}px; line-height: 1.12; color: #fff;
              text-shadow: 0 {G(4)}px {G(16)}px rgba(0,0,0,.7); }}
-  .cap .w {{ display: inline-block; margin: 0 0.07em; {"opacity: 0;" if a.style in ("pop", "duo", "mono") else ""} }}
+  .cap .w {{ display: inline-block; margin: 0 0.07em; {"opacity: 0;" if a.style in ("pop", "duo", "seam", "mono") else ""} }}
 {caption_css(a.style, acc)}
 </style>
 </head>
@@ -461,6 +457,9 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    from build_composition import cli_args
+    from common import write_json as _wj
+    _wj(job / "work" / f"{a.slug}_build.json", {"script": "build_footage.py", "args": cli_args(ap, a)})  # deliver.py rejoue ces options
     if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
         sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=total, plans=rep, voix=bool(voice), sous_titres=len(caps), bulles=n_bub,

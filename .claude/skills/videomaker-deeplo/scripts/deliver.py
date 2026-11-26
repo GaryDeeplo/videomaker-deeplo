@@ -13,6 +13,9 @@ couverture extraite du MP4. La composition du format principal est reconstruite 
 Chaque fichier livré passe la conformité de qa.py (h264 yuv420p, taille exacte, cadence fixe, AAC 48 kHz stéréo,
 son et image de même longueur, BT.709, poids) : pastille dans livraison.html, « conformite » par format et
 « conforme » dans la réponse.
+Cadence : celle du cut si elle est standard (24 / 25 / 30 ; 50 -> 25, 60 -> 30), sinon celle de la composition ;
+qa.py vérifie la même. La vidéo livrée = l'aperçu validé : les options du monteur (--mode, --style, --zooms,
+--accroche…) sont relues dans work/<slug>_build.json (écrit par build_composition) et repassées à chaque appel.
 Crédits : credits.txt et page récap, jamais dans le post ; « a_citer » liste ceux sous licence BY (mention exigée).
 Texte du post : work/<slug>_post.json écrit par Claude AVANT la livraison :
   {"caption": "…", "hashtags": ["#lyon", "…"], "cta": "…", "first_comment": "…"}
@@ -29,7 +32,7 @@ import sys
 from pathlib import Path
 
 from common import FORMATS, config, fail, job_dir, out, read_json, sh, size_of
-from qa import conformite, verdict_of
+from qa import conformite, cut_fps, verdict_of
 
 HERE = Path(__file__).resolve().parent
 NPX = ["cmd", "/c", "npx"] if os.name == "nt" else ["npx"]
@@ -45,6 +48,29 @@ def run_py(script, *args):
         res = {}
     if r.returncode != 0 or not res.get("ok", True):
         fail(f"{script} a échoué", out=(r.stdout + r.stderr)[-800:])
+    return res
+
+
+def build_args(job, slug, builder):
+    """Options effectives du monteur (work/<slug>_build.json : {"script": …, "args": [...]}), sans --size / --lang /
+    --no-captions (ajoutés ici) ; None si le fichier manque ou vient d'un autre monteur."""
+    bj = job / "work" / f"{slug}_build.json"
+    if not bj.exists():
+        return None
+    data = read_json(bj)
+    if data.get("script") and data["script"] != builder:
+        return None
+    args, res, skip = [str(x) for x in (data.get("args") or [])], [], False
+    for x in args:
+        if skip:
+            skip = False
+            continue
+        if x in ("--size", "--lang"):
+            skip = True
+            continue
+        if x == "--no-captions" or x.startswith(("--size=", "--lang=")):
+            continue
+        res.append(x)
     return res
 
 
@@ -82,6 +108,13 @@ def main():
     builder = {"rush": "build_composition.py", "scenes": "build_scenes.py", "explainer": "build_explainer.py",
                "punch": "build_punch.py", "infographie": "build_data.py", "montage": "build_footage.py"}[pack]
     vertical_only = pack in ("explainer", "punch", "infographie")
+    avert = []
+    bargs = build_args(job, a.slug, builder)
+    if bargs is None:
+        bargs = []
+        if builder == "build_composition.py":  # les autres monteurs lisent tout dans work/ (storyboard, data…)
+            avert.append(f"work/{a.slug}_build.json absent : monteur relancé sans les options de l'aperçu (--mode, --style, "
+                         "--zooms…) ; la livraison peut différer de l'aperçu validé. Relance build_composition.py puis deliver.py.")
     fmts = [f.strip() for f in a.formats.split(",") if f.strip()]
     for f in fmts:
         if f not in FORMATS:
@@ -102,6 +135,8 @@ def main():
 
     if a.apercu:
         a.fps, a.quality = a.fps or 15, "draft"
+    elif not a.fps:
+        a.fps = cut_fps(job, a.slug)  # rush à 25 i/s livré à 25 (pas de saccade de conversion 25 -> 30)
     lg = ["--lang", a.lang] if a.lang else []
     sfx = f"_{a.lang}" if a.lang else ""
     dst = job / "renders" / (("apercu" if a.apercu else "livraison") + sfx)
@@ -116,10 +151,13 @@ def main():
             Wd, Hd = FORMATS[f]
             src_v, src_c = dst / made[0]["video"], dst / made[0]["cover"]
             final, cover = dst / f"{a.slug}_{tag}.mp4", dst / f"{a.slug}_{tag}_cover.jpg"
-            fc = (f"[0:v]split[a][b];[a]scale={Wd}:{Hd}:force_original_aspect_ratio=increase,crop={Wd}:{Hd},boxblur=40:4,"
-                  f"eq=brightness=-0.12[bg];[b]scale=-2:{Hd}[fg];[bg][fg]overlay=(W-w)/2:0,format=yuv420p[v]")
+            # fond flou calculé en petit (270 px) puis agrandi : même rendu, bien plus rapide ; premier plan en lanczos
+            fc = (f"[0:v]split[a][b];[a]scale=270:270:force_original_aspect_ratio=increase,crop=270:270,gblur=sigma=8,"
+                  f"eq=brightness=-0.12,scale={Wd}:{Hd}:flags=bicubic[bg];[b]scale=-2:{Hd}:flags=lanczos[fg];"
+                  f"[bg][fg]overlay=(W-w)/2:0,format=yuv420p[v]")
             sh(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src_v), "-filter_complex", fc, "-map", "[v]", "-map", "0:a?",
-                "-c:v", "libx264", "-preset", "medium", "-crf", "18", "-c:a", "copy", "-movflags", "+faststart", str(final)],
+                "-c:v", "libx264", "-preset", "slow", "-crf", "15", "-colorspace", "bt709", "-color_primaries", "bt709",
+                "-color_trc", "bt709", "-color_range", "tv", "-c:a", "copy", "-movflags", "+faststart", str(final)],
                "ffmpeg (format dérivé)")
             sh(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src_c), "-filter_complex", fc.replace(",format=yuv420p", ""),
                 "-map", "[v]", "-frames:v", "1", "-q:v", "2", str(cover)], "ffmpeg (couverture dérivée)")
@@ -127,7 +165,7 @@ def main():
                          "derive": "9:16 sur fond flouté"})
             continue
         tag = f.replace(":", "x") + sfx
-        run_py(builder, str(job), a.slug, "--size", f, *lg)
+        run_py(builder, str(job), a.slug, "--size", f, *bargs, *lg)
         raw = job / "renders" / f"{a.slug}_{tag}.mp4"
         fps = ["-f", str(a.fps)] if a.fps else []
         r = subprocess.run(NPX + ["--yes", "hyperframes@0.9.71", "render", "-q", a.quality, "-w", "8", *fps, "-o", str(raw)],
@@ -149,7 +187,7 @@ def main():
                 made.append({"format": f, "video": final.name, "cover": cover.name, "lufs": fin["lufs"], "tp": fin["true_peak"],
                              "verdict": fin["verdict"], "mo": round(final.stat().st_size / 1e6, 1)})
                 continue
-        run_py(builder, str(job), a.slug, "--size", f, "--no-captions", *lg)  # couverture sans sous-titres
+        run_py(builder, str(job), a.slug, "--size", f, *bargs, "--no-captions", *lg)  # couverture sans sous-titres
         snap = job / "work" / "cover_snap"
         shutil.rmtree(snap, ignore_errors=True)
         subprocess.run(NPX + ["--yes", "hyperframes@0.9.71", "snapshot", "--at", str(cover_t), "--no-end", "-o", str(snap)],
@@ -161,7 +199,7 @@ def main():
                      "verdict": fin["verdict"], "mo": round(final.stat().st_size / 1e6, 1)})
     for m in made:  # conformité de chaque fichier livré (codec, taille, cadence, son, couleurs, poids)
         m["conformite"] = verdict_of(conformite(dst / m["video"], m["format"], a.fps))
-    run_py(builder, str(job), a.slug, "--size", base)  # le Studio retrouve le format principal
+    run_py(builder, str(job), a.slug, "--size", base, *bargs)  # le Studio retrouve le format principal (options de l'aperçu)
 
     credits = (job / "renders" / "credits.txt").read_text(encoding="utf-8") if (job / "renders" / "credits.txt").exists() else ""
     pj = work / f"{a.slug}_post{sfx}.json"
@@ -219,6 +257,7 @@ button {{ background: var(--acc); color: #fff; border: 0; padding: 10px 16px; bo
         conforme=all(m["conformite"]["verdict"] == "OK" for m in made),
         post="présent" if post else "absent (écris work/<slug>_post.json)",
         a_citer=a_citer or None,  # licence BY : mention exigée (premier commentaire, description YouTube…), à voir avec le client
+        cadence=a.fps or "composition", options_monteur=bargs or None, avertissement=avert or None,
         page=str(dst / "livraison.html"))
 
 

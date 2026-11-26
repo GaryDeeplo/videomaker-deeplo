@@ -73,18 +73,10 @@ def best_frames(src, n=3, gap=2.0):
     return pick, (sw, sh)
 
 
-def fonts_css(vis, dst):
-    family, css = vis["fontFamily"], ""
-    for f in vis.get("fonts", []):
-        ff = ROOT / f["file"] if not Path(f["file"]).is_absolute() else Path(f["file"])
-        shutil.copy2(ff, dst / ff.name)
-        css += (f"@font-face {{ font-family: '{family}'; src: url('{ff.name}') format('{f.get('format', 'woff2')}'); "
-                f"font-weight: {f.get('weight', 400)}; }}\n")
-    if vis.get("fontFile"):
-        ff = Path(vis["fontFile"])
-        shutil.copy2(ff, dst / ff.name)
-        css = f"@font-face {{ font-family: '{family}'; src: url('{ff.name}'); font-weight: 100 900; }}\n"
-    return css
+def fonts_css(job, vis, dst):
+    """Polices de la charte copiées à côté de la page de couverture (fonts.py)."""
+    from fonts import brand_faces
+    return brand_faces(job, vis, dst=dst, url="")
 
 
 def title_html(title, accent_last=True):
@@ -214,7 +206,7 @@ def make(a):
             shutil.copy2(fr["file"], d / f"img{i}{Path(fr['file']).suffix}")
             items.append({"variant": v, "img": f"img{i}{Path(fr['file']).suffix}", "img_size": fr["size"],
                           "cx": fr["cx"], "cy": fr["cy"], "title": titles[i % len(titles)]})
-        (d / "index.html").write_text(page(W, H, items, vis, fonts_css(vis, d)), encoding="utf-8")
+        (d / "index.html").write_text(page(W, H, items, vis, fonts_css(job, vis, d)), encoding="utf-8")
         shutil.copy2(job / "hyperframes.json", d / "hyperframes.json")
         snap = d / "snap"
         subprocess.run(NPX + ["--yes", "hyperframes@0.9.71", "snapshot", "--at", "0.5,1.5,2.5", "--no-end", "-o", str(snap)],

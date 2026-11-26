@@ -44,6 +44,11 @@ SFX = {
     "paper": ("paper page turn", 200, 2500),
     "glitch": ("glitch", 100, 2500),
     "applause": ("applause", 1500, 10000),
+    "subdrop": ("sub drop", 300, 5000),  # grave qui tombe : accroche, révélation
+    "glass": ("glass ding", 100, 3000),  # tintement de verre : notification, tarif haut de gamme
+    "swoosh_soft": ("soft whoosh", 200, 2000),  # souffle discret : bandeau nom, surligneur, marquee
+    "tap": ("tap", 30, 600),  # toucher d'écran : bouton, appel à l'action
+    "pageflip": ("page flip", 200, 2500),
 }
 
 # ambiance -> requête (pistes de 60 s à 6 min)

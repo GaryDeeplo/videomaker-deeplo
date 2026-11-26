@@ -95,7 +95,7 @@ def main():
     ap.add_argument("--no-sfx", action="store_true")
     ap.add_argument("--size", help="9:16 | 1:1 | 4:5 | 16:9 | LxH (défaut : config)")
     ap.add_argument("--lang", help="sous-titres traduits (translate.py) : nl, en…")
-    ap.add_argument("--style", help="style des sous-titres : pop | karaoke | minimal | boite | impact | duo")
+    ap.add_argument("--style", choices=STYLES, default=None, help="style des sous-titres (défaut : text.captionStyle)")
     ap.add_argument("--emoji", action="store_true", help="emoji après les mots-clés")
     a = ap.parse_args()
     job = job_dir(a.job)
@@ -112,19 +112,9 @@ def main():
     box_ink = "#111111" if (0.299 * _rgb[0] + 0.587 * _rgb[1] + 0.114 * _rgb[2]) > 160 else "#ffffff"  # texte dans la boîte
     soft = vis.get("softColor", accent)
 
-    faces = []
-    for f in vis.get("fonts", []):
-        src = asset(job, f["file"], "fonts")
-        faces.append(f"@font-face {{ font-family: '{fam}'; src: url('{src}') format('{f.get("format", "woff2")}'); "
-                     f"font-weight: {f.get('weight', 400)}; font-style: normal; }}")
-    if vis.get("fontFile"):  # police variable (toutes les graisses dans un fichier)
-        src = asset(job, vis["fontFile"], "fonts")
-        faces.append(f"@font-face {{ font-family: '{fam}'; src: url('{src}'); font-weight: 100 900; font-style: normal; }}")
-    tf = vis.get("titleFont")  # police des titres de la charte (ex. Playfair Display), sinon celle du texte
-    if tf:
-        src = asset(job, tf["file"], "fonts")
-        faces.append(f"@font-face {{ font-family: '{tf['family']}'; src: url('{src}'); font-weight: {tf.get('weight', 400)}; "
-                     f"font-style: normal; }}")
+    from fonts import brand_faces
+    faces = [brand_faces(job, vis)]  # fonts + fontFile + titleFont (police des titres de la charte, ex. Playfair Display)
+    tf = vis.get("titleFont")
     logo = asset(job, vis["logo"], "img") if vis.get("logo") else None
 
     nodes, js, sfx_times, pops = [], [], [], []
@@ -512,7 +502,7 @@ def main():
   .cap .in {{ display: inline-block; max-width: 84%; padding: .16em .5em; border-radius: .25em;
               background: rgba(20,18,16,.80); color: #fff; font-family: '{fam}', 'Inter', sans-serif; font-weight: 700;
               font-size: {round(50*u)}px; line-height: 1.2; }}
-  .cap .w {{ display: inline-block; margin: 0 .06em; {"opacity: 0;" if style in ("pop", "duo", "mono") else ""} }}"""
+  .cap .w {{ display: inline-block; margin: 0 .06em; {"opacity: 0;" if style in ("pop", "duo", "seam", "mono") else ""} }}"""
     css += caption_css(style, accent, "0 2px 6px rgba(0,0,0,.5)")
     if style == "mono":  # police machine à écrire
         import panel as pn
@@ -718,6 +708,9 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    from build_composition import cli_args
+    from common import write_json as _wj
+    _wj(job / "work" / f"{a.slug}_build.json", {"script": "build_scenes.py", "args": cli_args(ap, a)})  # deliver.py rejoue ces options
     if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
         sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=round(dur, 1), scenes=len(scenes), sous_titres=len(caps_nodes),

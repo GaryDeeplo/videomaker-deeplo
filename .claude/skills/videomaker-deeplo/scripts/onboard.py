@@ -1,16 +1,24 @@
 """ACCUEIL du skill : ce que Claude doit savoir avant de poser ses questions (une ligne JSON)
 
-  python onboard.py status [--marque martin] [--parcours rush|sans-rush|shorts]   # installation, clés, marques, projets
-                                                  # récents, préférences connues, fichiers récents de Téléchargements,
-                                                  # et avec --marque : les goûts gardés du client (gouts.py prompt)
+  python onboard.py status [--marque martin] [--parcours <parcours>]   # installation, clés, marques (+ 2 récentes),
+                                                  # projets récents, préférences connues, fichiers récents de
+                                                  # Téléchargements, et avec --marque : les goûts gardés du client
   python onboard.py profil --marque martin --parcours rush format=9:16 style=boite reseaux=instagram,tiktok musique=upbeat
-  python onboard.py brief <job> objectif=vendre public=particuliers duree=30 ton=dynamique cta="Réservez sur le site"                           mentions="-20 % jusqu'au 31/12" eviter="les prix" langues=fr,nl      # -> work/brief.json
+  python onboard.py brief <job> objectif=vendre public=particuliers duree=30 ton=dynamique cta="Réservez sur le site"
+                    mentions="-20 % jusqu'au 31/12" eviter="les prix" langues=fr,nl accroche=titre   # -> work/brief.json
+
+Parcours : rush, sans-rush, shorts, montage, plusieurs-rushs, explainer, punch, infographie, collage, ecran-partage,
+mots, immobilier, traduction, lot, calendrier, guide, vitrine.
+Clés de profil (liste fermée ; une clé inconnue est ignorée avec un avertissement et la clé la plus proche) : voir
+PROFIL_KEYS. Seules `reseaux` et `langues` sont des listes (découpées par virgule) ; les autres valeurs restent
+entières (un cta « Réservez, c'est simple » garde sa virgule).
 
 Préférences (profil.json à la racine, jamais dans git ni dans les paquets) RANGÉES PAR MARQUE ET PAR PARCOURS : un Reel
 dynamique pour une marque ne décide pas du style d'une vidéo sobre pour une autre. Ce sont des valeurs par défaut :
 la demande du moment gagne toujours, et on n'enregistre qu'avec l'accord de l'utilisateur.
 """
 import argparse
+import difflib
 import shutil
 import sys
 from pathlib import Path
@@ -20,6 +28,25 @@ from common import ROOT, env_key, out, read_json, write_json
 PROFIL = ROOT / "profil.json"
 VIDEO = (".mp4", ".mov", ".m4v", ".webm", ".mkv")
 IMAGE = (".jpg", ".jpeg", ".png", ".webp", ".heic")
+
+PARCOURS = ["rush", "sans-rush", "shorts", "montage", "plusieurs-rushs", "explainer", "punch", "infographie", "collage",
+            "ecran-partage", "mots", "immobilier", "traduction", "lot", "calendrier", "guide", "vitrine"]
+LISTES = {"reseaux", "langues"}  # seules valeurs découpées par virgule
+PROFIL_KEYS = {
+    "format": "9:16 | 1:1 | 16:9 | tous",
+    "style": "style de sous-titres (pop, karaoke, minimal, boite, impact, duo, mono, bulle, souligne, geant, editorial)",
+    "reseaux": "instagram,tiktok,facebook,linkedin,youtube",
+    "musique": "ambiance (upbeat, chill, inspiring, energetic, acoustic, cinematic, funky, ambient) ou aucune",
+    "broll": "oui | non", "sous_titres": "oui | non (en plus des mots dynamiques)", "emoji": "oui | non",
+    "zooms": "oui | non", "accroche": "non | titre | dessin", "accroche_style": "papier, plan, pate, neon, …",
+    "layout": "full | split | cards", "pack": "ecran-partage | explainer | punch | infographie | montage | classique",
+    "habillage": "propositions retenues d'habitude (texte libre)",
+    "ton": "dynamique | chaleureux | haut de gamme | sobre", "public": "particuliers | professionnels | candidats | clients",
+    "objectif": "vendre | faire connaître | recruter | informer | fidéliser", "cta": "appel à l'action habituel",
+    "duree": "15 | 30 | 60 | libre", "langues": "fr,nl,en", "voix": "gemini-<ton> | fish | enregistrement | aucune",
+}
+BRIEF_KEYS = {"objectif", "public", "duree", "ton", "cta", "mentions", "eviter", "langues", "accroche", "accroche_style",
+              "habillage", "sous_titres", "format", "reseaux"}
 
 
 def job_state(j):
@@ -42,6 +69,44 @@ def job_state(j):
 def load():
     p = read_json(PROFIL) if PROFIL.exists() else {}
     return p if "reglages" in p else {"reglages": {}}
+
+
+def parse_pairs(pairs, allowed):
+    """k=v -> (valeurs gardées, avertissements). Clé hors liste : ignorée, avec la clé la plus proche."""
+    vals, warns = {}, []
+    for kv in pairs:
+        if "=" not in kv:
+            warns.append(f"« {kv} » ignoré : attendu cle=valeur")
+            continue
+        k, v = kv.split("=", 1)
+        k = k.strip()
+        norm = k.lower().replace("-", "_").replace("é", "e").replace("è", "e")
+        if norm in allowed:
+            if norm != k:
+                warns.append(f"clé « {k} » lue comme « {norm} »")
+            k = norm
+        else:
+            near = difflib.get_close_matches(norm, list(allowed), n=1, cutoff=0.6)
+            warns.append(f"clé inconnue « {k} » ignorée" + (f" : vouliez-vous « {near[0]}= » ?" if near else "")
+                         + f" (clés : {', '.join(sorted(allowed))})")
+            continue
+        vals[k] = [x.strip() for x in v.split(",") if x.strip()] if k in LISTES else v.strip()
+    return vals, warns
+
+
+def recent_brands(limit=2):
+    """Marques des projets les plus récents (pour l'accueil : 2 marques récentes + « autre »)."""
+    seen = []
+    for j in sorted((ROOT / "jobs").glob("20*"), key=lambda p: p.stat().st_mtime, reverse=True):
+        try:
+            b = read_json(j / "job.json").get("brand")
+        except (OSError, ValueError):
+            continue
+        if b and b not in seen and (ROOT / "brands" / b / "brand.json").exists():
+            seen.append(b)
+        if len(seen) == limit:
+            break
+    return seen
 
 
 def status(a):
@@ -74,7 +139,7 @@ def status(a):
     out(ok=True, installe=all(shutil.which(t) for t in ("ffmpeg", "ffprobe", "node")),
         cles={"gemini_voix": bool(env_key("GEMINI_API_KEY")), "fish_audio": bool(env_key("FISH_API_KEY")), "pixabay": bool(env_key("PIXABAY_API_KEY")),
               "groq": bool(env_key("GROQ_API_KEY"))},
-        marques=brands, projets_recents=jobs, telechargements_recents=recent,
+        marques=brands, marques_recentes=recent_brands(), projets_recents=jobs, telechargements_recents=recent,
         reglages_connus=prof.get(key) if (a.marque or a.parcours) else prof,
         gouts_client=gouts,
         mise_a_jour=__import__("update").check(),
@@ -84,13 +149,14 @@ def status(a):
 def profil(a, pairs):
     p = load()
     key = f"{a.marque or '-'}/{a.parcours or '-'}"
+    vals, warns = parse_pairs(pairs, PROFIL_KEYS)
     cur = p["reglages"].setdefault(key, {})
-    for kv in pairs:
-        if "=" in kv:
-            k, v = kv.split("=", 1)
-            cur[k.strip()] = [x for x in v.split(",") if x] if "," in v else v.strip()
-    write_json(PROFIL, p)
-    out(ok=True, cle=key, reglages=cur)
+    cur.update(vals)
+    if not cur:
+        del p["reglages"][key]
+    if vals:
+        write_json(PROFIL, p)
+    out(ok=bool(vals) or not pairs, cle=key, reglages=cur, enregistre=sorted(vals), avertissements=warns or None)
 
 
 def brief(job_name, pairs):
@@ -99,13 +165,11 @@ def brief(job_name, pairs):
     job = job_dir(job_name)
     dst = job / "work" / "brief.json"
     b = read_json(dst) if dst.exists() else {}
-    for kv in pairs:
-        if "=" in kv:
-            k, v = kv.split("=", 1)
-            b[k.strip()] = [x.strip() for x in v.split(",") if x.strip()] if k.strip() == "langues" else v.strip()
+    vals, warns = parse_pairs(pairs, BRIEF_KEYS)
+    b.update(vals)
     dst.parent.mkdir(exist_ok=True)
     write_json(dst, b)
-    out(ok=True, brief=b, fichier=str(dst))
+    out(ok=True, brief=b, fichier=str(dst), avertissements=warns or None)
 
 
 def main():
@@ -114,8 +178,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["status", "profil"])
     ap.add_argument("--marque")
-    ap.add_argument("--parcours", choices=["rush", "sans-rush", "shorts"])
+    ap.add_argument("--parcours", choices=PARCOURS)
     a, rest = ap.parse_known_args()
+    unknown = [r for r in rest if r.startswith("--")]
+    if unknown:
+        ap.error(f"option inconnue : {' '.join(unknown)}")
     profil(a, rest) if a.cmd == "profil" else status(a)
 
 

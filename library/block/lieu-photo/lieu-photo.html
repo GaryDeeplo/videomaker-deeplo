@@ -1,0 +1,58 @@
+<!-- deeplo-library-block: lieu-photo · carte photo d'un lieu en verre, nom en haut à gauche, épingle qui tombe et pulse ; ex. Marbella vue du ciel -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="lieu-photo" data-composition-id="lieu-photo" data-start="0" data-duration="3.5" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "image", "type": "string", "label": "Photo du lieu (assets/…)", "default": "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}, {"id": "name", "type": "string", "label": "Nom du lieu", "default": "Marbella"}, {"id": "pinx", "type": "number", "label": "Épingle x (%)", "default": 62, "min": 0, "max": 100}, {"id": "piny", "type": "number", "label": "Épingle y (%)", "default": 42, "min": 0, "max": 100}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="lp-card"><div class="lp-ph"><img class="lp-img" data-var-src="image" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" /></div>
+        <div class="lp-name" data-var-text="name">Marbella</div><div class="lp-pin"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg><i class="lp-ring"></i></div></div></div>
+      <style>
+        #lieu-photo { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #lieu-photo .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #lieu-photo .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #lieu-photo .mf-pos { perspective: 160vmin; }
+        #lieu-photo .lp-card { position: relative; width: 78%; aspect-ratio: 16 / 10; padding: 1.2vmin; border-radius: 3.6vmin; background: rgba(255,255,255,.2); border: 0.25vmin solid rgba(255,255,255,.5); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25), inset 0 0.2vmin 0 rgba(255,255,255,.6); opacity: 0; transform-origin: 50% 0; }
+        #lieu-photo .lp-ph { width: 100%; height: 100%; border-radius: 2.6vmin; overflow: hidden; }
+        #lieu-photo .lp-img { width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: 50% 50%; }
+        #lieu-photo .lp-name { position: absolute; left: 4vmin; top: 3.4vmin; color: #fff; font-size: 4vmin; font-weight: 700; text-shadow: 0 0.3vmin 1.4vmin rgba(0,0,0,.55); }
+        #lieu-photo .lp-pin { position: absolute; width: 7vmin; height: 7vmin; margin: -7vmin 0 0 -3.5vmin; color: var(--accent);
+                               filter: drop-shadow(0 0.6vmin 1vmin rgba(0,0,0,.4)); opacity: 0; }
+        #lieu-photo .lp-pin svg { width: 100%; height: 100%; position: relative; z-index: 1; }
+        #lieu-photo .lp-ring { position: absolute; left: 50%; bottom: -0.6vmin; width: 6vmin; height: 2vmin; margin-left: -3vmin; border-radius: 50%;
+                                border: 0.4vmin solid var(--accent); opacity: 0; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("lieu-photo");
+        const r = '[data-composition-id="lieu-photo"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.5;
+        const K = Math.min(1, D / 3.5);  // tout se resserre si le bloc est monté plus court que prévu
+        const pin = document.querySelector(r + ".lp-pin");
+        pin.style.left = (Number(v.pinx) || 62) + "%"; pin.style.top = (Number(v.piny) || 42) + "%";
+        tl.fromTo(r + ".lp-card", { opacity: 0, y: -50, rotationX: 28, scale: 0.94 }, { opacity: 1, y: 0, rotationX: 0, scale: 1, duration: 0.6, ease: "power3.out" }, 0);
+        tl.fromTo(r + ".lp-img", { scale: 1.16 }, { scale: 1.0, duration: D, ease: "none" }, 0);
+        tl.fromTo(r + ".lp-pin", { opacity: 0, y: -90 }, { opacity: 1, y: 0, duration: 0.5, ease: "bounce.out" }, 0.55 * K);
+        tl.fromTo(r + ".lp-ring", { opacity: 0.9, scale: 0.4 }, { opacity: 0, scale: 2.2, duration: 0.8, repeat: 2, ease: "power2.out" }, 1.0 * K);
+        tl.to(r + ".lp-card", { y: -14, duration: Math.max(0.5, D - 1.2), ease: "sine.inOut" }, 0.6);
+        tl.to(r + ".lp-card", { opacity: 0, scale: 0.94, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["lieu-photo"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

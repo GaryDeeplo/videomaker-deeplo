@@ -14,7 +14,7 @@ Vérifie (mesures ffmpeg + sous-titres du slug) :
     francs = à revoir ; s'il est amené en douceur = info, blanc voulu ?), image isolée qui saute (info : nos éclairs de
     transition sont voulus), première image unie (info : le fil d'actualité la montre) ;
   - conformité du fichier livré (--format, ou d'après le nom dans renders/livraison) : h264 yuv420p, taille exacte,
-    cadence fixe attendue (--fps, 30), AAC 48 kHz stéréo, son et image de même longueur, BT.709, poids.
+    cadence fixe attendue (--fps ; sinon celle du cut ramenée à 24 / 25 / 30 comme deliver.py ; sinon 30), AAC 48 kHz stéréo, son et image de même longueur, BT.709, poids.
 Sortie : verdict « OK » ou « à revoir » + la liste des points avec leurs instants. À lancer sur l'aperçu, avant de le
 montrer (les points « info » n'empêchent rien, les « à revoir » se corrigent d'abord).
 """
@@ -224,6 +224,22 @@ def conformite(video, fmt, fps=None):
     return pts
 
 
+def cut_fps(job, slug):
+    """Cadence de livraison tirée du cut (work/<slug>_map.json) : 24, 25 ou 30 ; 50 -> 25, 60 -> 30 ; sinon None."""
+    mj = job / "work" / f"{slug}_map.json"
+    if not mj.exists():
+        return None
+    cut = Path(read_json(mj).get("cut", ""))
+    cut = cut if cut.is_absolute() and cut.exists() else job / "assets" / cut.name  # job copié : chemin absolu périmé
+    if not cut.is_file():
+        return None
+    r = probe(cut).get("fps") or 0
+    for std, deliv in ((23.976, 24), (24, 24), (25, 25), (29.97, 30), (30, 30), (50, 25), (59.94, 30), (60, 30)):
+        if abs(r - std) / std < 0.01:
+            return deliv
+    return None
+
+
 def verdict_of(pts):
     """Même résumé que le contrôle principal : verdict, points à revoir, infos."""
     bad = [f"{q} : {d}" for lvl, q, d in pts if lvl == "à revoir"]
@@ -238,7 +254,7 @@ def main():
     ap.add_argument("--video")
     ap.add_argument("--format", help="contrôle de conformité du fichier livré (9:16, 1:1…) ; défaut : d'après le nom "
                                      "(<slug>_9x16.mp4) pour un fichier de renders/livraison")
-    ap.add_argument("--fps", type=float, help="cadence attendue pour la conformité (défaut 30)")
+    ap.add_argument("--fps", type=float, help="cadence attendue pour la conformité (défaut : celle du cut, sinon 30)")
     a = ap.parse_args()
     job = job_dir(a.job)
     if a.video:
@@ -316,7 +332,7 @@ def main():
         fmt = f"{m.group(1)}:{m.group(2)}"
     conf = None
     if fmt in FORMATS:
-        conf_pts = conformite(v, fmt, a.fps)
+        conf_pts = conformite(v, fmt, a.fps or cut_fps(job, a.slug))
         pts += conf_pts
         conf = verdict_of(conf_pts)["verdict"]
     bj = work / "brief.json"

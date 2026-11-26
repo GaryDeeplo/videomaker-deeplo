@@ -1,0 +1,57 @@
+<!-- deeplo-library-block: cartes-3d · deux cartes photo en verre inclinées en 3D de chaque côté de la personne, qui flottent ; pastille au-dessus de chacune -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="cartes-3d" data-composition-id="cartes-3d" data-start="0" data-duration="3.6" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "image1", "type": "string", "label": "Photo gauche (assets/…)", "default": "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}, {"id": "image2", "type": "string", "label": "Photo droite (assets/…)", "default": "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}, {"id": "label1", "type": "string", "label": "Pastille gauche (vide = aucune)", "default": ""}, {"id": "label2", "type": "string", "label": "Pastille droite (vide = aucune)", "default": ""}]'>
+      <div class="mf-fill"></div>
+      <div class="c3-stage"><div class="c3 c3l"><span class="c3-lab" data-var-text="label1"></span><div class="c3-f"><img data-var-src="image1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" /></div></div>
+        <div class="c3 c3r"><span class="c3-lab" data-var-text="label2"></span><div class="c3-f"><img data-var-src="image2" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" /></div></div></div>
+      <style>
+        #cartes-3d { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #cartes-3d .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #cartes-3d .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #cartes-3d .c3-stage { position: absolute; left: 0; right: 0; top: calc(var(--top, 30) * 1%); height: 30%; perspective: 120vmin; }
+        #cartes-3d .c3 { position: absolute; top: 0; width: 34%; visibility: hidden; }
+        #cartes-3d .c3l { left: 3%; transform-origin: 0 50%; }
+        #cartes-3d .c3r { right: 3%; transform-origin: 100% 50%; }
+        #cartes-3d .c3-f { aspect-ratio: 4 / 5; padding: 1vmin; border-radius: 3vmin; background: rgba(255,255,255,.2); border: 0.25vmin solid rgba(255,255,255,.5); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25), inset 0 0.2vmin 0 rgba(255,255,255,.6); }
+        #cartes-3d .c3-f img { width: 100%; height: 100%; object-fit: cover; border-radius: 2.2vmin; display: block; }
+        #cartes-3d .c3-lab { display: inline-block; margin: 0 0 1.4vmin 1vmin; padding: 0.8vmin 2vmin; border-radius: 99px; background: rgba(255,255,255,.2); border: 0.25vmin solid rgba(255,255,255,.5); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25), inset 0 0.2vmin 0 rgba(255,255,255,.6); color: #fff;
+                              font-size: 3vmin; font-weight: 700; white-space: nowrap; }
+        #cartes-3d .c3-lab:empty { display: none; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("cartes-3d");
+        const r = '[data-composition-id="cartes-3d"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.6;
+        const K = Math.min(1, D / 3.6);  // tout se resserre si le bloc est monté plus court que prévu
+        tl.set(r + ".c3", { visibility: "visible" }, 0);
+        tl.fromTo(r + ".c3l", { x: -520, rotationY: 70 }, { x: 0, rotationY: 24, duration: 0.7, ease: "power3.out" }, 0);
+        tl.fromTo(r + ".c3r", { x: 520, rotationY: -70 }, { x: 0, rotationY: -24, duration: 0.7, ease: "power3.out" }, 0.12 * K);
+        tl.to(r + ".c3l", { y: -22, rotationY: 18, duration: Math.max(0.6, D - 1.1), ease: "sine.inOut" }, 0.7);
+        tl.to(r + ".c3r", { y: 18, rotationY: -18, duration: Math.max(0.6, D - 1.1), ease: "sine.inOut" }, 0.8);
+        tl.fromTo(r + ".c3-lab", { y: 12, scale: 0.6 }, { y: 0, scale: 1, duration: 0.3, stagger: 0.12, ease: "back.out(2)" }, 0.55 * K);
+        tl.to(r + ".c3l", { x: -520, rotationY: 60, duration: 0.38, ease: "power2.in" }, D - 0.4);
+        tl.to(r + ".c3r", { x: 520, rotationY: -60, duration: 0.38, ease: "power2.in" }, D - 0.4);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["cartes-3d"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

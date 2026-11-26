@@ -51,18 +51,8 @@ def main():
     bg, ink, acc, paper = pn.paper_colors(vis)
 
     # polices : charte + serif italique et mono du pack
-    faces = []
-    for f in vis.get("fonts", []):
-        ff = ROOT / f["file"] if not Path(f["file"]).is_absolute() else Path(f["file"])
-        (job / "assets" / "fonts").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ff, job / "assets" / "fonts" / ff.name)
-        faces.append(f"@font-face {{ font-family: '{fam}'; src: url('assets/fonts/{ff.name}'); font-weight: {f.get('weight', 400)}; }}")
-    if vis.get("fontFile"):
-        ff = ROOT / vis["fontFile"] if not Path(vis["fontFile"]).is_absolute() else Path(vis["fontFile"])
-        (job / "assets" / "fonts").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ff, job / "assets" / "fonts" / ff.name)
-        faces.append(f"@font-face {{ font-family: '{fam}'; src: url('assets/fonts/{ff.name}'); font-weight: 100 900; }}")
-    faces.append(pn.fonts(job))
+    from fonts import brand_faces
+    faces = [brand_faces(job, vis), pn.fonts(job)]
 
     # géométrie : carte, bandeau d'étapes, scène des temps forts, cadre des sous-titres
     mx, top, bottom = round(W * 0.055), round(H * 0.045), round(H * 0.80)
@@ -90,7 +80,7 @@ def main():
     cjs = [f'  tl.fromTo(".prog b", {{ scaleX: 0 }}, {{ scaleX: 1, duration: {dur}, ease: "none", immediateRender: false }}, 0);']
     for r in prep:  # la puce du chapitre s'allume quand son premier temps fort arrive
         b = next((x for x in beats if x.get("word") == r.get("mot") and x.get("type") == r.get("type")), None)
-        if b and b.get("chapter"):
+        if b and b.get("chapter") and r.get("a") is not None:
             cjs.append(f'  tl.call(function () {{ document.querySelectorAll(".chip").forEach(function (e) {{ '
                        f'e.classList.toggle("on", e.dataset.ch === {json.dumps(b["chapter"], ensure_ascii=False)}); }}); }}, null, {r["a"]});')
 
@@ -209,6 +199,9 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    from build_composition import cli_args
+    from common import write_json as _wj
+    _wj(job / "work" / f"{a.slug}_build.json", {"script": "build_explainer.py", "args": cli_args(ap, a)})  # deliver.py rejoue ces options
     if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
         sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=total, chapitres=chapters, temps_forts=prep, sous_titres=len(caps),

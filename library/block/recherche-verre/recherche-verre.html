@@ -1,0 +1,62 @@
+<!-- deeplo-library-block: recherche-verre · barre de recherche en verre dépoli qui se tape, bouton pressé, pastille lieu qui tombe dessous ; ex. « villa surin, marbella » -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="recherche-verre" data-composition-id="recherche-verre" data-start="0" data-duration="3.2" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "query", "type": "string", "label": "Texte tapé", "default": "villa surin, marbella"}, {"id": "button", "type": "string", "label": "Bouton", "default": "Rechercher"}, {"id": "place", "type": "string", "label": "Pastille lieu (vide = aucune)", "default": "Marbella"}]'>
+      <div class="mf-fill"></div>
+      <div class="mf-pos"><div class="rv-wrap">
+        <div class="rv-bar"><svg class="rv-mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <span class="rv-q"></span><i class="rv-caret"></i><span class="rv-btn" data-var-text="button">Rechercher</span></div>
+        <div class="rv-chip"><span class="rv-pin"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/></svg></span><span class="rv-place" data-var-text="place">Marbella</span></div></div></div>
+      <style>
+        #recherche-verre { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #recherche-verre .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #recherche-verre .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #recherche-verre .rv-wrap { width: 84%; display: flex; flex-direction: column; align-items: center; gap: 2.4vmin; }
+        #recherche-verre .rv-bar { position: relative; width: 100%; display: flex; align-items: center; gap: 2.2vmin; padding: 2.2vmin 2.2vmin 2.2vmin 3.4vmin;
+                                    border-radius: 99px; background: rgba(255,255,255,.2); border: 0.25vmin solid rgba(255,255,255,.5); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25), inset 0 0.2vmin 0 rgba(255,255,255,.6); color: #fff; opacity: 0; }
+        #recherche-verre .rv-mag { width: 5vmin; height: 5vmin; flex: none; opacity: .9; }
+        #recherche-verre .rv-q { font-size: 4.4vmin; font-weight: 500; white-space: nowrap; text-shadow: 0 0.2vmin 1vmin rgba(0,0,0,.3); }
+        #recherche-verre .rv-caret { width: 0.4vmin; height: 5vmin; background: #fff; margin-left: -1.6vmin; }
+        #recherche-verre .rv-btn { margin-left: auto; padding: 1.8vmin 3.6vmin; border-radius: 99px; background: var(--accent); color: #fff;
+                                    font-size: 3.6vmin; font-weight: 700; box-shadow: 0 1vmin 3vmin rgba(0,0,0,.25); }
+        #recherche-verre .rv-chip { display: inline-flex; align-items: center; gap: 1.2vmin; padding: 1.4vmin 3vmin 1.4vmin 2.2vmin; border-radius: 99px;
+                                     background: rgba(255,255,255,.2); border: 0.25vmin solid rgba(255,255,255,.5); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25), inset 0 0.2vmin 0 rgba(255,255,255,.6); color: #fff; font-size: 3.6vmin; font-weight: 600; opacity: 0; }
+        #recherche-verre .rv-pin { width: 3.8vmin; height: 3.8vmin; color: var(--accent); display: flex; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("recherche-verre");
+        const r = '[data-composition-id="recherche-verre"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.2;
+        const K = Math.min(1, D / 3.2);  // tout se resserre si le bloc est monté plus court que prévu
+        const q = String(v.query || ""), qs = document.querySelector(r + ".rv-q"), o = { n: 0 };
+        if (!String(v.place || "").trim()) document.querySelector(r + ".rv-chip").style.display = "none";
+        tl.fromTo(r + ".rv-bar", { opacity: 0, y: 40, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 0);
+        tl.fromTo(o, { n: 0 }, { n: q.length, duration: Math.max(0.6, 1.25 * K), ease: "none", onUpdate: function () { qs.textContent = q.slice(0, Math.round(o.n)); } }, 0.35 * K);
+        tl.fromTo(r + ".rv-caret", { opacity: 1 }, { opacity: 0, duration: 0.25, repeat: Math.floor(D / 0.5), yoyo: true, ease: "steps(1)" }, 0);
+        tl.to(r + ".rv-btn", { scale: 0.9, duration: 0.09, yoyo: true, repeat: 1, ease: "power1.inOut" }, 1.75 * K);
+        tl.fromTo(r + ".rv-chip", { opacity: 0, y: -26, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(2.4)" }, 1.95 * K);
+        tl.to(r + ".rv-wrap", { y: -18, duration: Math.max(0.5, D - 2.5 * K), ease: "sine.inOut" }, 0.5);
+        tl.to(r + ".rv-bar, " + r + ".rv-chip", { opacity: 0, y: -30, duration: 0.3, ease: "power2.in" }, D - 0.35);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["recherche-verre"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

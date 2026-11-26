@@ -165,7 +165,9 @@ EMOJI_CHAR = {"valide": "✅", "coeur": "❤️", "etoile": "⭐", "pouce": "�
               "regard": "👀", "waouh": "🤩", "adore": "😍", "cent": "💯", "bravo": "🙌", "applaudir": "👏", "eclat": "✨",
               "cloche": "🔔", "alarme": "🚨", "trophee": "🏆", "force": "💪", "reflexion": "🤔", "rire": "😂", "doigt": "👉",
               "cible": "🎯", "feu": "🔥", "fete": "🎉"}
-STYLES = ["pop", "karaoke", "minimal", "boite", "impact", "duo", "seam", "mono", "bulle", "souligne"]
+NBSP = chr(160)  # espace insécable
+EDITORIAL_INK = "#F4EAD5"  # ivoire du mot fort (style « editorial ») ; text.editorialColor pour une autre teinte
+STYLES = ["pop", "karaoke", "minimal", "boite", "impact", "duo", "seam", "mono", "bulle", "souligne", "geant", "editorial"]
 
 
 def emoji_for(word):
@@ -186,18 +188,143 @@ def key_word(words):
     return {j} if len(re.sub(r"\W", "", words[j]["w"])) >= 6 else set()
 
 
-def caption_spans(words, style, use_emoji, st, last_emo):
-    """HTML des mots d'un groupe selon le style (+ emoji collé à son mot). -> (html, instant de l'emoji ou None, last_emo)"""
+VOY = "aeiouyàâäéèêëîïôöùûüœæ"
+INSEP = {"bl", "br", "cl", "cr", "dr", "fl", "fr", "gl", "gr", "pl", "pr", "tr", "vr", "ch", "ph", "gn", "th", "qu", "gu"}
+
+
+def syllabes(mot):
+    """Découpe orale approximative d'un mot français (« incroyable » -> in, cro, ya, ble) pour l'affichage en escalier."""
+    m, out, cur, i = mot, [], "", 0
+    low = mot.lower()
+    while i < len(m):
+        cur += m[i]
+        if low[i] in VOY and i + 2 < len(m) and low[i + 1] == "y" and low[i + 2] in VOY:  # « croyable » : cro-yable
+            out.append(cur)
+            cur, i = "", i + 1
+            continue
+        if low[i] in VOY and i + 1 < len(m):
+            j = i + 1
+            while j < len(m) and low[j] not in VOY and low[j].isalpha():
+                j += 1
+            cons = low[i + 1:j]
+            if j >= len(m) or not cons:  # fin du mot, ou deux voyelles qui se suivent : on continue
+                i += 1
+                continue
+            cut = i + 1 if len(cons) == 1 or cons[-2:] in INSEP and len(cons) == 2 else i + 1 + (len(cons) - (2 if cons[-2:] in INSEP else 1))
+            cur += m[i + 1:cut]
+            out.append(cur)
+            cur, i = "", cut
+            continue
+        i += 1
+    if cur:
+        if out and not any(ch in VOY for ch in cur.lower()):
+            out[-1] += cur
+        else:
+            out.append(cur)
+    if len(out) > 1 and re.fullmatch(rf"[^{VOY}]*es?", out[-1].lower()):  # e muet final : « mon-tage », « in-cro-yable »
+        last = out.pop()
+        out[-1] += last
+    return out if len(out) > 1 else [mot]
+
+
+def join_numbers(words):
+    """« 50 » + « 000 » -> « 50 000 » (espace insécable) : un nombre ne se coupe jamais entre deux mots ou deux lignes."""
+    out = []
+    for w in words:
+        if out and re.fullmatch(r"\d{3}[.,!?…]*", w["w"]) and re.search(r"\d$", out[-1]["w"]):
+            out[-1] = {**out[-1], "w": out[-1]["w"] + " " + w["w"], "end": w["end"]}
+        else:
+            out.append(dict(w))
+    return out
+
+
+def glue_flags(words, skip=()):
+    """glue[j] : le mot j reste collé au suivant en fin de ligne (« de la », « 20 % », « 4 à 7 ») ; skip : indices jamais
+    collés (mot fort du style editorial, sur sa propre ligne). Une chaîne collée ne dépasse pas 18 caractères."""
+    from build_text import HARD, NUMW, UNITS, deac
+
+    def core(w):
+        return re.sub(r"[^\w%€'’]", "", w.lower())
+
+    def num(w):
+        return bool(re.search(r"\d", w)) or deac(core(w)) in NUMW
+    g = [False] * len(words)
+    for j in range(len(words) - 1):
+        if j in skip or j + 1 in skip or re.search(r"[,;:.!?]$", words[j]["w"]):
+            continue
+        a, b = words[j]["w"], words[j + 1]["w"]
+        ca, cb = core(a), core(b)
+        if (ca in HARD or deac(ca) in HARD) and len(ca) <= 4:
+            g[j] = True
+        elif num(a) and (cb in UNITS or deac(cb) in UNITS or b.startswith(("%", "€"))):
+            g[j] = True
+        elif num(a) and deac(cb) in ("a", "et", "ou") and j + 2 < len(words) and num(words[j + 2]["w"]):
+            g[j] = g[j + 1] = True
+    n = 0
+    for j in range(len(words)):  # chaîne trop longue : coupée
+        n += len(words[j]["w"]) + 1
+        if n > 18 and j and g[j - 1]:
+            g[j - 1], n = False, len(words[j]["w"]) + 1
+        if not g[j]:
+            n = 0
+    return g
+
+
+def caption_spans(words, style, use_emoji, st, last_emo, syl=(), fit=None):
+    """HTML des mots d'un groupe selon le style (+ emoji collé à son mot). -> (html, instant de l'emoji ou None, last_emo)
+    syl : mots (minuscules, sans ponctuation) affichés en escalier de syllabes par le style « geant » (IN- / CRO- / YABLE).
+    fit : liste où ajouter le texte de mesure de la taille (blocs insécables séparés par une espace, « ¦ » = mot fort
+    editorial, sur sa ligne)."""
+    if style == "geant":  # un seul mot géant à la fois ; les mots déjà dits du groupe en petit au-dessus
+        small = " ".join(f'<span class="s">{esc(w["w"])}</span>' for w in words)
+
+        def big_of(w):
+            core = re.sub(r"[^\w'-]", "", w["w"].lower())
+            if core in syl:
+                sy = syllabes(re.sub(r"[^\w'-]", "", w["w"]))
+                lines = "".join(f'<i>{esc(x.upper())}{"-" if k + 1 < len(sy) else ""}</i>' for k, x in enumerate(sy))
+                return f'<span class="b sy" style="--n:{len(sy)}">{lines}</span>'
+            return f'<span class="b">{esc(w["w"])}</span>'
+        big = "".join(big_of(w) for w in words)
+        if fit is not None:
+            fit.append(max((w["w"] for w in words), key=len))
+        return f'<span class="gs">{small}</span><span class="gb">{big}</span>', None, last_emo
     keyw = key_word(words) if style in ("duo", "seam", "bulle", "souligne") else set()
-    parts, emo = [], None
+    if style == "editorial" and words:  # un mot fort par groupe, toujours : chiffre > mot fort > mot plein le plus long
+        from build_text import STRONG_WORDS, WEAK
+
+        def _score(j):
+            raw = words[j]["w"].lower()
+            core = re.sub(r"^(?:[a-z]{1,3}['’])", "", re.sub(r"[^\w'’-]", "", raw))  # « c'est » -> « est », « l'offre » -> « offre »
+            weak = core in WEAK or raw.rstrip(".,!?") in WEAK or core in ("est", "sont", "suis", "ai", "as", "va", "vont", "fait") or core.endswith("ment")
+            return (bool(re.search(r"\d", raw)), core in STRONG_WORDS, not weak, len(core))
+        keyw = {max(range(len(words)), key=_score)}
+    parts, emo, units = [], None, []
+    edito = style == "editorial"
     for j, w in enumerate(words):
-        inner = ('<i class="bx"></i>' if style == "boite" else "") + esc(w["w"])
+        txt = esc(w["w"])
+        if edito and j in keyw and EDITORIAL_INK == "degrade":  # dégradé clair -> accent sur un <em> intérieur
+            txt = f"<em>{txt}</em>"
+        inner = ('<i class="bx"></i>' if style == "boite" else "") + txt
         parts.append(f'<span class="w{" k" if j in keyw else ""}">{inner}</span>')
+        units.append("¦" if edito and j in keyw else w["w"])
         ch = emoji_for(w["w"]) if use_emoji and emo is None and w["start"] - last_emo > 4 else None
         if ch:  # un emoji au plus par groupe, et pas plus d'un toutes les 4 s ; collé à son mot (même ligne)
             parts[-1] = f'<span class="wn">{parts[-1]}<span class="em">{ch}</span></span>'
+            units[-1] += NBSP + "MM"
             emo, last_emo = round(max(st, w["start"]), 3), w["start"]
-    return " ".join(parts), emo, last_emo
+    glue = glue_flags(words, skip=keyw if edito else ())  # « de | la », « 20 | % » : jamais coupés en fin de ligne
+    html_, fit_, run, urun = [], [], [], []
+    for j, p_ in enumerate(parts):
+        run.append(p_)
+        urun.append(units[j])
+        if not glue[j] or j == len(parts) - 1:
+            html_.append(run[0] if len(run) == 1 else '<span class="wn">' + " ".join(run) + "</span>")
+            fit_.append(NBSP.join(urun))
+            run, urun = [], []
+    if fit is not None:
+        fit.append(" ".join(fit_))
+    return " ".join(html_), emo, last_emo
 
 
 def emoji_tween(gid, emo):
@@ -209,6 +336,126 @@ def bubble_ink(accent):
     """Accent lisible sur une bulle blanche : un accent clair (jaune, citron) est assombri."""
     import panel as pn
     return pn._mix(accent, "#111111", 0.45) if pn._lum(accent) > 165 else accent
+
+
+def _mix(a, b, t):
+    import panel as pn
+    return pn._mix(a, b, t)
+
+
+def _readable(color, bg, target=4.5, to=None):
+    """Couleur assez contrastée sur bg (WCAG 4,5:1, ou ce que permet le blanc / le noir) : éclaircie sur fond sombre,
+    assombrie sur fond clair (to : forcer le sens)."""
+    import panel as pn
+    to = to or ("#ffffff" if pn._lum(bg) < 128 else "#111111")
+    target, c = min(target, 0.85 * pn._contrast(to, bg)), color
+    for t in (0.15, 0.3, 0.45, 0.6, 0.75, 0.9):
+        if pn._contrast(c, bg) >= target:
+            break
+        c = pn._mix(color, to, t)
+    return c
+
+
+def band_luma(video, W, H, focus, contain, bands):
+    """Luminosité moyenne (0-255) de la bande de chaque sous-titre, sur la vidéo cadrée comme à l'écran (ffmpeg, 3 images/s
+    au 1/8) ; bands : [(t0, t1, x0, y0, x1, y1)] en temps du contenu -> [lum | None]."""
+    import subprocess
+    import numpy as np
+    w, h = max(16, W // 8) // 2 * 2, max(16, H // 8) // 2 * 2
+    vf = (f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2" if contain else
+          f"scale={w}:{h}:force_original_aspect_ratio=increase,crop={w}:{h}:(iw-{w})*{float(focus) / 100:.3f}:(ih-{h})/2")
+    try:
+        raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(video), "-vf", f"fps=3,{vf},format=gray", "-f", "rawvideo", "-"],
+                             capture_output=True, timeout=600).stdout
+    except Exception:  # noqa: BLE001 — mesure impossible : sous-titres sur fond sombre par défaut
+        return [None] * len(bands)
+    n = len(raw) // (w * h)
+    if not n:
+        return [None] * len(bands)
+    fr = np.frombuffer(raw[:n * w * h], np.uint8).reshape(n, h, w)
+    res = []
+    for t0, t1, x0, y0, x1, y1 in bands:
+        a, b = max(0, int(t0 * 3)), min(n, max(int(t0 * 3) + 1, int(t1 * 3) + 1))
+        ya, yb = max(0, int(y0 * h / H)), min(h, max(int(y0 * h / H) + 1, int(y1 * h / H)))
+        xa, xb = max(0, int(x0 * w / W)), min(w, max(int(x0 * w / W) + 1, int(x1 * w / W)))
+        sub = fr[a:b, ya:yb, xa:xb]
+        res.append(round(float(sub.mean()), 1) if sub.size else None)
+    return res
+
+
+def cli_args(ap, a, skip=("job", "slug", "size", "lang")):
+    """Options effectives de la ligne de commande (sans le job, le slug, --size ni --lang), prêtes à repasser au script :
+    deliver.py reconstruit la vidéo validée à l'identique dans chaque format."""
+    res = []
+    for act in ap._actions:
+        if not act.option_strings or act.dest in skip or act.dest == "help":
+            continue
+        v = getattr(a, act.dest, None)
+        if v is None or v == act.default or v is False:
+            continue
+        flag = max(act.option_strings, key=len)
+        res += [flag] if v is True else [flag, str(v)]
+    return res
+
+
+def fit_settings(style, family, W, cap_size, split=False):
+    """Réglages de mesure de la taille des sous-titres (police, graisse, majuscules, marges des mots en em, lignes)."""
+    upper = style not in ("minimal", "geant", "editorial", "souligne", "bulle") and (not split or style == "mono")
+    weight = {"minimal": 700, "souligne": 700, "editorial": 400, "bulle": 800, "mono": 500}.get(style, 800 if split else 900)
+    fam = "'IBM Plex Mono', monospace" if style == "mono" else f"'{family}', 'Inter', sans-serif"
+    ls = {"geant": -0.035, "editorial": -0.005, "mono": 0, "souligne": -0.005, "minimal": 0}.get(style, -0.01)
+    pad = {"impact": 0.54, "mono": 0.7, "geant": 0}.get(style, 0.14)  # marges (et boîtes) des mots
+    width = W * (0.86 if style == "geant" else 0.84 * (0.8 if style == "bulle" else 1))
+    load = [f"{weight} 50px '{family}'"] + (["italic 700 50px 'Bodoni Moda'"] if style == "editorial" else []) \
+        + (["500 50px 'IBM Plex Mono'"] if style == "mono" else [])
+    return {"upper": upper, "weight": weight, "family": fam, "ls": ls, "pad": pad, "width": round(width),
+            "inset": 1.2 if style == "bulle" else 0, "scale": {"impact": 1.08, "karaoke": 1.08, "geant": 1.0, "editorial": 1.0}.get(style, 1.04),
+            "lines": 1 if (split or style == "geant") else (3 if style == "editorial" else 2), "uniform": style != "geant",
+            "base": cap_size, "min": round(cap_size * 0.55), "floor": round(cap_size * 0.8), "load": load}
+
+
+FIT_JS = r"""
+  /* taille des sous-titres mesurée (police chargée, graisse, majuscules, marges des mots) : 2 lignes au plus (1 en
+     écran partagé), une seule taille pour la vidéo, bornée : un groupe trop long garde sa taille, plus petite */
+  function fitCaps() {
+    const cv = document.createElement("canvas").getContext("2d");
+    const wid = function (t, font) { cv.font = font; return cv.measureText(t).width; };
+    const els = Array.prototype.slice.call(document.querySelectorAll(".cap .in[data-fit]"));
+    const f100 = FIT.weight + " 100px " + FIT.family;
+    const sp = wid(" ", f100);
+    const own = els.map(function (el) {
+      let t = el.dataset.fit;
+      if (FIT.upper) t = t.toUpperCase();
+      const segs = t.split("¦").map(function (x) { return x.split(" ").filter(Boolean); }).filter(function (x) { return x.length; });
+      const ws = segs.map(function (u) { return u.map(function (x) { return wid(x, f100) + 100 * (FIT.ls * x.length + FIT.pad * x.split(" ").length); }); });
+      const key = el.querySelector(".w.k");
+      const kw = FIT.lines === 3 && key ? wid(FIT.upper ? key.textContent.toUpperCase() : key.textContent, "italic 700 100px 'Bodoni Moda'") * 1.9 : 0;
+      const box = el.parentNode.classList.contains("fond") || el.parentNode.classList.contains("clair") ? 0.7 : 0;
+      for (let s = FIT.base; s > FIT.min; s -= 1) {
+        const lw = FIT.width - (FIT.inset + box) * s, k = s / 100;
+        if (kw * k > lw) continue;
+        let lines = 0, ok = true;
+        ws.forEach(function (seg) {
+          let cur = 0;
+          lines += 1;
+          seg.forEach(function (w) {
+            const ww = w * k * FIT.scale;
+            if (ww > lw) ok = false;
+            if (cur && cur + sp * k + ww > lw) { lines += 1; cur = ww; } else cur += (cur ? sp * k : 0) + ww;
+          });
+        });
+        if (ok && lines <= FIT.lines) return s;
+      }
+      return FIT.min;
+    });
+    const S = FIT.uniform && own.length ? Math.max(FIT.floor, Math.min.apply(null, own)) : FIT.base;
+    els.forEach(function (el, i) { el.style.fontSize = Math.min(S, own[i]) + "px"; });
+  }
+  fitCaps();
+  if (document.fonts && document.fonts.load) {
+    Promise.all(FIT.load.map(function (f) { return document.fonts.load(f); })).then(fitCaps, fitCaps);
+    document.fonts.ready.then(fitCaps);
+  }"""
 
 
 def caption_css(style, accent, shadow=SHADOW):
@@ -224,6 +471,28 @@ def caption_css(style, accent, shadow=SHADOW):
         css += f"""
   .cap .in {{ -webkit-text-stroke: 0.09em #000; paint-order: stroke fill; text-shadow: 0 0.07em 0 #000, {shadow}; }}
   .cap .w {{ margin: 0 0.2em; }}  /* le mot dit grossit de 8 % : de la place pour ne pas toucher ses voisins */"""
+    if style == "geant":  # mot géant en casse normale, petits mots déjà dits au-dessus (tutos tech TikTok)
+        css += """
+  .cap .in { text-transform: none; letter-spacing: -0.035em; line-height: 1; white-space: nowrap; }
+  .cap .gs { display: block; font-size: 0.26em; font-weight: 700; letter-spacing: 0; line-height: 1.2; margin-bottom: 0.08em; opacity: .9; }
+  .cap .gs .s { opacity: 0; }
+  .cap .gb { display: grid; justify-items: center; }
+  .cap .gb .b { grid-area: 1 / 1; opacity: 0; }
+  .cap .gb .sy { display: flex; flex-direction: column; align-items: center; font-size: .82em; line-height: .86; letter-spacing: -0.02em;
+                 margin-top: calc((1 - var(--n)) * .86em); }  /* l'escalier monte : la dernière ligne reste à la place du mot */
+  .cap .gb .sy i { font-style: normal; opacity: 0; }"""
+    if style == "editorial":  # petits mots en sans fine, le mot fort en serif Didone italique ivoire, empilés (immobilier, luxe)
+        css += f"""
+  .cap .in {{ text-transform: none; font-weight: 400; letter-spacing: -0.005em; line-height: 1.02; text-shadow: 0 2px 18px rgba(0,0,0,.45); }}
+  .cap .w {{ opacity: 0; }}
+  .cap .w.k {{ display: block; font-family: 'Bodoni Moda', Georgia, serif; font-style: italic; font-weight: 700; font-size: 1.9em; line-height: .92;
+              letter-spacing: -0.01em; color: {EDITORIAL_INK if EDITORIAL_INK != "degrade" else "#fff"}; margin: .02em 0 .04em; }}
+  .cap .w.k em {{ font-style: inherit; display: inline-block; padding: .08em .06em .14em; margin: -.08em -.06em -.14em;
+                 background: linear-gradient(180deg, {_mix(accent, "#ffffff", 0.55)} 0%, {accent} 100%); -webkit-background-clip: text; background-clip: text;
+                 color: transparent; }}  /* text.editorialColor: "degrade" */
+  .cap.clair .in {{ color: #1c1a17; text-shadow: 0 1px 16px rgba(255,255,255,.4); }}  /* fond clair : encre sombre */
+  .cap.clair .w.k {{ color: {_readable(accent, "#e6e6e6")}; }}
+  .cap.clair .w.k em {{ background-image: linear-gradient(180deg, {_mix(accent, "#000000", 0.2)} 0%, {_mix(accent, "#000000", 0.55)} 100%); }}"""
     if style == "mono":  # majuscules machine à écrire, chaque mot dans sa boîte noire, le mot dit en couleur d'accent
         css += """
   .cap .in { font-family: 'IBM Plex Mono', monospace; font-weight: 500; text-transform: uppercase; letter-spacing: 0; text-shadow: none; }
@@ -280,6 +549,41 @@ def caption_js(style):
       if (i + 1 < ws.length) tl.to(spans[i], { color: INK, scale: 1, duration: 0.07, ease: "power2.in" }, Math.max(on + 0.08, ws[i + 1][0] - 0.02));
     });
     tl.to(g + " .in", { opacity: 0, scale: 0.94, duration: 0.1, ease: "power2.in" }, en - 0.1);
+    tl.set(g + " .in", { opacity: 0 }, en);
+  }"""
+    if style == "geant":  # chaque mot dit remplace le précédent, en grand ; les mots déjà dits restent en petit au-dessus
+        return """
+  function cap(id, st, en, ws) {
+    const g = "#" + id, bs = document.querySelectorAll(g + " .gb .b"), ss = document.querySelectorAll(g + " .gs .s");
+    tl.set(g + " .in", { opacity: 1 }, st);
+    ws.forEach(function (t, i) {
+      const on = i ? Math.max(st, t[0] - 0.02) : st;
+      tl.fromTo(bs[i], { opacity: 0, scale: 1.12, filter: "blur(6px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.12, ease: "power3.out", immediateRender: false }, on);
+      if (i) { tl.set(bs[i - 1], { opacity: 0 }, on); tl.to(ss[i - 1], { opacity: 1, duration: 0.1 }, on); }
+      const ls = bs[i].querySelectorAll("i");  // mot en escalier : une syllabe après l'autre, sur la durée du mot
+      if (ls.length) {  // seul à l'écran : les petits mots s'effacent le temps de l'escalier
+        tl.to(g + " .gs", { opacity: 0, duration: 0.06 }, on);
+        if (i + 1 < ws.length) tl.to(g + " .gs", { opacity: 0.9, duration: 0.1 }, Math.max(on + 0.1, ws[i + 1][0] - 0.02));
+        const step = Math.max(0.08, (Math.max(t[1], on + 0.3) - on) / ls.length);
+        ls.forEach(function (l, k) {
+          tl.fromTo(l, { opacity: 0, y: 30, scale: 1.2 }, { opacity: 1, y: 0, scale: 1, duration: 0.1, ease: "back.out(2)", immediateRender: false }, on + k * step);
+        });
+      }
+    });
+    tl.to(g + " .in", { opacity: 0, duration: 0.08, ease: "power2.in" }, en - 0.08);
+    tl.set(g + " .in", { opacity: 0 }, en);
+  }"""
+    if style == "editorial":  # chaque mot arrive quand il est dit (montée + flou) ; le mot fort grossit depuis le flou
+        return """
+  function cap(id, st, en, ws) {
+    const g = "#" + id, spans = document.querySelectorAll(g + " .w");
+    tl.set(g + " .in", { opacity: 1, filter: "blur(0px)" }, st);
+    ws.forEach(function (t, i) {
+      const on = i ? Math.max(st, t[0] - 0.03) : st, k = spans[i].classList.contains("k");
+      tl.fromTo(spans[i], k ? { opacity: 0, scale: 1.25, filter: "blur(10px)" } : { opacity: 0, y: 14, filter: "blur(6px)" },
+        { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", duration: k ? 0.35 : 0.2, ease: k ? "power3.out" : "power2.out", immediateRender: false }, on);
+    });
+    tl.to(g + " .in", { opacity: 0, filter: "blur(8px)", duration: 0.15, ease: "power2.in" }, en - 0.15);
     tl.set(g + " .in", { opacity: 0 }, en);
   }"""
     if style == "karaoke":
@@ -364,7 +668,8 @@ def main():
                     help="split : animation en haut, visage en bas ; cards : visage plein écran, cartes en haut (visual.layout)")
     ap.add_argument("--accroche", help="accroche animée de 3 s en ouverture : papier, plan, pate, neon, aquarelle, pixel, isometrique, mosaique, encre, relief")
     ap.add_argument("--accroche-texte", help="titre de l'accroche (sinon config hook.text ou l'accroche du short)")
-    ap.add_argument("--panel-theme", choices=["dark", "light"], help="écran partagé : panneau sombre ou clair (visual.panelTheme)")
+    ap.add_argument("--panel-theme", choices=["dark", "light", "glass"],
+                    help="écran partagé : panneau sombre ou clair ; cartes : glass = cartes en verre dépoli (visual.panelTheme)")
     ap.add_argument("--mode", choices=["captions", "overlays", "both", "none"])
     ap.add_argument("--no-captions", action="store_true", help="= --mode none (couverture)")
     ap.add_argument("--style", choices=STYLES)
@@ -419,24 +724,23 @@ def main():
         mode = "captions" if mode != "none" else mode
     cap_top = (txt["captionTopPct"] if not fill else 70) if H > W else 82  # fond flouté : sous l'image
 
-    font_face = ""
-    for f in vis.get("fonts", []):
-        ff = ROOT / f["file"] if not Path(f["file"]).is_absolute() else Path(f["file"])
-        (job / "assets" / "fonts").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ff, job / "assets" / "fonts" / ff.name)
-        font_face += (f"@font-face {{ font-family: '{family}'; src: url('assets/fonts/{ff.name}') format('{f.get('format', 'woff2')}'); "
-                      f"font-weight: {f.get('weight', 400)}; }} ")
-    if vis.get("fontFile"):
-        ff = Path(vis["fontFile"])
-        (job / "assets" / "fonts").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ff, job / "assets" / "fonts" / ff.name)
-        font_face = f"@font-face {{ font-family: '{family}'; src: url('assets/fonts/{ff.name}'); font-weight: 100 900; }}"
+    from fonts import brand_faces, title_stack, title_weight
+    font_face = brand_faces(job, vis)  # fonts + fontFile + titleFont de la charte
+    mcfg0 = c.get("mots") if isinstance(c.get("mots"), dict) else {}
+    if style == "editorial" or mcfg0.get("police") == "serif":  # serif Didone (Bodoni Moda, OFL) des styles éditoriaux
+        from common import serif_fonts
+        font_face += " " + serif_fonts(job)
+    global EDITORIAL_INK
+    EDITORIAL_INK = txt.get("editorialColor", EDITORIAL_INK)
 
     r = W / 1920.0
     k = float(vis.get("sizeScale") or (1.5 if H > W else 1.0))
     SZ = {"side": round(88 * r * k), "center": round(97 * r * k), "topline": round(110 * r * k)}
-    cap_size = round({"minimal": 58, "impact": 96, "seam": 62, "mono": 52, "souligne": 56}.get(style, 84) * (W / 1080 if H > W else H / 1080))
+    hook_size = round(84 * 0.82 * (W / 1080 if H > W else H / 1080))  # accroche : même taille quel que soit le style
+    cap_bottom = round(H * 0.08) if H <= W else None  # 1:1 / 16:9 : sous-titres ancrés par le bas (2 lignes restent dans l'image)
+    cap_size = round({"minimal": 58, "impact": 96, "seam": 62, "mono": 52, "souligne": 56, "geant": 150, "editorial": 64}.get(style, 84) * (W / 1080 if H > W else H / 1080))
     use_emoji = a.emoji or txt.get("captionEmoji", False)
+    syl_words = {str(x).lower() for x in txt.get("syllabes", [])}  # style « geant » : mots en escalier de syllabes
 
     nodes, tw = [], []
     cap_blocks, calques = [], []  # groupes de sous-titres à placer ; calques posés (work/<slug>_calques.json)
@@ -453,13 +757,21 @@ def main():
             if en - st <= 0.1:
                 continue
             gid = f"cap-{g['id']}"
-            words = g["words"]
+            words = join_numbers(g["words"])
             text = " ".join(w["w"] for w in words)
-            spans, emo, last_emo = caption_spans(words, style, use_emoji, st, last_emo)
-            fit_text = text + (" MM" if emo is not None else "")  # place de l'emoji dans le calcul de taille
+            fl = []
+            spans, emo, last_emo = caption_spans(words, style, use_emoji, st, last_emo, syl_words, fit=fl)
+            fit_text = text + (" MM" if emo is not None else "")  # place de l'emoji dans le calcul de taille (estimation)
+            fs_ = ""
+            if style == "geant":  # un mot à la fois : c'est le plus long qui doit tenir (réduit s'il dépasse)
+                fit_text = max((w["w"] for w in words), key=len)
+                k_ = W * 0.86 / max(1.0, len(fit_text) * 0.56 * cap_size)
+                fs_ = f' style="font-size:{round(cap_size * k_)}px"' if k_ < 1 else ""
             nodes.append(f'      <div class="clip cap" id="{gid}" data-start="{st}" data-duration="{round(en - st, 3)}" '
-                         f'data-track-index="4"><div class="in" data-fit="{esc(fit_text)}">{spans}</div></div>')
+                         f'data-track-index="4"><div class="in" data-fit="{esc(fl[0])}"{fs_}>{spans}</div></div>')
             bx = text_box(fit_text, cap_size, W * 0.08, W * 0.84, 0, 1.08, max_lines=2, pad=0.3 if style == "bulle" else 0)
+            if style == "editorial":  # mot fort sur sa propre ligne, 1,9 fois plus grand : bloc plus haut
+                bx = (bx[0], bx[1], bx[2], bx[1] + round((bx[3] - bx[1]) * 1.9))
             cap_blocks.append({"id": gid, "t0": st, "t1": en, "h": bx[3], "x0": bx[0], "x1": bx[2]})
             times = [[round(max(st, w["start"]), 3), round(w["end"], 3)] for w in words]
             tw.append(f'  cap("{gid}", {st}, {en}, {json.dumps(times)});')
@@ -505,9 +817,10 @@ def main():
             tw.append(f'  noteOut("#{oid}", {round(min(en - 0.3, dur), 3)});')
             tw.append(f'  tl.set("#{oid}", {{ opacity: 0 }}, {round(en, 3)});')
 
-    cam = [] if (a.no_cam or not c["camera"]["enabled"]) else build_cam(dur, punches)
+    low_res = float(m.get("upscale", 1)) > 1.001  # petite source agrandie (build_cut) : pas de punch ni de zoom, ils la rendraient floue
+    cam = [] if (a.no_cam or not c["camera"]["enabled"] or low_res) else build_cam(dur, punches)  # petite source : pas de dérive non plus
     zooms = []
-    if (a.zooms or c["camera"].get("zooms")) and not a.no_cam:  # resserrements sur les mots appuyés, mesurés (zooms.py)
+    if (a.zooms or c["camera"].get("zooms")) and not a.no_cam and not low_res:  # resserrements sur les mots appuyés, mesurés (zooms.py)
         zooms = [z for z in strong_words(job, a.slug, float(c["camera"].get("zoomsPerMinute", 8)))
                  if not any(abs(z["t"] - p) < 1.5 for p in punches)]  # pas sur un punch-in déjà posé
 
@@ -539,7 +852,7 @@ def main():
                   f'ease: "back.out(2)", immediateRender: false }}, 0.15);')
         tw.append(f'  tl.to("#hook .hk", {{ opacity: 0, y: -20, duration: 0.3, ease: "power2.in" }}, {round(0.15 + hd - 0.35, 3)});')
         calques.append({"type": "accroche", "nom": "hook", "t0": 0.15, "t1": round(0.15 + hd, 3),
-                        "box": text_box(read_json(hook)["text"], cap_size * 0.82, W * 0.08, W * 0.84, H * (0.11 if H > W else 0.08), 1.12, pad=0.3)})
+                        "box": text_box(read_json(hook)["text"], hook_size, W * 0.08, W * 0.84, H * (0.11 if H > W else 0.08), 1.12, pad=0.3)})
 
     music = job / "work" / f"{a.slug}_music.json"
     if music.exists():
@@ -653,13 +966,14 @@ def main():
         # couleur des mots : imposée (mots.couleur) > accent de la charte > tirée de l'image
         macc = mcfg.get("couleur") or (accent if accent.lower() != default_acc.lower() else mo.scene_color(job / "assets" / cut))
         mh_, mo_over, mjs, mots_css, mots_rep = mo.nodes(job, read_json(mf), cap_words, dur, W, H, T0, job / "assets" / cut, macc, family,
-                                                         segments=m["segments"], icon=pn_m.icon, mix=pn_m._mix)
+                                                         segments=m["segments"], icon=pn_m.icon, mix=pn_m._mix,
+                                                         serif=mcfg.get("police") == "serif")
         behind_html += "\n" + mh_
         mots_css += f"\n  .acut {{ object-position: {vis['focusX']}% 50%; }}"  # même recadrage que la vidéo
         nodes += mo_over
         tw += mjs
         for r_ in mots_rep:  # mot géant posé devant (plan serré) : il peut couvrir le visage ; derrière, la personne passe devant
-            if r_["place"].startswith("devant"):
+            if r_.get("place", "").startswith("devant"):
                 calques.append({"type": "texte", "nom": f'mot géant « {r_["geant"]} »', "t0": r_["a"], "t1": round(r_["a"] + r_["duree"], 3),
                                 "box": r_.pop("box"), "estime": True})
             else:
@@ -686,11 +1000,14 @@ def main():
         tw += tjs
         ts_css = (stack_rep or {}).pop("css", "")
         if stack_rep and stack_rep.get("pose"):  # sous-titres descendus sous la pile pendant qu'elle est là
-            dy = round(H * (stack_rep["bas_libre"] + 0.06) - H * cap_top / 100)
+            cap0 = PH - round(cap_size * 0.62) if split else (H - cap_bottom - round(cap_size * 2.2) if cap_bottom else H * cap_top / 100)
+            dy = round(H * (stack_rep["bas_libre"] + 0.06) - cap0)
+            if cap_bottom and not split:  # ancrés en bas : jamais sortis de l'image
+                dy = min(dy, cap_bottom - round(H * 0.025))
             if dy > 0:
                 tw.append(f'  tl.set(".cap", {{ y: {dy} }}, {stack_rep["t0"]});')
                 tw.append(f'  tl.set(".cap", {{ y: 0 }}, {stack_rep["t1"]});')
-    if mj_.exists() and (split or cards):  # écran partagé : pas de bloc par-dessus le panneau, ce qu'ils disent va dans les temps forts
+    if mj_.exists() and split:  # écran partagé : pas de bloc par-dessus le panneau, ce qu'ils disent va dans les temps forts
         motion_rep = [{"block": m_.get("block"), "pose": False, "raison": "écran partagé : à mettre dans le panneau"} for m_ in read_json(mj_)]
     elif mj_.exists():  # blocs de motion design calés sur des mots prononcés
         mvals = {"accent": accent, "font": family, "top": (12 if fill else 22) if H > W else 18,  # fond flouté : bande du haut
@@ -719,13 +1036,20 @@ def main():
         if not pj.exists() and hook.exists():
             beats = [{"type": "title", "_t": 0.0, "text": read_json(hook)["text"], "mark": True}] + beats
         cw = [w for g in t.get("captions", []) for w in g["words"]] or cap_words
-        theme = "cards" if cards else ("light" if ptheme == "light" else "dark")
-        panel_html, pjs, panel_rep, layers = pn.nodes(job, beats, cw, dur, T0, W, PH, vis, theme=theme)
+        theme = ("glass" if ptheme == "glass" else "cards") if cards else ("light" if ptheme == "light" else "dark")
+        blur_off = round(H * 0.15) if cards and vis.get("cardsBlur") else 0  # cartes au milieu : les calques vidéo suivent
+        if blur_off:  # vidéo floutée : une carte ne reste pas plus de cardsMax s, puis retour au visage (net) jusqu'au temps fort suivant
+            mx = float(vis.get("cardsMax", 4.0))
+            rep0 = pn.nodes(job, beats, cw, dur, T0, W, PH, vis, theme=theme, origin=(0, blur_off))[2]
+            beats = list(beats) + [{"type": "face", "_t": r_["a"] + mx, "_auto": True} for r_ in rep0
+                                   if r_.get("a") is not None and r_["type"] != "face" and r_["duree"] > mx + 1.0]
+        panel_html, pjs, panel_rep, layers = pn.nodes(job, beats, cw, dur, T0, W, PH, vis, theme=theme, origin=(0, blur_off))
         panel_html += "\n" + "\n".join(layers)
         tw += pjs
         font_face += " " + pn.fonts(job)
         seam_h = round(cap_size * 2.1)
-        base_css = pn.css_light(W, PH, family, vis, cards=cards) if theme != "dark" else pn.css(W, PH, family, vis)
+        base_css = (pn.css_glass(W, PH, family, vis) if theme == "glass" else
+                    pn.css_light(W, PH, family, vis, cards=cards) if theme != "dark" else pn.css(W, PH, family, vis))
         kbox = "" if style in ("bulle", "souligne") else f".cap .w.k {{ background: {accent}; color: {hook_ink}; padding: 0 .2em; border-radius: .14em; font-size: 1em; }}"
         split_css = base_css if cards else base_css + f"""
   .zw {{ inset: auto; left: 0; top: {PH}px; width: {W}px; height: {H - PH}px; }}
@@ -736,7 +1060,7 @@ def main():
   .cap .in {{ {"" if style == "mono" else "text-transform: none; font-weight: 800; letter-spacing: -0.01em; "}{"" if style == "bulle" else "text-shadow: 0 2px 10px rgba(0,0,0,.6); "}white-space: nowrap; }}
   {kbox}
   .broll {{ inset: auto; left: 0; top: 0; width: {W}px; height: {PH}px; }}"""
-        faces = [r_ for r_ in panel_rep if r_.get("type") == "face"]
+        faces = [r_ for r_ in panel_rep if r_.get("type") == "face" and r_.get("pose", True)]
         if split and faces:  # alternance : temps forts « face » -> visage plein écran (coupe franche), le panneau revient au suivant
             cap_split, cap_full = PH - round(cap_size * 0.62), round(H * cap_top / 100)
             for f_ in faces:
@@ -747,6 +1071,18 @@ def main():
                     tw.append(f'  tl.set(".zw", {{ top: {0 if full else PH}, height: {H if full else H - PH} }}, {t_});')
                     tw.append(f'  tl.set("#a-roll", {{ height: {H if full else H - PH}, objectPosition: "{vis["focusX"]}% {50 if full else 32}%" }}, {t_});')
                     tw.append(f'  tl.set(".cap", {{ top: {cap_full if full else cap_split} }}, {t_});')
+        if split and stack_rep and stack_rep.get("pose"):  # pile d'outils plein écran : le panneau s'efface dessous (pas de texte caché)
+            s0_, s1_ = stack_rep["t0"], stack_rep["t1"]
+            tw.append(f'  tl.set("#panel, .seam", {{ autoAlpha: 0 }}, {s0_});')
+            if not any(f_["a"] <= s1_ < f_["a"] + f_["duree"] for f_ in faces):
+                tw.append(f'  tl.set("#panel, .seam", {{ autoAlpha: 1 }}, {s1_});')
+        if cards and vis.get("cardsBlur"):  # cartes au milieu, vidéo floutée et assombrie derrière (tutos TikTok) ; « face » la rend nette
+            split_css += f"\n  #panel.paper.light.cards {{ top: {blur_off}px; }}"
+            for r_ in sorted((r_ for r_ in panel_rep if r_.get("a") is not None), key=lambda r_: r_["a"]):
+                face_ = r_["type"] == "face"
+                tw.append(f'  tl.to("#a-roll", {{ filter: "{"blur(0px) brightness(1)" if face_ else "blur(16px) brightness(.6)"}", '
+                          f'duration: 0.22, ease: "power2.out" }}, {r_["a"]});')
+                tw.append(f'  tl.set("#panel", {{ autoAlpha: {0 if face_ else 1} }}, {r_["a"]});')
     # géométrie de la vidéo à l'écran (face.py la rejoue pour situer le visage)
     geo = None
     if src.get("width") and not cards:
@@ -813,9 +1149,29 @@ def main():
             face_rep = {"plateforme": plat, "visages_pct": pct, "zones": modes}
         else:
             face_rep = {"visages_pct": pct, "zones": "hauteur fixe (pas assez de visage)"}
+    bands = []
     for b_ in cap_blocks:
         y_ = cap_y.get(b_["id"], round(H * cap_top / 100) if not split else PH - round(cap_size * 0.62))
+        if cap_bottom is not None and not split:
+            y_ = H - cap_bottom - b_["h"]
         calques.append({"type": "sous-titre", "nom": b_["id"], "t0": b_["t0"], "t1": b_["t1"], "box": [b_["x0"], y_, b_["x1"], y_ + b_["h"]]})
+        bands.append((b_["t0"], b_["t1"], b_["x0"], y_, b_["x1"], y_ + b_["h"]))
+    # fond clair sous un groupe (mur blanc, ciel) : voile sombre derrière le texte, ou encre sombre (editorial)
+    cap_acc, clairs, lums = accent, 0, []
+    if bands and not split and not track and style not in ("bulle", "mono") and txt.get("captionLight", True):
+        lums = band_luma(job / "assets" / cut, W, H, vis["focusX"], fill, bands)
+        for b_, l_ in zip(cap_blocks, lums):
+            if l_ is not None and l_ > float(txt.get("captionLightAt", 170)):
+                clairs += 1
+                for i_, n_ in enumerate(nodes):
+                    if f'id="{b_["id"]}"' in n_ and 'cap fond' not in n_:  # déjà sur fond sombre (gros plan) : rien à faire
+                        nodes[i_] = n_.replace('class="clip cap', 'class="clip cap clair', 1)
+                        break
+    dark = sorted(l_ for l_ in lums if l_ is not None and l_ <= 170)
+    if style not in ("boite", "mono", "bulle", "editorial"):  # accent sombre sur vidéo sombre : éclairci (contraste 4,5:1)
+        g_ = round(dark[len(dark) // 2]) if dark else 60
+        if g_ < 110:  # vidéo sombre seulement : sur un fond moyen, l'ombre portée du texte suffit
+            cap_acc = _readable(accent, f"#{g_:02x}{g_:02x}{g_:02x}", to="#ffffff")  # texte clair sur la vidéo : l'accent s'éclaircit
     if style == "mono" and not (split or cards):  # police machine à écrire du style « mono »
         import panel as pn
         font_face += " " + pn.fonts(job)
@@ -844,13 +1200,18 @@ def main():
   #a-fill {{ position: absolute; left: 0; top: 0; width: {W}px; height: {H}px; object-fit: cover;
              filter: blur(40px) brightness(.55); transform: scale(1.15); }}
   .cap {{ position: absolute; left: 0; right: 0; top: {round(H * cap_top / 100)}px; overflow: visible; z-index: 50; }}
+  #pbar {{ position: absolute; left: 6%; right: 6%; bottom: {round(H * 0.035)}px; height: {max(4, round(H * 0.0032))}px; border-radius: 99px;
+          background: rgba(255,255,255,.42); overflow: hidden; z-index: 400; }}  /* barre de progression (visual.progressBar) */
+  #pbar i {{ display: block; height: 100%; background: {accent}; transform-origin: 0 50%; transform: scaleX(0); }}
   .cap .in {{ margin: 0 {round(W * 0.08)}px; text-align: center; font-family: '{family}'; font-weight: 900;
              font-size: {cap_size}px; line-height: 1.08; color: {ink}; text-shadow: {SHADOW}; text-wrap: balance;
              {"text-transform: uppercase; letter-spacing: -0.01em;" if style != "minimal" else "font-weight: 700;"} }}
   .cap.fond .in {{ width: fit-content; max-width: {round(W * 0.84)}px; margin: 0 auto; padding: .1em .35em .14em; border-radius: .22em;
                   background: rgba(0,0,0,.58); box-sizing: border-box; }}  /* gros plan : sous la bouche, sur fond sombre */
-  .cap .w {{ display: inline-block; margin: 0 0.07em; transform-origin: 50% 70%; {"opacity: 0;" if style in ("pop", "duo", "mono") else ""} }}
-{caption_css(style, accent)}
+  .cap .w {{ display: inline-block; margin: 0 0.07em; transform-origin: 50% 70%; {"opacity: 0;" if style in ("pop", "duo", "seam", "mono") else ""} }}
+  {"" if style in ("editorial", "bulle", "mono") else f".cap.clair .in {{ width: fit-content; max-width: {round(W * 0.84)}px; margin: 0 auto; padding: .1em .35em .14em; border-radius: .22em; background: rgba(0,0,0,.5); box-sizing: border-box; }}  /* fond clair : voile sombre */"}
+  {f".cap {{ top: auto; bottom: {cap_bottom}px; }}" if cap_bottom is not None and not split else ""}
+{caption_css(style, cap_acc)}
 {ts_css}
 {mots_css}
   .broll {{ position: absolute; inset: 0; z-index: 30; overflow: hidden; }}
@@ -866,7 +1227,7 @@ def main():
   .nC {{ left: {round(70 * r)}px; right: {round(70 * r)}px; text-align: center; top: {round(H * 0.52)}px; font-size: {SZ['center']}px; }}
   .hook {{ position: absolute; left: 0; right: 0; top: {round(H * (0.11 if H > W else 0.08))}px; text-align: center; z-index: 60; }}
   .hook .hk {{ display: inline-block; max-width: 84%; padding: .28em .6em; border-radius: .22em; background: {accent};
-              color: {hook_ink}; font-family: '{family}'; font-weight: 900; font-size: {round(cap_size * 0.82)}px; line-height: 1.12;
+              color: {hook_ink}; font-family: {title_stack(vis)}; font-weight: {title_weight(vis, 900)}; font-size: {hook_size}px; line-height: 1.12;
               text-wrap: balance; opacity: 0; box-shadow: 0 10px 30px rgba(0,0,0,.35); }}
   .topline {{ left: {round(70 * r)}px; right: {round(70 * r)}px; text-align: center; top: {round(H * 0.16)}px;
               font-size: {SZ['topline']}px; text-transform: uppercase; color: {accent}; }}
@@ -889,6 +1250,7 @@ def main():
 {chr(10).join(sfx_nodes)}
 {chr(10).join(nodes)}
 {chr(10).join(blocks)}
+{'    <div id="pbar"><i></i></div>' if vis.get("progressBar") else ""}
   </div>
 <script>
   window.__timelines = window.__timelines || {{}};
@@ -896,15 +1258,10 @@ def main():
   const master = gsap.timeline({{ paused: true }});
   const tl = gsap.timeline();
   master.add(tl, {T0});
-  const INK = {json.dumps(ink)}, ACCENT = {json.dumps(accent)}, BOXINK = {json.dumps(hook_ink)};
-
-  /* taille ajustée à la largeur, pour que chaque groupe tienne sur 2 lignes max */
-  document.querySelectorAll(".cap .in").forEach(function (el) {{
-    const f = window.__hyperframes && window.__hyperframes.fitTextFontSize;
-    if (!f) return;
-    const r = f(el.dataset.fit, {{ fontFamily: {json.dumps(family)}, fontWeight: 900, maxWidth: {round(W * 0.84 / 1.12)}, baseFontSize: {cap_size}, minFontSize: 42 }});
-    if (r && r.fontSize) el.style.fontSize = r.fontSize + "px";
-  }});
+{"  master.fromTo('#pbar i', { scaleX: 0 }, { scaleX: 1, duration: " + str(total) + ", ease: 'none' }, 0);" if vis.get("progressBar") else ""}
+  const INK = {json.dumps(ink)}, ACCENT = {json.dumps(cap_acc)}, BOXINK = {json.dumps(hook_ink)};
+  const FIT = {json.dumps(fit_settings(style, family, W, cap_size, split))};
+{FIT_JS}
 {caption_js(style)}
 
   /* overlays reel-cut : chaque mot apparaît 0,12 s avant d'être dit */
@@ -933,6 +1290,7 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    write_json(job / "work" / f"{a.slug}_build.json", {"script": "build_composition.py", "args": cli_args(ap, a)})
     write_json(job / "work" / f"{a.slug}_calques.json",
                {"slug": a.slug, "T0": T0, "duree": dur, "video": f"assets/{cut}", "ideal": round(H * cap_top / 100), "plateforme": plat,
                 "geo": geo, "calques": sorted(calques, key=lambda c_: c_["t0"])})
@@ -943,8 +1301,9 @@ def main():
         motions=motion_rep, plans_de_coupe=broll_rep, mode=mode, style=style,
         cadrage="écran partagé" if split else ("suit le visage" if track else ("image entière, fond flouté" if fill else "recadré")),
         panneau=panel_rep or None,
-        captions=sum(1 for n in nodes if 'class="clip cap"' in n), overlays=sum(1 for n in nodes if "note" in n),
-        drifts=drifts, punchs=len(cam) - drifts, sous_titres_visage=face_rep, titre_derriere=behind_rep, mots=mots_rep, couleur_mots=macc if mots_rep is not None else None, outils=stack_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
+        captions=sum(1 for n in nodes if 'class="clip cap' in n), overlays=sum(1 for n in nodes if "note" in n),
+        drifts=drifts, punchs=len(cam) - drifts,
+        sous_titres_fond_clair=clairs or None, fond_sous_titres=[round(l_) for l_ in lums if l_ is not None][:60] or None, accent_sous_titres=cap_acc if cap_acc != accent else None, sous_titres_visage=face_rep, titre_derriere=behind_rep, mots=mots_rep, couleur_mots=macc if mots_rep is not None else None, outils=stack_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
         suite="npx hyperframes check, puis snapshot / preview")
 
 

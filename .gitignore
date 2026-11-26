@@ -11,3 +11,5 @@ dist/
 .impeccable/hook.cache.json
 profil.json
 .update_check.json
+
+sounds/music/recent.json

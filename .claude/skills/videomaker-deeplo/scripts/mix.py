@@ -1,12 +1,14 @@
 """BAISSE AUTOMATIQUE DE LA MUSIQUE (ducking) : la musique descend quand quelqu'un parle et un peu sous chaque
-bruitage, puis remonte dans les silences, avec des rampes douces (pas de « pompage »). Lu dans la composition :
-voix (clip "voice" ou rush "a-roll"), bruitages (sound_design, sfx des monteurs) et musique (clip "music").
+bruitage marquant, puis remonte dans les silences, avec des rampes douces (pas de « pompage »). Lu dans la
+composition : voix (clip "voice" ou rush "a-roll"), bruitages (sound_design, sfx des monteurs) et musique (clip "music").
 
-  python mix.py <job> [--voix -10] [--bruitages -4] [--off]
+  python mix.py <job> [--voix -10] [--bruitages -2.5] [--off]
 
 - Parole détectée sur l'énergie de la voix montée (trames de 20 ms), trous de moins de 0,45 s comblés ; la musique
   commence à descendre 0,12 s avant le premier mot et remonte en 0,5 s après le dernier.
-- Sous un bruitage : -4 dB pendant ~0,4 s, pour qu'il se détache sans monter le son.
+- Sous un bruitage marquant (changement de plan, impact, notification : priorité ≥ 2 dans sound_design.PRIO) :
+  -2,5 dB autour de son PIC (lu dans le fichier), creux voisins de moins de 0,8 s fusionnés, remontée en 0,35 s ;
+  rien sous les pops, ticks et clics (ils passent sans aide).
 - La piste d'origine n'est jamais modifiée : assets/<slug>_music_mix.wav est écrit et la composition pointe dessus.
   Si add_music.py a déjà baissé la musique sous la voix (ancien lit sans <slug>_music_bed.wav), seule la partie
   bruitages s'applique (pas de double baisse).
@@ -20,9 +22,11 @@ from pathlib import Path
 import numpy as np
 
 from common import config, job_dir, out
+from sound_design import PRIO, TARGET
 
 SR = 48000
 FR = 100  # résolution de la courbe (pas de 10 ms)
+_PEAKS = {}
 
 
 def decode(path, sr=SR, ch=2):
@@ -34,6 +38,32 @@ def decode(path, sr=SR, ch=2):
 def attr(tag, name, default=None):
     m = re.search(rf'\b{name}="([^"]*)"', tag)
     return m.group(1) if m else default
+
+
+def family(src):
+    """Famille d'un bruitage d'après son nom de fichier (sd2_whoosh_xxx.wav, tick_xxx.mp3…)."""
+    stem = re.sub(r"^sd2?_", "", Path(src).stem)
+    return next((f for f in sorted(TARGET, key=len, reverse=True) if stem == f or stem.startswith(f + "_")), None)
+
+
+def peak_in(path):
+    """Instant du pic dans le fichier (s)."""
+    if path not in _PEAKS:
+        a = np.abs(decode(path, 8000, 1))
+        _PEAKS[path] = float(np.argmax(a)) / 8000 if len(a) else 0.0
+    return _PEAKS[path]
+
+
+def dips(times, merge=0.8, before=0.1, after=0.3):
+    """Creux autour des pics, fusionnés quand ils sont à moins de 0,8 s l'un de l'autre."""
+    res = []
+    for t in sorted(times):
+        a, b = t - before, t + after
+        if res and a - res[-1][1] < merge:
+            res[-1][1] = max(res[-1][1], b)
+        else:
+            res.append([a, b])
+    return res
 
 
 def speech_intervals(voice_file, gap=0.45, min_len=0.12):
@@ -66,27 +96,33 @@ def speech_intervals(voice_file, gap=0.45, min_len=0.12):
     return [iv for iv in merged if iv[1] - iv[0] >= min_len]
 
 
-def envelope(n, speech, sfx, voice_db, sfx_db, attack=0.12, release=0.5):
-    """Gain (linéaire) à FR Hz : bas sous la parole, petit creux sous les bruitages, rampes douces."""
+def envelope(n, speech, sfx, voice_db, sfx_db, attack=0.12, release=0.5, sfx_release=0.35):
+    """Gain (linéaire) à FR Hz : bas sous la parole, petit creux sous les bruitages (intervalles), rampes douces."""
     tgt = np.zeros(n)  # en dB
+    src = np.zeros(n, dtype=np.int8)  # 1 = parole, 2 = bruitage
+    for s, e in sfx:
+        a, b = max(0, int(s * FR)), min(n, int(e * FR))
+        tgt[a:b], src[a:b] = sfx_db, 2
     for s, e in speech:
         a, b = max(0, int((s - attack) * FR)), min(n, int(e * FR))
         tgt[a:b] = np.minimum(tgt[a:b], voice_db)
-    for t in sfx:
-        a, b = max(0, int((t - 0.05) * FR)), min(n, int((t + 0.4) * FR))
-        tgt[a:b] = np.minimum(tgt[a:b], sfx_db)
-    # lissage asymétrique : descente en ~attack, remontée en ~release
+        src[a:b] = np.where(tgt[a:b] <= voice_db, 1, src[a:b])
+    # lissage asymétrique : descente en ~attack, remontée en ~release (0,35 s après un creux de bruitage)
     g = np.zeros(n)
-    ka, kr = 1 - np.exp(-1 / (attack * FR / 2.5)), 1 - np.exp(-1 / (release * FR / 2.5))
-    cur = 0.0
+    ka, kr, ks = (1 - np.exp(-1 / (x * FR / 2.5)) for x in (attack, release, sfx_release))
+    cur, last = 0.0, 1
     for i in range(n):
-        k = ka if tgt[i] < cur else kr
+        if tgt[i] < cur:
+            k = ka
+            last = src[i] or last
+        else:
+            k = ks if last == 2 else kr
         cur += (tgt[i] - cur) * k
         g[i] = cur
     return 10 ** (g / 20)
 
 
-def apply(job, html_text, voice_db=-10.0, sfx_db=-4.0):
+def apply(job, html_text, voice_db=-10.0, sfx_db=-2.5):
     """-> (html modifié, rapport). Écrit assets/<slug>_music_mix.wav."""
     mt = re.search(r'<audio\b[^>]*\bid="music"[^>]*>', html_text)
     if not mt:
@@ -111,16 +147,19 @@ def apply(job, html_text, voice_db=-10.0, sfx_db=-4.0):
         vsrc, vst = attr(vt.group(0), "src"), float(attr(vt.group(0), "data-start", "0") or 0)
         if vsrc and (job / vsrc).exists():
             speech = [[s + vst - mstart, e + vst - mstart] for s, e in speech_intervals(job / vsrc)]
-    # bruitages (tout audio qui n'est ni la voix ni la musique)
+    # bruitages marquants (priorité ≥ 2) : creux centré sur le pic du son
     sfx = []
     for m in re.finditer(r"<audio\b[^>]*>", html_text):
         tag = m.group(0)
         if re.search(r'\bid="(voice|music)"', tag):
             continue
-        st = attr(tag, "data-start")
-        if st:
-            sfx.append(float(st) - mstart + (0.12 if "whoosh" in tag or "swoosh" in tag else 0.0))
-    g = envelope(n, speech, sfx, voice_db, sfx_db)
+        st, ssrc = attr(tag, "data-start"), attr(tag, "src")
+        if not st or not ssrc or PRIO.get(family(ssrc), 1) < 2:
+            continue
+        sp = job / ssrc
+        sfx.append(float(st) - mstart + (peak_in(sp) if sp.exists() else 0.06))
+    zones = dips(sfx)
+    g = envelope(n, speech, zones, voice_db, sfx_db)
     gs = np.interp(np.arange(len(music)) / SR, np.arange(n) / FR, g).astype(np.float32)
     mixd = music * gs[:, None]
     dst = job / "assets" / f"{stem}_music_mix.wav"
@@ -129,8 +168,8 @@ def apply(job, html_text, voice_db=-10.0, sfx_db=-4.0):
     new_tag = mtag.replace(f'src="{msrc}"', f'src="assets/{dst.name}"')
     html_text = html_text.replace(mtag, new_tag, 1)
     talk = sum(e - s for s, e in speech)
-    return html_text, {"musique": True, "parole_s": round(talk, 1), "bruitages": len(sfx), "deja_baissee": already_ducked,
-                       "fichier": f"assets/{dst.name}"}
+    return html_text, {"musique": True, "parole_s": round(talk, 1), "bruitages": len(sfx), "creux": len(zones),
+                       "deja_baissee": already_ducked, "fichier": f"assets/{dst.name}"}
 
 
 def auto(job, html_text):
@@ -139,7 +178,7 @@ def auto(job, html_text):
     if mu.get("duck") is False:
         return html_text, None
     try:
-        return apply(job, html_text, float(mu.get("duckDb", -10)), float(mu.get("sfxDuckDb", -4)))
+        return apply(job, html_text, float(mu.get("duckDb", -10)), float(mu.get("sfxDuckDb", -2.5)))
     except Exception as e:  # noqa: BLE001  (le mixage ne doit jamais bloquer un montage)
         return html_text, {"erreur": str(e)[:200]}
 
@@ -148,7 +187,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("job")
     ap.add_argument("--voix", type=float, default=-10.0, help="baisse sous la parole (dB)")
-    ap.add_argument("--bruitages", type=float, default=-4.0, help="baisse sous un bruitage (dB)")
+    ap.add_argument("--bruitages", type=float, default=-2.5, help="baisse sous un bruitage marquant (dB)")
     ap.add_argument("--off", action="store_true", help="revenir à la musique sans baisse ajoutée")
     a = ap.parse_args()
     job = job_dir(a.job)

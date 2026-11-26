@@ -10,6 +10,9 @@ Par morceau monté (map.json) :
 - netteté comparée aux meilleurs passages du MÊME rush (un décor uni n'est pas un flou) ; sous 40 % : léger débruitage
   des blocs de compression + renfort de netteté (dosé, sans halo). Un visage net n'est jamais retouché.
 Le flou de bougé ne se rattrape pas vraiment : il s'atténue. Mieux vaut le dire au client (guide de tournage).
+Source agrandie par build_cut (« upscale » dans map.json) : pas de renfort de netteté (déjà fait au dérush).
+Qualité : morceaux intermédiaires sans perte (x264 qp 0), un seul encodage final (crf 12, slow, BT.709) ; après
+vidstab, zoom adaptatif doux (optzoom=2) et netteté légère (le rééchantillonnage adoucit l'image).
 """
 import argparse
 import shutil
@@ -24,6 +27,8 @@ from common import job_dir, out, read_json
 JITTER_MIN = 1.0
 SOFT_REL = 0.4
 SHARPEN = "hqdn3d=1.2:1.2:4:4,unsharp=5:5:0.7:5:5:0.0"
+LOSSLESS = ["-c:v", "libx264", "-qp", "0", "-preset", "ultrafast", "-pix_fmt", "yuv420p"]  # morceaux intermédiaires
+BT709 = ["-colorspace", "bt709", "-color_primaries", "bt709", "-color_trc", "bt709", "-color_range", "tv"]
 
 
 def sharpness(v, t0, t1, n=4):
@@ -46,6 +51,8 @@ def enhance(job, slug, force_stab=False, sharpen=True):
     cut = Path(m["cut"])
     cut = cut if cut.is_absolute() else job / "assets" / cut.name
     segs = [(s["out_start"], s["out_end"]) for s in m["segments"]]
+    if m.get("upscale"):  # petite source agrandie au dérush : l'unsharp y est déjà, un second ferait des halos
+        sharpen = False
     if not segs:
         return {"retouche": 0}
     # un morceau = un plan continu (jamais de coupe à l'intérieur : vidstab et la mesure se trompent sur une coupe)
@@ -71,23 +78,23 @@ def enhance(job, slug, force_stab=False, sharpen=True):
             raw = tmp / f"p{k}.mp4"
             f0, f1 = round(r["a"] * fps), round(r["b"] * fps)  # à l'image près : la somme des morceaux = la vidéo, le son reste calé
             subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(cut), "-an", "-vf", f"select='between(n,{f0},{f1 - 1})',setpts=N/FRAME_RATE/TB",
-                            "-r", f"{fps:g}", "-c:v", "libx264", "-crf", "14", "-preset", "veryfast", str(raw)], check=True)
+                            "-r", f"{fps:g}", *LOSSLESS, str(raw)], check=True)
             cur_p, done = raw, []
             if stab:
                 trf, sta = f"p{k}.trf", tmp / f"p{k}_s.mp4"
                 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", raw.name, "-vf", f"vidstabdetect=shakiness=6:accuracy=10:result={trf}",
                                 "-f", "null", "-"], check=True, cwd=tmp)
                 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", raw.name, "-vf",
-                                f"vidstabtransform=input={trf}:smoothing=20:optzoom=1:interpol=bicubic", "-c:v", "libx264", "-crf", "14",
-                                "-preset", "veryfast", sta.name], check=True, cwd=tmp)
+                                f"vidstabtransform=input={trf}:smoothing=20:optzoom=2:zoomspeed=0.1:interpol=bicubic"
+                                + ("" if soft or m.get("upscale") else ",unsharp=5:5:0.3:5:5:0"), *LOSSLESS, sta.name],
+                               check=True, cwd=tmp)
                 before, after = camera_jitter(raw), camera_jitter(sta)
                 if after < 0.6 * before:
                     cur_p = sta
                     done.append(f"stabilisé ({before} -> {after})")
             if soft:
                 sh_ = tmp / f"p{k}_n.mp4"
-                subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(cur_p), "-vf", SHARPEN, "-c:v", "libx264", "-crf", "14",
-                                "-preset", "veryfast", str(sh_)], check=True)
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(cur_p), "-vf", SHARPEN, *LOSSLESS, str(sh_)], check=True)
                 cur_p = sh_
                 done.append("netteté")
             parts.append(cur_p)
@@ -99,8 +106,8 @@ def enhance(job, slug, force_stab=False, sharpen=True):
         lst.write_text("".join(f"file '{p.as_posix()}'\n" for p in parts), encoding="utf-8")
         new = tmp / "cut.mp4"
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", str(lst), "-i", str(cut),
-                        "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-crf", "18", "-preset", "medium", "-pix_fmt", "yuv420p",
-                        "-c:a", "copy", "-shortest", "-movflags", "+faststart", str(new)], check=True)
+                        "-map", "0:v", "-map", "1:a", "-c:v", "libx264", "-crf", "12", "-preset", "slow", "-tune", "film", "-g", "30",
+                        "-pix_fmt", "yuv420p", *BT709, "-c:a", "copy", "-shortest", "-movflags", "+faststart", str(new)], check=True)
         orig = cut.with_name(cut.stem + "_avant_retouche.mp4")
         shutil.copy2(cut, orig)
         shutil.move(str(new), str(cut))

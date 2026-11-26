@@ -6,7 +6,7 @@ Temps forts (work/<slug>_panels.json), chacun posé sur un MOT dit (jamais un ti
   {"type": "check",  "word": "…", "title": "Ce qu'on vérifie", "items": ["…", "…", "…"], "stamp": "VALIDÉ", "tag": "…"}
   {"type": "stat",   "word": "…", "value": 1200, "prefix": "+", "suffix": "", "label": "clientes servies", "tag": "…"}
   {"type": "search", "word": "…", "query": "fleuriste lyon", "results": ["Fleurs & Co · 4,9 ★", "…"], "tag": "…"}
-  {"type": "image",  "word": "…", "image": "inbox/x.jpg | assets/broll/…", "caption": "…", "tag": "…"}
+  {"type": "image",  "word": "…", "image": "inbox/x.jpg | assets/broll/…", "caption": "…", "tag": "…"}   ("fit": "contain" : capture d'écran entière)
   {"type": "steps",  "word": "…", "items": ["Réservez", "Venez", "Repartez"], "tag": "…"}
   {"type": "icons",  "word": "…", "title": "…", "items": [{"icon": "clock", "label": "1 h"}, {"icon": "heart", "label": "…"}]}
 Visuels en plus :
@@ -48,7 +48,12 @@ Logos de marques (Simple Icons, CC0) : "icon": "logo:claude" | "logo:github" | "
   (hub, listes, en-tête de liste, flux, titres) ; les marques restent à leurs propriétaires (usage informatif).
 Liste : "list": {"n": 1, "of": 5, "name": "…", "icon": "…"} sur les temps forts d'un élément -> en-tête « 1 SUR 5 » ;
   "style": "tabs" -> rangée d'onglets numérotés 1 2 3 4 (celui en cours en couleur).
-Thèmes : dark (écran partagé), light (écran partagé clair), cards (cartes sur la vidéo plein écran), paper (explainer).
+Thèmes : dark (écran partagé), light (écran partagé clair), cards (cartes sur la vidéo plein écran), glass (cartes en verre
+dépoli sur la vidéo, visual.panelTheme: "glass" avec layout cards, + cardsBlur), paper (explainer).
+Cartes (cards, glass) : entrées variées prises à tour de rôle (pivot 3D, rideau, zoom), sortie dans le sens opposé, la carte
+suivante chevauche la sortie ; "side": "left" | "right" pose la carte d'un côté, tournée en 3D.
+"word" peut être une suite de mots (« trois hectares ») ; un mot introuvable est signalé dans le rapport (pose: false).
+stat : "from": 12 (compte de 12 à value), "style": "glass" (chiffre en dégradé), "dim": "3 ha" (cote fléchée sous le chiffre).
 *mot* = mot fort en italique serif. Chiffres, avis, résultats : uniquement des données réelles du client.
 Sans fichier : un temps fort « title » par phrase forte (overlays gardés de text.json).
 
@@ -68,6 +73,41 @@ from common import ROOT, job_dir, out, read_json, word_hit, write_json
 VENDOR = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "fonts"
 LUCIDE = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "lucide"
 SIMPLE = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "simple-icons"
+
+
+def find_word(words, word, occurrence=1, lo=0.0, hi=1e9):
+    """Mot dit (word_hit) ou suite de mots (« trois hectares », « 50 000 ») : -> le premier mot de la suite n° occurrence,
+    avec la fin ("end") du dernier ; None si introuvable."""
+    from common import _norm_word
+    keys = [k for k in (_norm_word(x) for x in re.split(r"\s+", str(word).strip())) if k]
+    if len(keys) <= 1:
+        return word_hit(words, word, occurrence, lo, hi)
+
+    def parts(w):
+        return [x for x in (_norm_word(y) for y in re.split(r"[\s’'\-]+", w["w"])) if x]
+    seen = 0
+    for i, w in enumerate(words):
+        ps = parts(w)
+        if not (lo <= w["start"] <= hi) or keys[0] not in ps:
+            continue
+        stream, kk, j, ok = ps[ps.index(keys[0]):], 0, i, True
+        while kk < len(keys):
+            if not stream:
+                j += 1
+                if j >= len(words):
+                    ok = False
+                    break
+                stream = parts(words[j])
+                continue
+            if stream[0] != keys[kk]:
+                ok = False
+                break
+            stream, kk = stream[1:], kk + 1
+        if ok:
+            seen += 1
+            if seen == int(occurrence):
+                return {**w, "end": words[j]["end"]}
+    return None
 
 
 def logo(name):
@@ -134,7 +174,7 @@ def media_box(W, ph, theme):
     u = W / 1080
     if theme == "paper":
         l, t, b, bw, rad = round(110 * u), round(ph * 0.12), round(ph * 0.16), max(2, round(3 * u)), round(10 * u)
-    elif theme in ("light", "cards"):
+    elif theme in ("light", "cards", "glass"):
         l, t, b, bw, rad = round(110 * u), round(ph * 0.12), round(ph * 0.16), 1, round(26 * u)
     else:
         l, t, b, bw, rad = round(110 * u), round(120 * u), round(ph * 0.14), 2, round(24 * u)
@@ -190,6 +230,9 @@ def fonts(job):
 def css(W, ph, fam, vis):
     base, tint, acc, on_acc = colors(vis)
     u = W / 1080
+    from fonts import title_stack, title_weight
+    tfont = (f"\n  .ttl, .big {{ font-family: {title_stack(vis, fam)}; font-weight: {title_weight(vis)}; }}  /* police des titres de la charte */"
+             if (vis.get("titleFont") or {}).get("family") else "")
     noise = ("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'>"
              "<feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter>"
              "<rect width='100%' height='100%' filter='url(%23n)' opacity='.55'/></svg>")
@@ -239,6 +282,24 @@ def css(W, ph, fam, vis):
   .big {{ position: absolute; left: 0; right: 0; top: {round(ph*0.22)}px; text-align: center; font-weight: 800; font-size: {round(230*u)}px;
          letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }}
   .big .px {{ color: {acc}; }}
+  .stat {{ position: absolute; left: 0; right: 0; top: {round(ph*0.2)}px; display: flex; flex-direction: column; align-items: center;
+          gap: {round(22*u)}px; }}
+  .stat .big, .stat .bar, .stat .lbl {{ position: static; }}
+  .stat .big {{ white-space: nowrap; }}
+  .stat .num {{ display: inline-block; text-align: right; }}  /* largeur réservée : le compteur ne glisse pas */
+  .stat .bar {{ width: 40%; }}
+  .stat .lbl {{ max-width: 84%; text-align: center; text-wrap: balance; }}
+  .stat.sg .big {{ background: linear-gradient(180deg, #ffffff 0%, {acc} 100%); -webkit-background-clip: text; background-clip: text; color: transparent;
+                  padding: .06em .08em .1em; box-shadow: none; }}
+  .stat.sg .big .px {{ color: transparent; }}
+  .dim {{ display: flex; flex-direction: column; align-items: center; gap: {round(10*u)}px; width: 52%; }}
+  .dim i {{ position: relative; display: block; width: 100%; height: {max(2, round(3*u))}px; background: currentColor; transform: scaleX(0); }}
+  .dim i::before, .dim i::after {{ content: ""; position: absolute; top: 50%; margin-top: -{round(11*u)}px; border: {round(11*u)}px solid transparent; }}
+  .dim i::before {{ left: -{round(4*u)}px; border-left-width: 0; border-right: {round(18*u)}px solid currentColor; }}
+  .dim i::after {{ right: -{round(4*u)}px; border-right-width: 0; border-left: {round(18*u)}px solid currentColor; }}
+  .dim span {{ font: 500 {round(28*u)}px 'IBM Plex Mono', monospace; letter-spacing: .12em; text-transform: uppercase; opacity: 0; }}
+  .tico {{ display: inline-flex; width: .9em; height: .9em; margin-right: .25em; vertical-align: -.1em; color: {acc}; }}
+  .tico svg {{ width: 100%; height: 100%; }}{tfont}
   .lbl {{ position: absolute; left: 0; right: 0; top: {round(ph*0.22 + 250*u)}px; text-align: center; font-family: 'Instrument Serif', Georgia, serif;
          font-style: italic; font-size: {round(70*u)}px; color: rgba(244,244,242,.85); opacity: 0; }}
   .bar {{ position: absolute; left: {round(W*0.3)}px; right: {round(W*0.3)}px; top: {round(ph*0.22 + 236*u)}px; height: {round(6*u)}px;
@@ -408,12 +469,12 @@ def css_ui(W, ph, acc, on_acc):
   .fun {{ position: absolute; left: {round(70*u)}px; right: {round(70*u)}px; top: {round(ph*0.2)}px; height: {round(ph*0.56)}px; }}
   .fbar {{ position: absolute; bottom: {round(60*u)}px; border-radius: {round(12*u)}px {round(12*u)}px 0 0; background: var(--acc); transform-origin: 50% 100%; }}
   .fbar.leak {{ background: #d62f33; }}
-  .flab {{ position: absolute; bottom: 0; height: {round(48*u)}px; text-align: center; font-size: {round(30*u)}px; font-weight: 700; color: var(--ui-ink);
-          white-space: nowrap; }}
-  .fval {{ position: absolute; text-align: center; font: 600 {round(28*u)}px {mono}; color: var(--ui-mute); }}
+  .flab {{ position: absolute; bottom: 0; text-align: center; font-weight: 700; color: var(--ui-ink); line-height: 1.08; text-wrap: balance;
+          overflow-wrap: anywhere; display: flex; align-items: flex-start; justify-content: center; }}  /* deux lignes au plus, jamais sur le voisin */
+  .fval {{ position: absolute; text-align: center; font: 600 {round(28*u)}px {mono}; color: var(--ui-mute); opacity: 0; }}
   .fdot {{ position: absolute; width: {round(12*u)}px; height: {round(12*u)}px; border-radius: 50%; background: var(--ui-mute); opacity: 0; }}
   .fnote {{ position: absolute; padding: {round(10*u)}px {round(20*u)}px; border-radius: {round(12*u)}px; background: #d62f33; color: #fff; font-size: {round(32*u)}px;
-           font-weight: 800; white-space: nowrap; transform: rotate(-3deg); opacity: 0; }}
+           font-weight: 800; line-height: 1.1; text-align: center; transform: rotate(-3deg); opacity: 0; box-sizing: border-box; }}
   .chartc svg {{ display: block; overflow: visible; }}
   .chartc .gl {{ stroke: var(--ui-line); stroke-width: {max(1, round(2*u))}; }}
   .chartc .gt {{ font: 500 {round(22*u)}px {mono}; fill: var(--ui-mute); }}
@@ -624,6 +685,7 @@ def css_paper(W, ph, fam, vis):
   #panel.paper .big {{ top: {round(ph*0.24)}px; font-size: {round(300*u)}px; }}
   #panel.paper .bar {{ top: {round(ph*0.24 + 320*u)}px; }}
   #panel.paper .lbl {{ top: {round(ph*0.24 + 345*u)}px; font-size: {round(84*u)}px; }}
+  #panel.paper .stat {{ top: {round(ph*0.24)}px; }}
   #panel.paper .stps {{ top: {round(ph*0.2)}px; }}
   #panel.paper .stp {{ font-size: {round(64*u)}px; padding: {round(32*u)}px {round(34*u)}px; margin-bottom: {round(28*u)}px; }}
   #panel.paper .ph {{ top: {round(ph*0.12)}px; bottom: {round(ph*0.16)}px; }}
@@ -648,8 +710,10 @@ def css_light(W, ph, fam, vis, cards=False):
     line = f"1px solid {ink}1c"
     s = css_paper(W, ph, fam, vis) + f"""
   #panel.paper.light {{ inset: auto; left: 0; top: 0; width: {W}px; height: {ph}px; z-index: 20; background: {_mix(bg, '#ffffff', 0.7)}; }}
-  #panel.light .card, #panel.light .stp, #panel.light .ph, #panel.light .ic .cir, #panel.light .stamp {{ border: {line}; box-shadow: {soft};
+  #panel.light .card, #panel.light .stp, #panel.light .ph, #panel.light .ic .cir {{ border: {line}; box-shadow: {soft};
              border-radius: {round(26*u)}px; }}
+  #panel.light .stamp {{ background: #fff; box-shadow: {soft}; }}  /* garde son cadre d'accent */
+  #panel.light .tag {{ display: flex; color: {ink}99; }}
   #panel.light .stp.on {{ border-color: {acc}; }}
   #panel.light .wbar {{ border-bottom: {line}; background: {ink}06; }}
   #panel.light .field {{ border: 2px solid {acc}; }}
@@ -662,7 +726,7 @@ def css_light(W, ph, fam, vis, cards=False):
   #panel.cards .hlab {{ background: #fff; padding: {round(4*u)}px {round(14*u)}px; border-radius: 99px; box-shadow: {soft}; }}
   #panel.cards .ttl {{ left: {round(60*u)}px; right: auto; max-width: {round(W - 120*u)}px; top: {round(ph*0.14)}px; padding: {round(26*u)}px {round(34*u)}px;
              background: #fff; border-radius: {round(28*u)}px; box-shadow: {soft}; font-size: {round(74*u)}px; }}
-  #panel.cards .big {{ left: 22%; right: 22%; top: {round(ph*0.12)}px; padding: {round(20*u)}px 0; background: #fff; border-radius: {round(30*u)}px;
+  #panel.cards .big {{ left: 8%; right: 8%; white-space: nowrap; top: {round(ph*0.12)}px; padding: {round(20*u)}px 0; background: #fff; border-radius: {round(30*u)}px;
              box-shadow: {soft}; font-size: {round(190*u)}px; }}
   #panel.cards .bar {{ display: none; }}
   #panel.cards .lbl {{ left: 18%; right: 18%; top: {round(ph*0.12 + 250*u)}px; padding: {round(12*u)}px {round(20*u)}px; background: #fff;
@@ -670,9 +734,110 @@ def css_light(W, ph, fam, vis, cards=False):
   #panel.cards .ihead, #panel.cards .cap2 {{ left: 50%; right: auto; transform: translateX(-50%); white-space: nowrap; padding: {round(10*u)}px {round(22*u)}px;
              background: #fff; border-radius: 99px; box-shadow: {soft}; opacity: 1; }}
   #panel.cards .mark {{ display: none; }}
-  #panel.cards .bigico {{ display: none; }}
-  #panel.cards .hs, #panel.cards .hc {{ box-shadow: {soft}; }}"""
+  #panel.cards .bigico {{ display: none; }}  /* icône du titre : dans la carte (.tico) */
+  #panel.cards .tag {{ padding: {round(8*u)}px {round(18*u)}px; border-radius: 99px; background: #fff; box-shadow: {soft}; }}
+  #panel.cards .kick.kabs {{ left: {round(60*u)}px; right: auto; padding: {round(8*u)}px {round(18*u)}px; border-radius: 99px; background: #fff; box-shadow: {soft};
+             color: {_mix(acc, "#151515", 0.2)}; }}
+  #panel.cards .stat {{ top: {round(ph*0.12)}px; }}
+  #panel.cards .stat .big {{ padding: {round(20*u)}px {round(46*u)}px; }}
+  #panel.cards .stat .lbl {{ padding: {round(12*u)}px {round(26*u)}px; }}
+  #panel.cards .beat.sl .bi {{ transform: perspective({round(1400*u)}px) rotateY(12deg) scale(.74); transform-origin: 0 0; }}  /* "side": "left" */
+  #panel.cards .beat.sr .bi {{ transform: perspective({round(1400*u)}px) rotateY(-12deg) scale(.74); transform-origin: 100% 0; }}
+  #panel.cards .hs, #panel.cards .hc {{ box-shadow: {soft}; }}
+  #panel.cards .ic .lab {{ display: inline-block; white-space: nowrap; background: #fff; color: {ink}; padding: {round(8*u)}px {round(20*u)}px;
+             border-radius: 99px; box-shadow: {soft}; font-size: {round(38*u)}px; }}  /* lisible sur la vidéo floutée */"""
     return s
+
+
+def css_glass(W, ph, fam, vis):
+    """Thème « glass » : cartes en verre dépoli sur la vidéo (fond qui se devine, texte blanc). Aucun parent d'une surface en
+    verre n'anime filter ni opacity (le verre ne verrait plus la vidéo) : entrées et sorties en transformations."""
+    _, _, acc_t, on_t = colors(vis)  # accent éclairci, lisible sur le verre
+    u = W / 1080
+    surf = ", ".join(f"#panel.glass {x}" for x in (".card", ".ttl", ".stat .big", ".stat .lbl", ".stp", ".ihead", ".cap2", ".ph", ".hs", ".ic .lab",
+                                                     ".hlab", ".tag", ".kick.kabs", ".stamp", ".lhead .lp", ".ltabs", ".cval"))
+    return css_light(W, ph, fam, vis, cards=True) + f"""
+  #panel.glass {{ color: #fff; --ui-ink: #ffffff; --ui-line: rgba(255,255,255,.24); --ui-soft: rgba(255,255,255,.10); --ui-mute: rgba(255,255,255,.72);
+                 --ui-solid: rgba(255,255,255,.16); --acc: {acc_t}; --on-acc: {on_t}; }}
+  {surf} {{ background: rgba(255,255,255,.12); -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+            border: 1px solid rgba(255,255,255,.38); box-shadow: 0 {round(18*u)}px {round(50*u)}px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.35);
+            color: #fff; text-shadow: 0 1px {round(10*u)}px rgba(0,0,0,.18); }}
+  #panel.glass .beat .bi {{ opacity: 1; }}
+  #panel.glass .ttl, #panel.glass .big, #panel.glass .lbl, #panel.glass .stp, #panel.glass .ic .lab, #panel.glass .chead, #panel.glass .ihead,
+  #panel.glass .cap2, #panel.glass .tag {{ color: #fff; }}
+  #panel.glass .chead, #panel.glass .tag {{ color: rgba(255,255,255,.78); }}
+  #panel.glass .ttl .it, #panel.glass .big .px, #panel.glass .kick, #panel.glass .tico, #panel.glass .hs {{ color: {acc_t}; }}
+  #panel.glass .stamp {{ color: {acc_t}; border: {round(6*u)}px solid {acc_t}; }}
+  #panel.glass .row {{ border-top-color: rgba(255,255,255,.18); }}
+  #panel.glass .box, #panel.glass .stp .n {{ border-color: rgba(255,255,255,.6); }}
+  #panel.glass .stp.on {{ background: {acc_t}33; border-color: {acc_t}; }}
+  #panel.glass .res {{ background: rgba(255,255,255,.08); }}
+  #panel.glass .field {{ border-color: {acc_t}; }}
+  #panel.glass .stat.sg .big {{ background: linear-gradient(180deg, #ffffff 0%, {acc_t} 100%); -webkit-background-clip: text; background-clip: text;
+                               -webkit-backdrop-filter: none; backdrop-filter: none; border: 0; box-shadow: none; }}
+  #panel.glass .beat.sl .bi {{ transform: perspective({round(1400*u)}px) rotateY(12deg) scale(.74); transform-origin: 0 0; }}
+  #panel.glass .beat.sr .bi {{ transform: perspective({round(1400*u)}px) rotateY(-12deg) scale(.74); transform-origin: 100% 0; }}"""
+
+
+# entrées des cartes, prises à tour de rôle ; la sortie part dans le sens opposé
+ENTRIES = ("turn", "clip", "zoom")
+
+
+def card_motion(sid, k, s0, t1, d, last, W, glass, side=None):
+    """Entrée / dérive / sortie d'une carte (thèmes cards et glass). Verre : jamais de filter ni d'opacité sur la carte
+    entière (parent du verre), les flous finissent par clearProps."""
+    u = W / 1080
+    kind = ENTRIES[k % len(ENTRIES)]
+    dr = -1 if side == "left" else (1 if side == "right" else (1 if k % 2 == 0 else -1))
+    js, sel = [], f"#{sid}"
+    if kind == "turn":
+        js.append(f'  tl.fromTo("{sel}", {{ rotationY: {25 * dr}, x: {round(120 * u * dr)}, transformPerspective: {round(1200 * u)} }}, '
+                  f'{{ rotationY: 0, x: 0, duration: 0.55, ease: "power3.out", immediateRender: false }}, {s0});')
+        out_ = f'{{ rotationY: {-25 * dr}, x: {-round(W * 1.15) * dr}, duration: 0.3, ease: "power2.in" }}'
+    elif kind == "clip":
+        js.append(f'  tl.fromTo("{sel}", {{ clipPath: "inset(0% 0% 100% 0%)", y: {round(24 * u)} }}, {{ clipPath: "inset(0% 0% 0% 0%)", y: 0, duration: 0.5, '
+                  f'ease: "power3.inOut", immediateRender: false, clearProps: "clipPath" }}, {s0});')
+        out_ = '{ clipPath: "inset(100% 0% 0% 0%)", y: -20, duration: 0.28, ease: "power2.in" }'
+    elif glass:  # zoom sans flou (le verre doit voir la vidéo)
+        js.append(f'  tl.fromTo("{sel}", {{ scale: 0.84, y: {round(60 * u)} }}, {{ scale: 1, y: 0, duration: 0.55, ease: "back.out(1.6)", immediateRender: false }}, {s0});')
+        out_ = '{ scale: 0.9, yPercent: -110, duration: 0.3, ease: "power2.in" }'
+    else:
+        js.append(f'  tl.fromTo("{sel}", {{ scale: 0.86, filter: "blur(12px)" }}, {{ scale: 1, filter: "blur(0px)", duration: 0.5, ease: "back.out(1.7)", '
+                  f'immediateRender: false, clearProps: "filter" }}, {s0});')
+        out_ = '{ scale: 1.08, filter: "blur(10px)", duration: 0.25, ease: "power2.in", clearProps: "filter" }'
+    if d > 2.0:  # dérive au repos
+        js.append(f'  tl.fromTo("{sel}", {{ y: 0, rotation: 0 }}, {{ y: -{round(14 * u)}, rotation: {0.8 * dr}, duration: {round(d - 0.9, 3)}, '
+                  f'ease: "sine.inOut", immediateRender: false }}, {round(s0 + 0.55, 3)});')
+    if not last:
+        js.append(f'  tl.to("{sel}", {out_}, {round(max(s0 + 0.6, t1 - 0.28), 3)});')
+    return js
+
+
+def lottie_layers(job, lo, k, s0, t1, T0, W, ph, ox, oy):
+    """Emoji animé (library/lottie) posé dans la scène, rejoué en boucle pendant le temps fort (ou lo["dur"] s)."""
+    layers = []
+    if lo:  # emoji animé (library/lottie) posé dans la scène, rejoué en boucle pendant le temps fort
+        import math
+        lm = ROOT / "library" / "lottie" / str(lo.get("name", "")) / "lottie.json"
+        if lm.exists() and "webm" in read_json(lm):
+            meta = read_json(lm)
+            (job / "assets" / "lottie").mkdir(parents=True, exist_ok=True)
+            shutil.copy2(lm.parent / meta["webm"], job / "assets" / "lottie" / meta["webm"])
+            from common import add_credit
+            add_credit(job, meta["credit"])
+            size = round(W * float(lo.get("size", 26)) / 100)
+            lx = ox + round(W * float(lo.get("x", 78)) / 100) - size // 2
+            ly = oy + round(ph * float(lo.get("y", 72)) / 100) - size // 2
+            one = float(meta.get("rendered_duration") or meta.get("duration") or 1.5)
+            start = s0 + float(lo.get("delay", 0.4))
+            if lo.get("dur"):  # sur un passage « face » long : l'emoji ne reste que dur s
+                t1 = min(t1, start + float(lo["dur"]))
+            n = max(1, math.ceil((t1 - start - 0.25) / one - 0.05))
+            for r_ in range(n):
+                layers.append(f'    <video id="lo{k}_{r_}" class="clip" src="assets/lottie/{meta["webm"]}" data-start="{round(start + T0 + r_ * one, 3)}" '
+                              f'data-duration="{round(min(one, t1 - start - r_ * one), 3)}" data-track-index="{90 + k}" muted playsinline '
+                              f'style="position:absolute;left:{lx}px;top:{ly}px;width:{size}px;height:{size}px;z-index:35"></video>')
+    return layers
 
 
 def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
@@ -682,25 +847,31 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
     u = W / 1080
     ox, oy = origin
     layers = []
-    placed = []
+    placed, lost = [], []
     for b in beats or []:
-        hit = word_hit(words, b.get("word", ""), b.get("occurrence", 1)) if b.get("word") else None
+        hit = find_word(words, b.get("word", ""), b.get("occurrence", 1)) if b.get("word") else None
         t = (hit["start"] - 0.12) if hit else (b.get("_t") if b.get("_t") is not None else None)
-        if t is None:
+        if t is None:  # jamais perdu en silence : le rapport dit pourquoi
+            lost.append({"type": b.get("type", "title"), "mot": b.get("word"), "pose": False,
+                         "raison": f"mot introuvable : {b['word']}" if b.get("word") else "pas de mot (word) où le poser"})
             continue
         placed.append((max(0.0, t), b))
     placed.sort(key=lambda x: x[0])
     if placed:
         placed[0] = (0.0, placed[0][1])  # le panneau n'est jamais vide au début
-    kept = []
+    kept, dropped = [], []
     for t, b in placed:  # un temps fort reste au moins 1 s : trop proche du précédent, il est écarté (pas de trou ni de flash)
         if kept and t - kept[-1][0] < 1.0:
+            dropped.append({"type": b.get("type", "title"), "mot": b.get("word"), "pose": False,
+                            "raison": f"à {t - kept[-1][0]:.2f} s du temps fort précédent (1 s au moins) : choisis un mot plus loin"})
             continue
         kept.append((t, b))
     if len(kept) > 1 and dur - kept[-1][0] < 1.0:
-        kept.pop()
+        t, b = kept.pop()
+        dropped.append({"type": b.get("type", "title"), "mot": b.get("word"), "pose": False, "raison": "à moins d'1 s de la fin"})
     placed = kept
-    html_, js, rep = [], ([background_js(dur, T0)] if theme == "dark" else []), []
+    html_, js, rep = [], ([background_js(dur, T0)] if theme == "dark" else []), lost + dropped
+    cardlike, glass, nb = theme in ("cards", "glass"), theme == "glass", 0
     paper_on = []
     has_list = any(b.get("list") for _, b in placed)
     if has_list:
@@ -714,14 +885,17 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
         d, s0 = round(t1 - t0, 3), round(t0, 3)
         sid, typ = f"bt{k}", b.get("type", "title")
         if typ == "face":  # visage plein écran jusqu'au temps fort suivant (alternance) : build_composition replie le panneau
-            rep.append({"type": "face", "a": s0, "duree": d, "mot": b.get("word")})
+            rep.append({"type": "face", "a": s0, "duree": d, "mot": b.get("word") or ("(retour auto)" if b.get("_auto") else None)})
+            if b.get("lottie"):  # emoji animé sur le visage (ex. « c'est magique »)
+                layers += lottie_layers(job, b["lottie"], k, s0, t1, T0, W, ph, ox, oy)
             continue
         tag = f'<div class="tag">{esc(b["tag"])}</div>' if b.get("tag") else ""
         kick = esc(b.get("kicker", ""))
         inner, bj = "", []
         if typ == "title":
             big = icon(b["icon"]) if b.get("icon") else ""
-            inner = (f'<div class="ttl">' + (f'<div class="kick">{kick}</div>' if kick else "") + f'{title_words(b.get("text", ""))}</div>'
+            tico = f'<span class="tico">{big}</span>' if big and cardlike else ""  # cartes : l'icône dans la carte, devant le titre
+            inner = (f'<div class="ttl">' + (f'<div class="kick">{kick}</div>' if kick else "") + f'{tico}{title_words(b.get("text", ""))}</div>'
                      + (f'<div class="bigico">{big}</div>' if big else ('<div class="mark"></div>' if b.get("mark") else "")))
             if big:
                 bj.append(f'  tl.fromTo("#{sid} .bigico", {{ opacity: 0, scale: 0.3, rotation: -25 }}, {{ opacity: 1, scale: 1, rotation: 0, '
@@ -756,16 +930,33 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
                 bj.append(f'  tl.fromTo("#panel .flash", {{ opacity: 0.7, scale: 0.3 }}, {{ opacity: 0, scale: 1.3, duration: 0.5, ease: "power2.out", '
                           f'immediateRender: false }}, {ts});')
         elif typ == "stat":
-            v = float(str(b.get("value", 0)).replace(" ", "").replace(",", "."))
-            dec = 1 if (v % 1) else 0
-            inner = (f'<div class="big"><span class="px">{esc(b.get("prefix", ""))}</span><span class="num">0</span>'
-                     f'<span class="px">{esc(b.get("suffix", ""))}</span></div><div class="bar"></div><div class="lbl">{esc(b.get("label", ""))}</div>')
+            num_ = lambda x: float(str(x).replace(" ", "").replace("\u202f", "").replace(",", "."))
+            v, v0 = num_(b.get("value", 0)), num_(b.get("from", 0))
+            dec = 1 if (v % 1 or v0 % 1) else 0
+            nfin = max(f"{v:,.{dec}f}", f"{v0:,.{dec}f}", key=len).replace(",", " ")
+            fin = f'{b.get("prefix", "")}{nfin}{b.get("suffix", "")}'
+            # tous les thèmes : le chiffre final tient sur une ligne (« dès 50 000 € ») ; largeur du compteur réservée
+            base_ = {"paper": 300, "cards": 190, "glass": 190}.get(theme, 230) * u
+            fs = round(min(base_, W * (0.74 if cardlike else 0.86) / max(1, len(fin) * 0.6)))
+            eur = " eur" if "€" in f'{b.get("prefix", "")}{b.get("suffix", "")}' else ""  # prix : bruitage de caisse
+            sg = " sg" if b.get("style") == "glass" else ""
+            mid = (f'<div class="dim"><i></i><span>{esc(b["dim"])}</span></div>' if b.get("dim") else '<div class="bar"></div>')
+            start_txt = f"{v0:,.{dec}f}".replace(",", " ").replace(".", ",")
+            inner = (f'<div class="stat{sg}"><div class="big{eur}" style="font-size:{fs}px"><span class="px">{esc(b.get("prefix", ""))}</span>'
+                     f'<span class="num" style="min-width:{round(len(nfin) * 0.6, 2)}em">{start_txt}</span>'
+                     f'<span class="px">{esc(b.get("suffix", ""))}</span></div>{mid}'
+                     + (f'<div class="lbl">{esc(glue(b["label"]))}</div>' if b.get("label") else "") + '</div>')
             bj.append(f'  tl.fromTo("#{sid} .big", {{ opacity: 0, scale: 0.85 }}, {{ opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.8)", immediateRender: false }}, {s0 + 0.05});')
-            bj.append(f'  (function () {{ const el = document.querySelector("#{sid} .num"), o = {{ v: 0 }};'
-                      f' tl.fromTo(o, {{ v: 0 }}, {{ v: {v}, duration: {round(min(1.6, d * 0.5), 2)}, ease: "power2.out", immediateRender: false,'
+            bj.append(f'  (function () {{ const el = document.querySelector("#{sid} .num"), o = {{ v: {v0} }};'
+                      f' tl.fromTo(o, {{ v: {v0} }}, {{ v: {v}, duration: {round(min(1.6, d * 0.5), 2)}, ease: "power2.out", immediateRender: false,'
                       f' onUpdate: function () {{ el.textContent = o.v.toLocaleString("fr-FR", {{ minimumFractionDigits: {dec}, maximumFractionDigits: {dec} }}); }} }}, {s0 + 0.1}); }})();')
-            bj.append(f'  tl.fromTo("#{sid} .bar", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.7, ease: "power3.inOut", immediateRender: false }}, {s0 + 0.4});')
-            bj.append(f'  tl.fromTo("#{sid} .lbl", {{ opacity: 0, y: 20 }}, {{ opacity: 1, y: 0, duration: 0.45, ease: "power2.out", immediateRender: false }}, {s0 + 0.7});')
+            if b.get("dim"):  # cote fléchée qui s'ouvre depuis le centre, puis sa valeur
+                bj.append(f'  tl.fromTo("#{sid} .dim i", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.6, ease: "power3.out", immediateRender: false }}, {s0 + 0.4});')
+                bj.append(f'  tl.fromTo("#{sid} .dim span", {{ opacity: 0, y: 8 }}, {{ opacity: 1, y: 0, duration: 0.3, immediateRender: false }}, {s0 + 0.85});')
+            else:
+                bj.append(f'  tl.fromTo("#{sid} .bar", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.7, ease: "power3.inOut", immediateRender: false }}, {s0 + 0.4});')
+            if b.get("label"):
+                bj.append(f'  tl.fromTo("#{sid} .lbl", {{ opacity: 0, y: 20 }}, {{ opacity: 1, y: 0, duration: 0.45, ease: "power2.out", immediateRender: false }}, {s0 + 0.7});')
         elif typ == "search":
             q, res = b.get("query", ""), b.get("results", [])[:4]
             hi = int(b.get("highlight", 0))  # la ligne du client
@@ -792,7 +983,8 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
                 rep.append({"type": typ, "pose": False, "raison": "pas d'image (panel.py fetch pour une query)"})
                 continue
             is_vid = src.lower().endswith((".mp4", ".webm", ".mov"))
-            med = "" if is_vid else f'<img src="{esc(src)}" alt="">'
+            med = "" if is_vid else (f'<img src="{esc(src)}" alt=""' + (' style="object-fit:contain;background:#fff;padding:6%;box-sizing:border-box"'
+                                                                          if b.get("fit") == "contain" else "") + '>')
             inner = f'<div class="ph">{med}</div>' + (f'<div class="cap2">{esc(b["caption"])}</div>' if b.get("caption") else "")
             if is_vid:  # le cadre est dans le temps fort, la vidéo dans un calque à la même place
                 x, y, w, h, rad = media_box(W, ph, theme)
@@ -800,7 +992,7 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
                 layers.append(f'    <div class="mlayer" id="{lid}" style="position:absolute;left:{ox + x}px;top:{oy + y}px;width:{w}px;height:{h}px;'
                               f'border-radius:{rad}px;overflow:hidden;z-index:30;opacity:0"><video id="{lid}v" class="clip" src="{esc(src)}" '
                               f'data-start="{round(s0 + T0, 3)}" data-duration="{d}" data-track-index="{80 + k}" muted playsinline '
-                              f'style="width:100%;height:100%;object-fit:cover;display:block"></video></div>')
+                              f'style="width:100%;height:100%;object-fit:{"contain" if b.get("fit") == "contain" else "cover"};display:block;background:#fff"></video></div>')
                 bj.append(f'  tl.fromTo("#{sid} .ph", {{ opacity: 0, y: 60 }}, {{ opacity: 1, y: 0, duration: 0.6, ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
                 bj.append(f'  tl.fromTo("#{lid}", {{ opacity: 0, y: 60 }}, {{ opacity: 1, y: 0, duration: 0.6, ease: "power3.out", immediateRender: false }}, {s0 + 0.05});')
                 if k + 1 < len(placed):
@@ -818,7 +1010,9 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
             for j in range(len(items)):
                 tj = round(s0 + 0.15 + j * span, 3)
                 bj.append(f'  tl.fromTo("#{sid} .p{j}", {{ opacity: 0, x: 40 }}, {{ opacity: 1, x: 0, duration: 0.4, ease: "power3.out", immediateRender: false }}, {tj});')
-                bj.append(f'  tl.call(function () {{ document.querySelectorAll("#{sid} .stp").forEach(function (e, i) {{ e.classList.toggle("on", i === {j}); }}); }}, null, {tj});')
+                bj.append(_cls_at(f"#{sid} .p{j}", "on", True, tj))  # étape allumée, la précédente s'éteint
+                if j:
+                    bj.append(_cls_at(f"#{sid} .p{j - 1}", "on", False, tj))
         elif typ == "icons":
             items = b.get("items", [])[:6]
             cols = 2 if len(items) == 4 else min(3, max(1, len(items)))
@@ -845,35 +1039,24 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
             bj.append(f'  tl.fromTo("#{sid} .kick", {{ opacity: 0, y: 10 }}, {{ opacity: 1, y: 0, duration: 0.3, ease: "power2.out", immediateRender: false }}, {s0 + 0.02});')
         if b.get("fond") == "papier" and theme == "dark":  # alternance : ce temps fort sur papier quadrillé
             paper_on.append((s0, t1))
-        lo = b.get("lottie")
-        if lo:  # emoji animé (library/lottie) posé dans la scène, rejoué en boucle pendant le temps fort
-            import math
-            lm = ROOT / "library" / "lottie" / str(lo.get("name", "")) / "lottie.json"
-            if lm.exists() and "webm" in read_json(lm):
-                meta = read_json(lm)
-                (job / "assets" / "lottie").mkdir(parents=True, exist_ok=True)
-                shutil.copy2(lm.parent / meta["webm"], job / "assets" / "lottie" / meta["webm"])
-                from common import add_credit
-                add_credit(job, meta["credit"])
-                size = round(W * float(lo.get("size", 26)) / 100)
-                lx = ox + round(W * float(lo.get("x", 78)) / 100) - size // 2
-                ly = oy + round(ph * float(lo.get("y", 72)) / 100) - size // 2
-                one = float(meta.get("rendered_duration") or meta.get("duration") or 1.5)
-                start = s0 + 0.4
-                n = max(1, math.ceil((t1 - start - 0.25) / one - 0.05))
-                for r_ in range(n):
-                    layers.append(f'    <video id="lo{k}_{r_}" class="clip" src="assets/lottie/{meta["webm"]}" data-start="{round(start + T0 + r_ * one, 3)}" '
-                                  f'data-duration="{round(min(one, t1 - start - r_ * one), 3)}" data-track-index="{90 + k}" muted playsinline '
-                                  f'style="position:absolute;left:{lx}px;top:{ly}px;width:{size}px;height:{size}px;z-index:35"></video>')
-        html_.append(f'      <div class="clip beat{" pb" if b.get("fond") == "papier" and theme == "dark" else ""}" id="{sid}" data-start="{round(s0 + T0, 3)}" data-duration="{d}" data-track-index="{70 + k % 2}">'
+        if b.get("lottie"):
+            layers += lottie_layers(job, b["lottie"], k, s0, t1, T0, W, ph, ox, oy)
+        side = b.get("side") if b.get("side") in ("left", "right") and cardlike else None
+        cls = (" pb" if b.get("fond") == "papier" and theme == "dark" else "") + {"left": " sl", "right": " sr", None: ""}[side]
+        e0 = round(max(0.0, s0 - 0.15), 3) if cardlike and k else s0  # cartes : la suivante chevauche la sortie de la précédente
+        html_.append(f'      <div class="clip beat{cls}" id="{sid}" data-start="{round(e0 + T0, 3)}" data-duration="{round(t1 - e0, 3)}" data-track-index="{70 + k % 2}">'
                      f'<div class="bi">{tag}{inner}</div></div>')
-        js.append(f'  tl.fromTo("#{sid} .bi", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.25, ease: "power1.out", immediateRender: false }}, {s0});')
+        if not glass:  # verre : jamais d'opacité sur un parent du verre
+            js.append(f'  tl.fromTo("#{sid} .bi", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.25, ease: "power1.out", immediateRender: false }}, {e0});')
+        if cardlike:  # entrées variées à tour de rôle, dérive au repos, sortie dans le sens opposé
+            js += card_motion(sid, nb, e0, t1, d, k + 1 >= len(placed), W, glass, side)
+            nb += 1
         if b.get("tag"):
             js.append(f'  tl.fromTo("#{sid} .tag", {{ opacity: 0, x: 20 }}, {{ opacity: 1, x: 0, duration: 0.4, ease: "power2.out", immediateRender: false }}, {s0 + 0.05});')
         if b.get("flash") and typ != "check":
             js.append(f'  tl.fromTo("#panel .flash", {{ opacity: 0.8, scale: 0.3 }}, {{ opacity: 0, scale: 1.4, duration: 0.55, ease: "power2.out", immediateRender: false }}, {s0 + 0.15});')
         js += bj
-        if k + 1 < len(placed):
+        if k + 1 < len(placed) and not glass:
             js.append(f'  tl.to("#{sid} .bi", {{ opacity: 0, y: -16, duration: 0.22, ease: "power2.in" }}, {round(t1 - 0.22, 3)});')
         rep.append({"type": typ, "a": s0, "duree": d, "mot": b.get("word")})
     for a_, b_ in paper_on:  # fond papier allumé pendant ces temps forts (le fil passe par-dessus)
@@ -909,8 +1092,8 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
         panel = panel.replace('<div id="panel">', f'<div id="panel" class="{hl.strip()}">', 1)
     if theme == "paper":  # pas de décor sombre : le papier et le motif sont dessinés par build_explainer
         panel = f'    <div id="panel" class="paper{hl}">{deco}\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
-    elif theme in ("light", "cards"):
-        cls = "paper light" + (" cards" if theme == "cards" else "") + hl
+    elif theme in ("light", "cards", "glass"):
+        cls = "paper light" + (" cards" if theme in ("cards", "glass") else "") + (" glass" if glass else "") + hl
         panel = f'    <div id="panel" class="{cls}">{deco}\n{chr(10).join(html_)}\n      <div class="flash"></div></div>'
     return panel, js, rep, layers
 
@@ -1054,8 +1237,8 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
     elif typ == "hub":
         items = b.get("items", [])[:8]
         cx, cy = W / 2, ph * (0.53 if b.get("title") else 0.48)
-        R = min(W * 0.32, ph * 0.27)
         cs, ss = round(220 * u), round(124 * u)
+        R = max(ss, min(W * 0.32, ph * 0.27, ph * 0.86 - cy - ss / 2 - 50 * u))  # le libellé du bas reste au-dessus de la couture
         import math
         c = b.get("center", {})
         if isinstance(c, str):
@@ -1072,9 +1255,14 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
                                                     else f'<span style="font-size:{round(38*u)}px;padding:0 .3em">{esc(c.get("text", ""))}</span>')
         pts = [(cx + R * math.cos(-math.pi / 2 + 2 * math.pi * j / max(1, len(items))),
                 cy + R * math.sin(-math.pi / 2 + 2 * math.pi * j / max(1, len(items)))) for j in range(len(items))]
-        lines = "".join(f'<line class="h{j}" x1="{cx:.0f}" y1="{cy:.0f}" x2="{x:.0f}" y2="{y:.0f}" />' for j, (x, y) in enumerate(pts))
+        def seg(x, y):  # du bord du cercle central au bord du satellite (jamais caché dessous, ni arrêté avant)
+            L_ = max(1.0, math.hypot(x - cx, y - cy))
+            ux, uy = (x - cx) / L_, (y - cy) / L_
+            return cx + ux * cs / 2, cy + uy * cs / 2, x - ux * ss / 2, y - uy * ss / 2
+        lines = "".join('<line class="h{}" x1="{:.0f}" y1="{:.0f}" x2="{:.0f}" y2="{:.0f}" />'.format(j, *seg(x, y)) for j, (x, y) in enumerate(pts))
         sats = "".join(f'<div class="hs s{j}" style="left:{x - ss / 2:.0f}px;top:{y - ss / 2:.0f}px;width:{ss}px;height:{ss}px">{item_icon(it)}</div>'
-                       + (f'<span class="hlab s{j}" style="left:{x - ss:.0f}px;top:{y + ss / 2 + round(6*u):.0f}px;width:{2 * ss}px">{esc(item_text(it))}</span>'
+                       + (f'<span class="hlab s{j}" style="left:{x - ss:.0f}px;top:{(y - ss / 2 - round(46*u)) if y < cy - 1 else (y + ss / 2 + round(6*u)):.0f}px;'
+                          f'width:{2 * ss}px">{esc(item_text(it))}</span>'
                           if item_text(it) else "")
                        for j, ((x, y), it) in enumerate(zip(pts, items)))
         inner = ((f'<div class="ihead">{esc(b["title"])}</div>' if b.get("title") else "")
@@ -1083,10 +1271,10 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
         bj.append(f'  tl.fromTo("#{sid} .hc", {{ opacity: 0, scale: 0.3 }}, {{ opacity: 1, scale: 1, duration: 0.55, ease: "back.out(2.2)", immediateRender: false }}, {s0 + 0.08});')
         span = max(0.16, min(0.4, (d * 0.6 - 0.6) / max(1, len(items))))
         for j, (x, y) in enumerate(pts):
-            L = math.hypot(x - cx, y - cy)
+            L = max(1, math.hypot(x - cx, y - cy) - cs / 2 - ss / 2)
             tj = round(s0 + 0.5 + j * span, 3)
-            bj.append(f'  tl.fromTo("#{sid} .h{j}", {{ attr: {{ "stroke-dasharray": {L:.0f}, "stroke-dashoffset": {L:.0f} }} }}, '
-                      f'{{ attr: {{ "stroke-dashoffset": {round(cs / 2)} }}, duration: 0.4, ease: "power2.out", immediateRender: true }}, {tj});')
+            bj.append(f'  tl.fromTo("#{sid} .h{j}", {{ attr: {{ "stroke-dasharray": {L + 2:.0f}, "stroke-dashoffset": {L + 2:.0f} }} }}, '
+                      f'{{ attr: {{ "stroke-dashoffset": 0 }}, duration: 0.4, ease: "power2.out", immediateRender: true }}, {tj});')
             bj.append(f'  tl.fromTo("#{sid} .s{j}", {{ opacity: 0, scale: 0.4 }}, {{ opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2.6)", '
                       f'immediateRender: false }}, {round(tj + 0.28, 3)});')
     elif typ == "funnel":
@@ -1097,24 +1285,32 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
         gap = round(24 * u)
         bw = (fw - gap * (n - 1)) / n
         leak = b.get("leak")
-        hmax = fh - round(150 * u)
+        longest = max([len(w_) for x_ in steps for w_ in str(x_.get("label", "")).split()] or [4])
+        lfs = round(max(20 * u, min(30 * u, bw / max(1, longest * 0.58))))  # le plus long mot tient dans sa colonne
+        lab_h = round(lfs * 1.08 * 2 + 6 * u)  # deux lignes
+        hmax = fh - lab_h - round(110 * u)
         parts = []
         for j, st_ in enumerate(steps):
             h = max(round(12 * u), round(hmax * float(st_.get("value", 0)) / mx))
             x = round(j * (bw + gap))
-            parts.append(f'<i class="fbar f{j}{" leak" if j == leak else ""}" style="left:{x}px;width:{round(bw)}px;height:{h}px"></i>'
-                         f'<span class="flab" style="left:{x}px;width:{round(bw)}px">{esc(glue(st_.get("label", "")))}</span>'
-                         + (f'<span class="fval v{j}" style="left:{x}px;width:{round(bw)}px;bottom:{h + round(70*u)}px">{esc(st_["show"])}</span>'
+            parts.append(f'<i class="fbar f{j}{" leak" if j == leak else ""}" style="left:{x}px;width:{round(bw)}px;height:{h}px;bottom:{lab_h + round(10*u)}px"></i>'
+                         f'<span class="flab" style="left:{x}px;width:{round(bw)}px;height:{lab_h}px;font-size:{lfs}px">{esc(st_.get("label", ""))}</span>'
+                         + (f'<span class="fval v{j}" style="left:{x}px;width:{round(bw)}px;bottom:{h + lab_h + round(20*u)}px">{esc(st_["show"])}</span>'
                             if st_.get("show") else ""))
         dots = "".join(f'<i class="fdot d{k}" style="left:{round(fw * (k + .5) / 14)}px;top:{round(10*u)}px"></i>' for k in range(14))
         note = ""
         if leak is not None and 0 <= int(leak) < n and b.get("note"):
             lx = round(int(leak) * (bw + gap) + bw / 2)
-            note = f'<span class="fnote" style="left:{max(0, lx - round(160*u))}px;top:{round(46*u)}px">{esc(glue(b["note"]))}</span>'
+            nw = min(fw, round(len(str(b["note"])) * 32 * u * 0.56 + 44 * u))  # largeur estimée : la note reste dans le cadre
+            nl = round(min(max(0, lx - nw / 2), fw - nw))
+            note = f'<span class="fnote" style="left:{nl}px;width:{nw}px;top:{round(46*u)}px">{esc(glue(b["note"]))}</span>'
         inner = ((f'<div class="ihead">{esc(b["title"])}</div>' if b.get("title") else "")
                  + f'<div class="fun">{dots}{"".join(parts)}{note}</div>')
         bj.append(f'  tl.fromTo("#{sid} .fbar", {{ scaleY: 0 }}, {{ scaleY: 1, duration: 0.55, stagger: 0.12, ease: "power3.out", immediateRender: false }}, {s0 + 0.15});')
         bj.append(f'  tl.fromTo("#{sid} .fdot", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.15, stagger: {round(min(0.08, d * 0.3 / 14), 3)}, immediateRender: false }}, {s0 + 0.3});')
+        if any(x_.get("show") for x_ in steps):  # valeurs au-dessus des barres, quand chaque barre a poussé
+            bj.append(f'  tl.fromTo("#{sid} .fval", {{ opacity: 0, y: 12 }}, {{ opacity: 1, y: 0, duration: 0.3, stagger: 0.12, ease: "back.out(2)", '
+                      f'immediateRender: false }}, {s0 + 0.55});')
         if note:
             tn = round(s0 + min(d * 0.5, 1.6), 3)
             bj.append(f'  tl.fromTo("#{sid} .fnote", {{ opacity: 0, y: 16, scale: 0.6 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(2.6)", '
@@ -1137,7 +1333,8 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
         inner = (f'<div class="card chartc">' + (f'<div class="chead">{esc(b["title"])}</div>' if b.get("title") else "")
                  + f'<div style="position:relative"><svg width="{cw}" height="{chh + round(50*u)}" viewBox="0 0 {cw} {chh + round(50*u)}">{grid}{xl}'
                  f'<path class="ln" d="{path}" pathLength="1000" /><circle class="dot" cx="{ex:.0f}" cy="{ey:.0f}" r="{round(12*u)}" /></svg>'
-                 + (f'<span class="cval" style="right:{round(10*u)}px;top:{max(0, round(ey - 70 * u))}px">{esc(b["label"])}</span>' if b.get("label") else "")
+                 + (f'<span class="cval" style="right:{round(cw - ex + 22 * u)}px;top:{round(max(-30 * u, ey - 84 * u))}px">{esc(b["label"])}</span>'
+                    if b.get("label") else "")
                  + '</div></div>')
         bj.append(card_in)
         tl_ = round(max(0.9, min(2.2, d * 0.55)), 2)
@@ -1160,9 +1357,13 @@ def ui_beat(job, typ, b, sid, s0, d, W, ph):
         bj.append(card_in)
         bj.append(f'  tl.fromTo("#{sid} .live", {{ opacity: 1 }}, {{ opacity: 0.35, duration: 0.5, yoyo: true, repeat: {max(1, int(d / 0.5))}, immediateRender: false }}, {s0 + 0.3});')
         span = max(0.35, min(0.8, (d * 0.7 - 0.5) / max(1, len(items))))
-        for j in range(len(items)):  # le plus récent arrive en haut et pousse les autres
-            bj.append(f'  tl.fromTo("#{sid} .q{j}", {{ opacity: 0, y: -{rh}, scale: 0.95 }}, {{ opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(1.8)", '
-                      f'immediateRender: false }}, {round(s0 + 0.4 + (len(items) - 1 - j) * span, 3)});')
+        n_ = len(items)
+        for j in range(n_):  # le plus récent arrive en haut (case 1) et pousse les autres d'une case vers le bas
+            tj = s0 + 0.4 + (n_ - 1 - j) * span
+            bj.append(f'  tl.fromTo("#{sid} .q{j}", {{ opacity: 0, y: {-j * rh - round(rh * 0.5)}, scale: 0.95 }}, {{ opacity: 1, y: {-j * rh}, scale: 1, duration: 0.4, '
+                      f'ease: "back.out(1.8)", immediateRender: false }}, {round(tj, 3)});')
+            for k_ in range(1, j + 1):
+                bj.append(f'  tl.to("#{sid} .q{j}", {{ y: {-(j - k_) * rh}, duration: 0.35, ease: "power2.out" }}, {round(tj + k_ * span, 3)});')
     elif typ == "palette":
         cols = b.get("colors", [])[:6]
         sw = "".join(f'<i class="c{j}" style="background:{esc(c)}"></i>' for j, c in enumerate(cols))

@@ -2,7 +2,9 @@
 
   python shorts.py sentences <job> <slug>     # phrases numérotées -> work/<slug>_sentences.txt (à lire en entier)
   #   Claude choisit les passages : work/<slug>_shorts.json (numéros de phrases, JAMAIS de timecodes)
-  python shorts.py make <job> <slug> [--mode captions|overlays] [--style pop] [--mood upbeat] [--size 9:16]
+  python shorts.py make <job> <slug> [--mode captions|overlays|both|none] [--style <style>] [--mood upbeat] [--size 9:16]
+  #   --style : tous les styles de sous-titres de build_composition.py (STYLES : pop, karaoke, minimal, boite, impact,
+  #   duo, mono, bulle, souligne, geant, editorial…)
 
 work/<slug>_shorts.json :
   {"shorts": [{"name": "devenir-manager", "from": 12, "to": 18, "skip": [15],
@@ -142,6 +144,18 @@ def cmd_make(a):
     out(ok=True, shorts=made, suite="check + snapshot sur chaque job, puis deliver.py <job> short")
 
 
+def caption_styles():
+    """Styles de sous-titres : la liste de build_composition.py (source unique), lue sans l'exécuter si l'import échoue."""
+    try:
+        from build_composition import STYLES
+        return list(STYLES)
+    except Exception:  # noqa: BLE001 — import cassé : on relit la ligne STYLES = [...] du fichier
+        import ast
+        src = (HERE / "build_composition.py").read_text(encoding="utf-8")
+        m = re.search(r"^STYLES\s*=\s*(\[[^\]]*\])", src, re.M)
+        return ast.literal_eval(m.group(1)) if m else ["pop", "karaoke", "minimal", "boite", "impact", "duo"]
+
+
 def main():
     ap = argparse.ArgumentParser()
     sp = ap.add_subparsers(dest="cmd", required=True)
@@ -152,7 +166,7 @@ def main():
     m.add_argument("job")
     m.add_argument("slug")
     m.add_argument("--mode", choices=["captions", "overlays", "both", "none"])
-    m.add_argument("--style", choices=["pop", "karaoke", "minimal", "boite", "impact", "duo"])
+    m.add_argument("--style", choices=caption_styles())
     m.add_argument("--mood")
     m.add_argument("--size", default="9:16")
     a = ap.parse_args()

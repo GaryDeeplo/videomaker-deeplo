@@ -130,3 +130,51 @@ cash_f6c06e00.mp3: "Picked Coin Echo 2" by NenadSimic is licensed under CC BY 4.
 cash_87834623.mp3: "coin-up.aif" by mattwasser is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
 cash_5a5ee2d2.mp3: "Single Coin Return.wav" by tweeterdj is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
 cash_e6462b90.mp3: "Retro, Coin 02.wav" by MATRIXXX_ is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_244b0713.mp3: "SUB A# 2 secs.wav" by uzerx is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_4f866dd5.mp3: "sub bass 4 secondsssss.wav" by uzerx is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_aa4e0e1d.mp3: "SUB OCEANO C.wav" by uzerx is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_76aa1231.mp3: "SUB OCEANO D.wav" by uzerx is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_2eadbca9.mp3: "SUB OCEANO A sharp.wav" by uzerx is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_7d760c83.mp3: "sub bass 5 secondsssss.wav" by uzerx is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_af807b88.mp3: "Bass Drop" by qubodup is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_ce7296ac.mp3: "SUB OCEANO A.wav" by uzerx is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_8a856be2.mp3: "SUB OCEANO B.wav" by uzerx is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+subdrop_080d0d94.mp3: "low thump.wav" by tim.kahn is licensed under CC BY 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/.
+glass_8fda20aa.mp3: "Kitchen Glass Ding 3" by iamaviolin is licensed under CC BY 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/.
+glass_a93898d0.mp3: "Kitchen Glass Ding" by iamaviolin is licensed under CC BY 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/.
+glass_bf1dabbe.mp3: "ding.wav" by Daphne_in_Wonderland is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+glass_286c4065.mp3: "glass_ding.mp3" by hihirex is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+glass_b30c8c3a.mp3: "ding2.wav" by MashedTatoes2 is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+glass_1b026f8d.mp3: "Glass Tap.wav" by Unicornaphobist is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+glass_6230e0eb.mp3: "Glass Bottle Clink" by twohoursago is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+glass_1393c2be.mp3: "Ding.wav" by LanooskiProductions is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+glass_a9ebae00.mp3: "Clanking glass.wav" by HonorHunter is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+glass_0cf20619.mp3: "Short glass-metal impact.wav" by flarn2006 is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+swoosh_soft_70ebf580.mp3: "digital_whoosh_soft.wav" by ludvique is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+swoosh_soft_448057a5.mp3: "whoosh.soft.wav" by junggle is licensed under CC BY 4.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/4.0/.
+swoosh_soft_f57697db.mp3: "Whoosh Simpler" by original_sound is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+swoosh_soft_d67b6c71.mp3: "Archive Sent" by original_sound is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+swoosh_soft_424cbdfb.mp3: "Whoosh Simple High" by original_sound is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+swoosh_soft_2242127b.mp3: "Swing 1_5" by Joao_Janz is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+tap_bf946aae.mp3: "Glass Tap" by zembacraftworks is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+pageflip_677461f5.mp3: "Page Flip" by qubodup is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+pageflip_6046343d.mp3: "page-flip-10.mp3" by effectsmaster4 is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+pageflip_7db17b5e.mp3: "Page Flip" by kevinpro is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+pageflip_437d3248.mp3: "Page Flip" by qubodup is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+pageflip_3f8411c2.mp3: "Book Sounds - Big Page Flip 1" by The_Matt_Freeman is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+pageflip_69a22578.mp3: "Book Sounds - Big Page Flip 2" by The_Matt_Freeman is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+pageflip_319e808b.mp3: "Book Sounds - Big Page Flip 3" by The_Matt_Freeman is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+pageflip_b01ff896.mp3: "Pages flipping in book, rustling heavily.wav" by mht23SD is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+tap_a09dc7fd.mp3: "Thump" by SamsterBirdies is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+tap_dffee897.mp3: "Notification Sound" by thehorriblejoke is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+tap_d9d9cc52.mp3: "UI click" by Ranner is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+tap_6cadd7ed.mp3: "Menu FX 03 (normal).wav" by Nightflame is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+tap_2e1ea9cc.mp3: "Menu FX 03 (descending).wav" by Nightflame is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+tap_e553877e.mp3: "UI 04" by rhodesmas is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+tap_d3a0ca5d.mp3: "Menu FX 03 (ascending).wav" by Nightflame is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+tap_a3633ef3.mp3: "UI 02" by rhodesmas is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+tap_b5ab38dc.mp3: "Tap 02" by rhodesmas is licensed under CC BY 3.0. To view a copy of this license, visit https://creativecommons.org/licenses/by/3.0/.
+swoosh_soft_24b9c60c.mp3: "Swishes_13_fast.wav" by videofueralle is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+swoosh_soft_ae216017.mp3: "Swishes_16_soft_slower.wav" by videofueralle is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+swoosh_soft_06c8f8d0.mp3: "Swishes_9_hill_curve_stronger.wav" by videofueralle is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.
+swoosh_soft_a0a2ff07.mp3: "Swishes_4_strong_fast.wav" by videofueralle is marked with CC0 1.0. To view the terms, visit https://creativecommons.org/publicdomain/zero/1.0/.

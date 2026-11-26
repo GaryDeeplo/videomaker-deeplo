@@ -127,26 +127,23 @@ def build(a):
     words = [w for g in t.get("captions", []) for w in g["words"]]
     (job / "assets" / "fonts").mkdir(parents=True, exist_ok=True)
     shutil.copy2(VENDOR / "Anton-Regular.ttf", job / "assets" / "fonts" / "Anton-Regular.ttf")
-    faces = ["@font-face { font-family: 'Anton'; src: url('assets/fonts/Anton-Regular.ttf'); }", pn.fonts(job)]
-    if vis.get("fontFile"):
-        ff = ROOT / vis["fontFile"]
-        shutil.copy2(ff, job / "assets" / "fonts" / ff.name)
-        faces.append(f"@font-face {{ font-family: '{fam}'; src: url('assets/fonts/{ff.name}'); font-weight: 100 900; }}")
-    for f in vis.get("fonts", []):
-        ff = ROOT / f["file"]
-        shutil.copy2(ff, job / "assets" / "fonts" / ff.name)
-        faces.append(f"@font-face {{ font-family: '{fam}'; src: url('assets/fonts/{ff.name}'); font-weight: {f.get('weight', 400)}; }}")
+    from fonts import brand_faces
+    faces = ["@font-face { font-family: 'Anton'; src: url('assets/fonts/Anton-Regular.ttf'); }", pn.fonts(job), brand_faces(job, vis)]
 
-    def at(word, occ=1, default=None):
-        h = word_hit(words, word, occ) if word else None
+    from panel import find_word
+
+    def at(word, occ=1, default=None):  # mot dit, ou suite de mots
+        h = find_word(words, word, occ) if word else None
         return max(0.0, h["start"] - 0.08) if h else default
 
     placed = sorted(((at(b.get("word"), b.get("occurrence", 1)), b) for b in beats), key=lambda x: (x[0] is None, x[0] or 0))
+    lost = [{"mot": b.get("word"), "pose": False, "raison": f"mot introuvable : {b.get('word')}" if b.get("word") else "pas de mot (word)"}
+            for tt, b in placed if tt is None]  # signalés dans le rapport, jamais perdus en silence
     placed = [(tt, b) for tt, b in placed if tt is not None]
     if not placed:
-        fail("aucun temps fort placé (mots introuvables)")
+        fail("aucun temps fort placé (mots introuvables)", introuvables=[x["mot"] for x in lost])
     placed[0] = (0.0, placed[0][1])
-    shots, layers, titles, props, js, rep = [], [], [], [], [], []
+    shots, layers, titles, props, js, rep = [], [], [], [], [], list(lost)
     media_starts = []
     for tt, b in placed:  # un plan dure au moins 1,2 s : un média trop proche du précédent n'est pas montré
         if not b.get("media"):
@@ -355,6 +352,9 @@ def build(a):
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    from build_composition import cli_args
+    from common import write_json as _wj
+    _wj(job / "work" / f"{a.slug}_build.json", {"script": "build_punch.py", "args": cli_args(a._ap, a) if getattr(a, '_ap', None) else []})  # deliver.py rejoue ces options
     if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
         sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=dur, plans=rep, titres=len(titles), objets=len(props) + len(layers), sous_titres=len(caps),
@@ -415,7 +415,9 @@ def main():
     ap.add_argument("--size")
     ap.add_argument("--no-captions", action="store_true")
     ap.add_argument("--lang", help="sous-titres traduits (translate.py apply) : nl, en…")
-    build(ap.parse_args())
+    a = ap.parse_args()
+    a._ap = ap  # options effectives -> work/<slug>_build.json
+    build(a)
 
 
 if __name__ == "__main__":

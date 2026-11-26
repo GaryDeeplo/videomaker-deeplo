@@ -1,12 +1,13 @@
 """MASTER FINAL -> renders/<nom>_final.mp4  (vidéo copiée, audio masterisé)
 
-Deux passes loudnorm vers -14 LUFS intégrés (norme Reels / TikTok / YouTube), true peak -2 dBTP avant AAC
-(l'encodage AAC ajoute ~0,5 dB). Mesure ensuite le MP4 livré, jamais le WAV intermédiaire.
+Vers -14 LUFS intégrés (norme Reels / TikTok / YouTube), true peak -2 dBTP avant AAC (l'encodage AAC ajoute ~0,5 dB).
+Chaîne : gain de départ mesuré (le mix arrive près de la cible), compresseur de « glue » léger (seuil -16 dB, 1,5:1,
+attaque 30 ms, ~1 à 2 dB de réduction), limiteur sur-échantillonné (192 kHz, 0,5 dB sous le plafond : il tient
+aussi les crêtes entre les échantillons), gain ajusté jusqu'à ±0,2 LU de la cible, PUIS loudnorm en deux passes sur
+ce signal (mesure, puis correction linéaire de quelques dixièmes). Plage (LRA) plafonnée à 9 LU : au-delà, loudnorm la resserre (mode dynamique, annoncé).
+Mesure ensuite le MP4 livré, jamais le WAV intermédiaire.
 Garde-fous (d'après ffmpeg-skill, MIT) :
-  - loudnorm ne reste en mode linéaire que si la plage (LRA) et la crête le permettent, sinon il bascule seul en mode
-    dynamique (compresse, peut rater la cible). Plage trop large : la cible LRA est élargie pour rester linéaire.
-    Crête trop haute : le mode dynamique est annoncé (« mode ») et ses horodatages réalignés ; s'il rate la cible
-    de plus de 1 LU, repli sur un gain fixe + limiteur (alimiter).
+  - mode dynamique qui rate la cible de plus de 1 LU : repli sur un gain fixe + limiteur.
   - crête > -1 dBTP dans le MP4 (dépassement de l'AAC) : ré-encodage en 256k, puis 320k, puis plafond abaissé.
   - son coupé à la longueur de l'image (loudnorm rend son dernier bloc entier : +0,1 s sinon) ; AAC 48 kHz stéréo.
 
@@ -14,7 +15,6 @@ Garde-fous (d'après ffmpeg-skill, MIT) :
 """
 import argparse
 import json
-import math
 import re
 import subprocess
 from pathlib import Path
@@ -22,14 +22,35 @@ from pathlib import Path
 from common import fail, job_dir, out, probe, sh
 
 LIMIT = -1.0  # crête maximale admise dans le MP4 livré (dBTP)
+LRA = 9.0  # plage maximale livrée (LU)
 
 
-def ebur(path):
-    log = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path), "-vn", "-af", "ebur128=peak=true",
-                          "-f", "null", "-"], capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
+def ebur(path, af=None):
+    """(LUFS intégrés, crête vraie dBTP) du fichier, après la chaîne af si donnée."""
+    log = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path), "-vn", "-af",
+                          (af + "," if af else "") + "ebur128=peak=true", "-f", "null", "-"],
+                         capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
     i = re.findall(r"I:\s+(-?[\d.]+) LUFS", log)
     p = re.findall(r"Peak:\s+(-?[\d.]+) dBFS", log)
     return (float(i[-1]) if i else None), (float(p[-1]) if p else None)
+
+
+def pre_chain(gain, ceiling):
+    """Gain de départ, compresseur de « glue » léger, limiteur sur-échantillonné 0,5 dB sous le plafond."""
+    return (f"volume={gain:.2f}dB,acompressor=threshold=-16dB:ratio=1.5:attack=30:release=250:knee=4,"
+            f"aresample=192000,alimiter=limit={10 ** ((ceiling - 0.5) / 20):.4f}:attack=2:release=60:level=false:latency=true,"
+            "aresample=48000")
+
+
+def measure(src, pre, lufs, tp):
+    """Première passe loudnorm (mesures JSON) sur le signal déjà préparé."""
+    log = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(src), "-vn", "-af",
+                          f"{pre},loudnorm=I={lufs}:TP={tp}:LRA={LRA:g}:print_format=json", "-f", "null", "-"],
+                         capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
+    try:
+        return json.loads(log[log.rindex("{"):log.rindex("}") + 1])
+    except ValueError:
+        fail("mesure loudnorm impossible", stderr=log[-600:])
 
 
 def loudnorm_mode(mj, lufs, tp, lra):
@@ -59,35 +80,37 @@ def main():
     if not src.exists():
         fail(f"introuvable : {src}")
 
-    log = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(src), "-vn", "-af",
-                          f"loudnorm=I={a.lufs}:TP={a.tp}:LRA=11:print_format=json", "-f", "null", "-"],
-                         capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
-    try:
-        mj = json.loads(log[log.rindex("{"):log.rindex("}") + 1])
-    except ValueError:
-        fail("mesure loudnorm impossible", stderr=log[-600:])
+    # gain de départ : le mix brut, puis corrigé (glue + limiteur retirent un peu de niveau) jusqu'à ±0,2 LU de la cible
+    i0, _ = ebur(src)
+    if i0 is None or i0 < -70:
+        fail("son muet ou illisible", fichier=str(src))
+    gain = a.lufs - i0
+    for _ in range(4):
+        i1, _ = ebur(src, pre_chain(gain, a.tp))
+        if i1 is None or i1 < -70 or abs(a.lufs - i1) <= 0.2:
+            break
+        gain += a.lufs - i1
     notes = []
-    lra = 11.0
-    try:
-        if float(mj["input_lra"]) > lra:  # plage plus large que 11 LU : on l'admet plutôt que de laisser loudnorm compresser
-            lra = min(50.0, math.ceil(float(mj["input_lra"])) + 1.0)
-            notes.append(f"plage {mj['input_lra']} LU > 11 : cible LRA portée à {lra:g} pour rester en mode linéaire")
-    except (KeyError, ValueError):
-        pass
     info = probe(src)
     keep = min(x for x in ((info.get("audio") or {}).get("duration"), info.get("video_duration"), info["duration"]) if x)
 
     dst = src.with_name(src.stem.replace("_draft", "") + "_final.mp4")
     ceiling, bitrate, steps, rounds = a.tp, "192k", ["256k", "320k"], 0
+    mj, mj_for = None, None
 
-    def encode(gain=None):
-        """gain (dB) : gain fixe + limiteur au lieu de loudnorm (repli quand le mode dynamique rate la cible)."""
-        if gain is not None:
+    def encode(fixed=None):
+        """fixed (dB) : gain fixe + limiteur au lieu de loudnorm (repli quand le mode dynamique rate la cible)."""
+        nonlocal mj, mj_for
+        pre = pre_chain(gain, ceiling)
+        if mj_for != pre:  # mesure refaite quand le plafond change
+            mj, mj_for = measure(src, pre, a.lufs, ceiling), pre
+        if fixed is not None:
             mode = "limiteur"
-            af = f"volume={gain:.2f}dB,alimiter=limit={10 ** ((ceiling - 1) / 20):.4f}:level=false:latency=true"
+            af = (f"{pre},volume={fixed:.2f}dB,aresample=192000,alimiter=limit={10 ** ((ceiling - 0.5) / 20):.4f}:"
+                  "level=false:latency=true,aresample=48000")
         else:
-            mode = loudnorm_mode(mj, a.lufs, ceiling, lra)
-            af = (f"loudnorm=I={a.lufs}:TP={ceiling:.2f}:LRA={lra:g}:measured_I={mj['input_i']}:measured_TP={mj['input_tp']}:"
+            mode = loudnorm_mode(mj, a.lufs, ceiling, LRA)
+            af = (f"{pre},loudnorm=I={a.lufs}:TP={ceiling:.2f}:LRA={LRA:g}:measured_I={mj['input_i']}:measured_TP={mj['input_tp']}:"
                   f"measured_LRA={mj['input_lra']}:measured_thresh={mj['input_thresh']}:offset={mj['target_offset']}:linear=true")
             if mode == "dynamic":  # en dynamique, loudnorm horodate lui-même ses blocs (saut de ~0,1 s après un silence)
                 af += ",asetpts=N/SR/TB"
@@ -97,12 +120,12 @@ def main():
            "ffmpeg (master)")
         return mode
 
-    def master(gain=None):
+    def master(fixed=None):
         """Encode puis, tant que la crête du MP4 dépasse -1 dBTP (dépassement de l'AAC) : 256k, 320k, puis plafond
         abaissé du dépassement (d'après ffmpeg-skill, MIT, scripts/loudness.py)."""
         nonlocal ceiling, bitrate, steps, rounds
         ceiling, bitrate, steps = a.tp, "192k", ["256k", "320k"]
-        mode = encode(gain)
+        mode = encode(fixed)
         lufs, peak = ebur(dst)
         while peak is not None and peak > LIMIT and rounds < 5:
             rounds += 1
@@ -112,23 +135,24 @@ def main():
             else:
                 ceiling -= (peak - LIMIT) + 0.2
                 notes.append(f"crête {peak} dBTP après AAC : plafond abaissé à {ceiling:.2f} dBTP")
-            mode = encode(gain)
+            mode = encode(fixed)
             lufs, peak = ebur(dst)
         return mode, lufs, peak
 
     mode, lufs, peak = master()
     if mode == "dynamic":
-        notes.append("loudnorm en mode dynamique (crête trop haute pour un simple gain, ou mesure inutilisable) : niveau compressé")
+        notes.append(f"plage {mj.get('input_lra')} LU > {LRA:g} (ou crête trop haute) : loudnorm en mode dynamique, plage resserrée")
         if lufs is not None and abs(lufs - a.lufs) > 1.0:  # cible ratée : gain fixe + limiteur, corrigé une fois
             notes.append(f"mode dynamique à {lufs} LUFS : repli gain fixe + limiteur")
-            gain = a.lufs - float(mj["input_i"])
-            mode, lufs, peak = master(gain)
+            fixed = a.lufs - float(mj["input_i"])
+            mode, lufs, peak = master(fixed)
             if lufs is not None and abs(lufs - a.lufs) > 0.5:
-                mode, lufs, peak = master(gain + a.lufs - lufs)
+                mode, lufs, peak = master(fixed + a.lufs - lufs)
     ok = lufs is not None and abs(lufs - a.lufs) <= 1.0 and peak is not None and peak <= LIMIT
-    out(ok=ok, final=str(dst), lufs=lufs, true_peak=peak, cible=f"{a.lufs} LUFS, crête ≤ {LIMIT:g} dBTP",
+    out(ok=ok, final=str(dst), lufs=lufs, true_peak=peak, cible=f"{a.lufs} LUFS, crête ≤ {LIMIT:g} dBTP, plage ≤ {LRA:g} LU",
         verdict="OK" if ok else "À CORRIGER", mode={"linear": "linéaire", "dynamic": "dynamique"}.get(mode, mode),
-        lra_cible=lra, debit=bitrate, plafond=round(ceiling, 2), reprises=rounds, notes=notes or None)
+        gain_depart=round(gain, 2), plage_mesuree=float(mj["input_lra"]) if mj else None, debit=bitrate,
+        plafond=round(ceiling, 2), reprises=rounds, notes=notes or None)
 
 
 if __name__ == "__main__":

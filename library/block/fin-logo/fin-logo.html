@@ -1,0 +1,50 @@
+<!-- deeplo-library-block: fin-logo · fin de vidéo : la vidéo se floute sous un voile, le logo apparaît au centre avec une ligne de texte (site, slogan) -->
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+  </head>
+  <body>
+    <div id="fin-logo" data-composition-id="fin-logo" data-start="0" data-duration="3.2" data-width="1080" data-height="1920"
+      data-composition-variables='[{"id": "accent", "type": "color", "label": "Accent", "default": "#c2410c"}, {"id": "text", "type": "color", "label": "Texte", "default": "#ffffff"}, {"id": "card", "type": "color", "label": "Fond de carte", "default": "rgba(20,18,16,0.78)"}, {"id": "fill", "type": "color", "label": "Fond plein cadre (transparent en surimpression)", "default": "transparent"}, {"id": "font", "type": "string", "label": "Police", "default": "Inter"}, {"id": "top", "type": "number", "label": "Hauteur (% du cadre)", "default": 40, "min": 0, "max": 90}, {"id": "dur", "type": "number", "label": "Durée du montage (s, remplie automatiquement)", "default": 0, "min": 0, "max": 60}, {"id": "logo", "type": "string", "label": "Logo (assets/…)", "default": "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="}, {"id": "tagline", "type": "string", "label": "Ligne sous le logo (vide = aucune)", "default": ""}, {"id": "veil", "type": "color", "label": "Voile sur la vidéo floutée", "default": "rgba(255,255,255,.32)"}, {"id": "ink", "type": "color", "label": "Couleur de la ligne", "default": "#1a1a1a"}]'>
+      <div class="mf-fill"></div>
+      <div class="fl-veil"></div><div class="mf-pos"><div class="fl-box"><img class="fl-logo" data-var-src="logo" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" />
+        <div class="fl-tag" data-var-text="tagline"></div></div></div>
+      <style>
+        #fin-logo { position: absolute; inset: 0; font-family: var(--font, "Inter"), "Inter", sans-serif; color: var(--text, #fff); }
+        #fin-logo .mf-fill { position: absolute; inset: 0; background: var(--fill, transparent); }
+        #fin-logo .mf-pos { position: absolute; left: 0; right: 0; top: calc(var(--top, 40) * 1%); display: flex; justify-content: center; }
+        #fin-logo .fl-veil { position: absolute; inset: 0; background: var(--veil, rgba(255,255,255,.32)); backdrop-filter: blur(26px) saturate(1.2);
+                             -webkit-backdrop-filter: blur(26px) saturate(1.2); opacity: 0; }
+        #fin-logo .fl-box { display: flex; flex-direction: column; align-items: center; gap: 3vmin; }
+        #fin-logo .fl-logo { width: 62vmin; max-height: 26vmin; object-fit: contain; opacity: 0; }
+        #fin-logo .fl-tag { font-size: 4vmin; font-weight: 600; letter-spacing: .04em; color: var(--ink, #1a1a1a); opacity: 0; }
+      </style>
+      <script>
+        (function () {
+        function V(id) {
+          var out = {}, root = document.getElementById(id);
+          try { JSON.parse(root.getAttribute("data-composition-variables")).forEach(function (d) { out[d.id] = d.default; }); } catch (e) {}
+          var hf = window.__hyperframes;
+          var o = hf && typeof hf.getVariables === "function" ? hf.getVariables() : window.__hfVariables;
+          if (o && typeof o === "object") { for (var k in o) { if (o[k] !== undefined) out[k] = o[k]; } }
+          return out;
+        }
+        const v = V("fin-logo");
+        const r = '[data-composition-id="fin-logo"] ';
+        const tl = gsap.timeline({ paused: true });
+        const D = Number(v.dur) > 0 ? Number(v.dur) : 3.2;
+        const K = Math.min(1, D / 3.2);  // tout se resserre si le bloc est monté plus court que prévu
+        if (!String(v.tagline || "").trim()) document.querySelector(r + ".fl-tag").style.display = "none";
+        tl.fromTo(r + ".fl-veil", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 0);
+        tl.fromTo(r + ".fl-logo", { opacity: 0, scale: 0.88, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.7, ease: "power3.out" }, 0.3 * K);
+        tl.fromTo(r + ".fl-tag", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.8 * K);
+        tl.to(r + ".fl-logo", { scale: 1.04, duration: Math.max(0.5, D - 1.2), ease: "sine.inOut" }, 1.0 * K);
+        window.__timelines = window.__timelines || {};
+        window.__timelines["fin-logo"] = tl;
+        })();
+      </script>
+    </div>
+  </body>
+</html>

@@ -32,9 +32,52 @@ import sys
 import tempfile
 from pathlib import Path
 
-from common import config, env_key, fail, job_dir, out, probe, read_json, sh, write_json
+from common import config, env_key, fail, ffmpeg_has, job_dir, out, probe, read_json, sh, write_json
 
 LEAD, TAIL = 0.35, 0.6  # silence avant la première phrase et après la dernière
+
+
+def voice_chain(denoise=False):
+    """Chaîne voix : coupe-bas 80 Hz, débruitage doux (option), moins de boue (220 Hz), plus de présence (3,2 kHz),
+    de-esser, compresseur (seuil -21 dB, 3:1, +3 dB). Un filtre absent du ffmpeg installé est sauté."""
+    fs = ["highpass=f=80"] + (["afftdn=nr=10:nf=-42:tn=1"] if denoise else []) + \
+         ["equalizer=f=220:t=q:w=1:g=-2", "equalizer=f=3200:t=q:w=1:g=2.5", "deesser=i=0.4:m=0.5:f=0.5",
+          "acompressor=threshold=-21dB:ratio=3:attack=8:release=120:makeup=1.41"]
+    return ",".join(f for f in fs if ffmpeg_has(f.split("=")[0]))
+
+
+def loudness(path):
+    """Niveau intégré (LUFS) d'un fichier, None si trop court ou muet."""
+    import subprocess
+    log = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", str(path), "-af", "ebur128", "-f", "null", "-"],
+                         capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
+    i = re.findall(r"I:\s+(-?[\d.]+) LUFS", log)
+    return float(i[-1]) if i and float(i[-1]) > -70 else None
+
+
+def render_voice(inputs, graph, dst, lufs, total, tp=-1.5):
+    """graph : filtre complexe qui finit en [pre] ; loudnorm en 2 passes (mesure, puis gain linéaire) -> dst, de
+    total s pile (loudnorm linéaire rend parfois la fin un peu courte : complétée en silence, sans décalage)."""
+    import subprocess
+    fd, script = tempfile.mkstemp(suffix=".txt")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(graph + f";[pre]loudnorm=I={lufs}:TP={tp}:LRA=11:print_format=json[v]")
+        log = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", *inputs, "-filter_complex_script", script, "-map", "[v]",
+                              "-f", "null", "-"], capture_output=True, text=True, encoding="utf-8", errors="replace").stderr
+        try:
+            mj = json.loads(log[log.rindex("{"):log.rindex("}") + 1])
+            lra = max(11.0, float(mj["input_lra"]) + 1)  # plage admise : reste en mode linéaire
+            ln = (f"loudnorm=I={lufs}:TP={tp}:LRA={lra:g}:measured_I={mj['input_i']}:measured_TP={mj['input_tp']}:"
+                  f"measured_LRA={mj['input_lra']}:measured_thresh={mj['input_thresh']}:offset={mj['target_offset']}:linear=true")
+        except (ValueError, KeyError):
+            ln = f"loudnorm=I={lufs}:TP={tp}:LRA=11"
+        with open(script, "w", encoding="utf-8") as f:
+            f.write(graph + f";[pre]{ln},asetpts=N/SR/TB,aresample=48000,apad=whole_dur={total},atrim=end={total}[v]")
+        sh(["ffmpeg", "-y", "-loglevel", "error", *inputs, "-filter_complex_script", script, "-map", "[v]",
+            "-c:a", "pcm_s16le", str(dst)], "ffmpeg (voix)")
+    finally:
+        Path(script).unlink(missing_ok=True)
 
 
 def fish(text, dst, voice, speed, model):
@@ -201,12 +244,9 @@ def from_file(a, job, c, sb_path):
     for i, tm in enumerate(timing):
         tm["end"] = timing[i + 1]["start"] if i + 1 < len(timing) else total
     dst = job / "assets" / f"{a.slug}_voice.wav"
-    pre = ",afftdn=nf=-25" if a.denoise else ""
-    af = (f"atrim=start={trim},asetpts=PTS-STARTPTS," if trim else "") + \
-         f"adelay={int(max(0.0, O) * 1000)}{pre},apad=whole_dur={total},atrim=end={total}," + \
-         f"loudnorm=I={c['derush']['voiceLufs']}:TP=-1.5:LRA=11,aresample=48000"
-    sh(["ffmpeg", "-y", "-loglevel", "error", "-i", str(src), "-vn", "-ac", "1", "-af", af, "-c:a", "pcm_s16le", str(dst)],
-       "ffmpeg (voix enregistrée)")
+    graph = ("[0:a]aformat=channel_layouts=mono," + (f"atrim=start={trim},asetpts=PTS-STARTPTS," if trim else "") +
+             f"{voice_chain(a.denoise)},adelay={int(max(0.0, O) * 1000)},apad=whole_dur={total},atrim=end={total}[pre]")
+    render_voice(["-i", str(src)], graph, dst, c["derush"]["voiceLufs"], total)
     words = [{"w": w["w"], "start": round(w["start"] + O, 3), "end": round(w["end"] + O, 3)} for w in ws
              if w["start"] + O >= 0 and w["end"] + O <= total]
     dur = probe(dst)["duration"]
@@ -324,18 +364,12 @@ def main():
     inputs, fc = [], []
     for k, ln in enumerate(parts):
         inputs += ["-i", str(ln["wav"])]
-        fc.append(f"[{k}:a]aresample=48000,aformat=channel_layouts=mono,adelay={int(ln['start'] * 1000)}[d{k}]")
+        lv = loudness(ln["wav"])  # chaque phrase au même niveau avant l'assemblage
+        gain = f"volume={-20 - lv:.2f}dB," if lv is not None else ""
+        fc.append(f"[{k}:a]aresample=48000,aformat=channel_layouts=mono,{gain}adelay={int(ln['start'] * 1000)}[d{k}]")
     fc.append("".join(f"[d{k}]" for k in range(len(parts))) +
-              f"amix=inputs={len(parts)}:normalize=0,apad=whole_dur={total},atrim=end={total},"
-              f"loudnorm=I={c['derush']['voiceLufs']}:TP=-1.5:LRA=11,aresample=48000[v]")
-    fd, script = tempfile.mkstemp(suffix=".txt")
-    with os.fdopen(fd, "w", encoding="utf-8") as f:
-        f.write(";".join(fc))
-    try:
-        sh(["ffmpeg", "-y", "-loglevel", "error", *inputs, "-filter_complex_script", script, "-map", "[v]",
-            "-c:a", "pcm_s16le", str(dst)], "ffmpeg (voix)")
-    finally:
-        Path(script).unlink(missing_ok=True)
+              f"amix=inputs={len(parts)}:normalize=0,{voice_chain()},apad=whole_dur={total},atrim=end={total}[pre]")
+    render_voice(inputs, ";".join(fc), dst, c["derush"]["voiceLufs"], total)
 
     # 3. mots horodatés : whisper sur chaque phrase, texte du script quand le compte de mots concorde
     import numpy as np

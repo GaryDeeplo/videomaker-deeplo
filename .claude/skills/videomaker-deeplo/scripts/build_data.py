@@ -257,18 +257,8 @@ def main():
         acc = pn._mix(acc, ink, 0.3)
     C = {"ink": ink, "acc": acc, "bg": bg, "grey": pn._mix(ink, bg, 0.5), "grey2": pn._mix(ink, bg, 0.72), "mute": pn._mix(ink, bg, 0.32)}
 
-    faces = []
-    for f in vis.get("fonts", []):
-        ff = ROOT / f["file"] if not Path(f["file"]).is_absolute() else Path(f["file"])
-        (job / "assets" / "fonts").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ff, job / "assets" / "fonts" / ff.name)
-        faces.append(f"@font-face {{ font-family: '{fam}'; src: url('assets/fonts/{ff.name}'); font-weight: {f.get('weight', 400)}; }}")
-    if vis.get("fontFile"):
-        ff = ROOT / vis["fontFile"] if not Path(vis["fontFile"]).is_absolute() else Path(vis["fontFile"])
-        (job / "assets" / "fonts").mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ff, job / "assets" / "fonts" / ff.name)
-        faces.append(f"@font-face {{ font-family: '{fam}'; src: url('assets/fonts/{ff.name}'); font-weight: 100 900; }}")
-    faces.append(pn.fonts(job))
+    from fonts import brand_faces
+    faces = [brand_faces(job, vis), pn.fonts(job)]
 
     # géométrie
     mx = round(72 * u)
@@ -286,15 +276,17 @@ def main():
         tl_y = round(H * 0.84)
 
     words = [w for g in t.get("captions", []) for w in g["words"]]
-    placed = []
+    from panel import find_word
+    placed, lost = [], []
     for b in data.get("beats", []):
-        hit = word_hit(words, b.get("word", ""), b.get("occurrence", 1)) if b.get("word") else None
-        if hit is None and b.get("word"):
+        hit = find_word(words, b.get("word", ""), b.get("occurrence", 1)) if b.get("word") else None
+        if hit is None and b.get("word"):  # signalé dans le rapport, jamais perdu en silence
+            lost.append({"type": b.get("type", "title"), "mot": b["word"], "pose": False, "raison": f"mot introuvable : {b['word']}"})
             continue
         placed.append((max(0.0, hit["start"] - 0.12) if hit else 0.0, b))
     placed.sort(key=lambda x: x[0])
     if not placed:
-        fail("aucun temps fort posé (mots introuvables ?)")
+        fail("aucun temps fort posé (mots introuvables ?)", introuvables=[x["mot"] for x in lost])
     placed[0] = (0.0, placed[0][1])
     kept = []
     for t0_, b_ in placed:  # un graphique reste au moins 1,2 s à l'écran
@@ -303,7 +295,7 @@ def main():
         kept.append((t0_, b_))
     placed = kept
 
-    stage, js, rep = [], [], []
+    stage, js, rep = [], [], list(lost)
     head, day = "", None
     heads = []
     for k, (t0, b) in enumerate(placed):
@@ -553,6 +545,9 @@ def main():
 </html>
 """
     (job / "index.html").write_text(doc, encoding="utf-8")
+    from build_composition import cli_args
+    from common import write_json as _wj
+    _wj(job / "work" / f"{a.slug}_build.json", {"script": "build_data.py", "args": cli_args(ap, a)})  # deliver.py rejoue ces options
     if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
         sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=total, temps_forts=rep, rubriques=len(heads), phrases=len(caps),

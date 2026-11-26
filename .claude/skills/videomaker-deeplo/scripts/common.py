@@ -159,7 +159,8 @@ def ffmpeg_has(name):
 
 def hdr_to_sdr(info):
     """Chaîne PQ / HLG / Dolby Vision -> SDR BT.709 (tonemap hable). Linéarisé à 100 nits par unité (blanc SDR = 1,0),
-    crête de la source : 1000 nits (HLG décodé par zimg pour un écran de 1000 nits). D'après ffmpeg-skill (MIT),
+    crête de la source : 1000 nits (HLG décodé par zimg pour un écran de 1000 nits). Passage en 8 bits tramé
+    (error_diffusion), plage limitée (tv) balisée sur chaque image. D'après ffmpeg-skill (MIT),
     scripts/_common/color.py hdr_to_sdr_chain."""
     c = info.get("color") or {}
     trc, prim, space = c.get("transfer") or "smpte2084", c.get("primaries") or "bt2020", c.get("space") or "bt2020nc"
@@ -170,7 +171,8 @@ def hdr_to_sdr(info):
     return ",".join(label + [
         f"zscale=tin={trc}:pin={prim}:min={space}:rin={c.get('range') or 'tv'}:t=linear:npl=100",
         "format=gbrpf32le", "zscale=p=bt709", "tonemap=tonemap=hable:desat=0:peak=10",
-        "zscale=t=bt709:m=bt709:r=tv", "format=yuv420p"])
+        "zscale=t=bt709:m=bt709:r=tv:d=error_diffusion", "format=yuv420p",  # tramage : pas de bandes dans les ciels
+        "setparams=range=tv:color_primaries=bt709:color_trc=bt709:colorspace=bt709"])  # + -color_range tv à l'encodage
 
 
 FORMATS = {"9:16": (1080, 1920), "1:1": (1080, 1080), "4:5": (1080, 1350), "16:9": (1920, 1080)}
@@ -203,6 +205,18 @@ def block_file(job, name):
     elif not dst.exists():
         fail(f"bloc introuvable : {name} (ni compositions/ ni library/)")
     return f"compositions/{name}.html"
+
+
+def serif_fonts(job):
+    """Bodoni Moda (OFL, vendor/fonts) copiée dans le job -> règles @font-face (serif Didone des styles éditoriaux)."""
+    import shutil
+    (job / "assets" / "fonts").mkdir(parents=True, exist_ok=True)
+    css = []
+    for f, w, st in (("BodoniModa-700-normal.woff2", 700, "normal"), ("BodoniModa-700-italic.woff2", 700, "italic"),
+                     ("BodoniModa-400-italic.woff2", 400, "italic")):
+        shutil.copy2(SKILL / "vendor" / "fonts" / f, job / "assets" / "fonts" / f)
+        css.append(f"@font-face {{ font-family: 'Bodoni Moda'; src: url('assets/fonts/{f}') format('woff2'); font-weight: {w}; font-style: {st}; }}")
+    return " ".join(css)
 
 
 def brand_info(job):

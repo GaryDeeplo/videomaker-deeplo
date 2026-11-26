@@ -2,7 +2,10 @@
 
 Recale les mots sur le dérush (les mots des prises jetées disparaissent), puis prépare :
 - "captions" : sous-titres complets mot à mot, en paquets de 1 à captionMaxWords mots (mode PME par défaut :
-  la plupart regardent sans le son) ;
+  la plupart regardent sans le son). Sans captionMaxWords dans la config du job (ou de la marque), la taille suit le
+  style : impact 3, geant 4, editorial 5, karaoke / souligne / minimal 6, bulle 8, sinon 4 ; plafond en caractères
+  par style (deux lignes lisibles). Ponctuation : ? et ! gardés (espace insécable devant en français), . , ; : …
+  retirés, ponctuation isolée collée au mot d'avant, apostrophe typographique ’ ;
 - "overlays" : phrases verbatim candidates, scorées, pré-cochées à ~5 par minute (doctrine reel-cut :
   la rareté fait la valeur), avec 2 punchs caméra par minute proposés.
 Le script ne décide rien d'important : Claude corrige keep / punch / reason dans overlays, et peut
@@ -65,19 +68,45 @@ notre nos votre vos leur leurs ce cet cette ces se ne n me m te t y ça on je j 
 with het een van op voor met""".split())  # interdits en fin (articles, prépositions, pronoms avant le verbe)
 NUMW = set("un une deux trois quatre cinq six sept huit neuf dix onze douze quinze vingt trente quarante cinquante soixante cent mille".split())
 QSTART = set("comment pourquoi quand combien quel quelle quels quelles".split())  # ouvrent un groupe
+# taille des groupes par style (sans captionMaxWords réglé) et plafond en caractères (2 lignes à la taille du style)
+STYLE_WORDS = {"impact": 3, "geant": 4, "editorial": 5, "karaoke": 6, "souligne": 6, "minimal": 6, "bulle": 8}
+STYLE_CHARS = {"impact": 20, "geant": 60, "editorial": 34, "karaoke": 40, "souligne": 42, "minimal": 42, "bulle": 56,
+               "mono": 30, "seam": 30}
+CHARS_DEFAULT = 26
 UNITS = set("€ euros euro % cent ans an heures heure h min minutes jours jour semaines mois km kg m² ml g".split())
 
 
-def _split_clause(cl, max_words):
+def group_size(job, style, c=None):
+    """(mots max, caractères max) d'un groupe de sous-titres : captionMaxWords s'il est réglé dans la config du job
+    ou de la marque, sinon la taille du style."""
+    from common import ROOT
+    c = c or config(job)
+    set_ = (job / "config.json").exists() and "captionMaxWords" in (read_json(job / "config.json").get("text") or {})
+    meta = read_json(job / "job.json") if (job / "job.json").exists() else {}
+    bj = ROOT / "brands" / meta.get("brand", "") / "brand.json"
+    if not set_ and meta.get("brand") and bj.exists():
+        set_ = "captionMaxWords" in ((read_json(bj).get("video") or {}).get("text") or {})
+    mw = int(c["text"]["captionMaxWords"]) if set_ else STYLE_WORDS.get(style, 4)
+    cap = int(c["text"].get("captionMaxChars") or STYLE_CHARS.get(style, CHARS_DEFAULT))
+    return mw, max(cap, 12)
+
+
+def _chars(g):
+    return len(" ".join(x["w"] for x in g))
+
+
+def _split_clause(cl, max_words, max_chars=None):
     """Groupes équilibrés dans un morceau de phrase : jamais de fin sur un petit mot, jamais un mot seul,
-    jamais un nombre séparé de son unité (programmation dynamique sur les points de coupe)."""
+    jamais un nombre séparé de son unité (programmation dynamique sur les points de coupe) ; max_chars : plafond
+    de caractères par groupe (un mot plus long reste seul)."""
     n = len(cl)
+    cap = max_chars or 10 ** 6
     # « 1 800 » compte pour un mot : un bloc de 3 chiffres après un nombre prolonge ce nombre
     wt = [0 if t and re.fullmatch(r"\d{3}\D*", cl[t]["w"]) and NUM.search(cl[t - 1]["w"]) else 1 for t in range(n)]
     eff = sum(wt)
-    if eff <= max_words:
+    if eff <= max_words and _chars(cl) <= cap:
         return [cl]
-    k = -(-eff // max_words)
+    k = max(-(-eff // max_words), -(-_chars(cl) // cap))
     target = eff / k
     INF = 1e9
     best, prev = [0.0] + [INF] * n, [0] * (n + 1)
@@ -93,6 +122,8 @@ def _split_clause(cl, max_words):
             cost = 0.5 * (L - target) ** 2 + (3 if L > max_words else 0)  # un 4e mot plutôt qu'une mauvaise coupe
             if L == 1:
                 cost += 12
+            elif _chars(cl[j:i]) > cap:  # trop long pour 2 lignes
+                cost += 25 + (_chars(cl[j:i]) - cap)
             last = cl[i - 1]
             if i < n:
                 kl = deac(STRIP_END.sub("", last["w"]).lower())
@@ -129,7 +160,7 @@ def _split_clause(cl, max_words):
     return out_[::-1]
 
 
-def chunks(ws, max_words, gap):
+def chunks(ws, max_words, gap, max_chars=None):
     """Groupes de sous-titres : on coupe d'abord aux fins de phrase, aux virgules et aux pauses, puis chaque morceau
     est réparti en groupes équilibrés (le moins de coupures en plein milieu d'une idée)."""
     clauses, cur = [], []
@@ -146,14 +177,40 @@ def chunks(ws, max_words, gap):
     # un morceau d'un seul mot rejoint son voisin s'il reste de la place (« Ensuite, » + « rien à faire »)
     merged = []
     for cl in clauses:
-        if merged and (len(cl) == 1 or len(merged[-1]) == 1) and len(merged[-1]) + len(cl) <= max_words                 and not STRONG.search(merged[-1][-1]["w"]) and cl[0]["start"] - merged[-1][-1]["end"] <= gap:
+        if merged and (len(cl) == 1 or len(merged[-1]) == 1) and len(merged[-1]) + len(cl) <= max_words and _chars(merged[-1] + cl) <= (max_chars or 10 ** 6)                 and not STRONG.search(merged[-1][-1]["w"]) and cl[0]["start"] - merged[-1][-1]["end"] <= gap:
             merged[-1] = merged[-1] + cl
         else:
             merged.append(cl)
     res = []
     for cl in merged:
-        res += _split_clause(cl, max_words)
+        res += _split_clause(cl, max_words, max_chars)
     return res
+
+
+PUNCT_ONLY = re.compile(r"^[.,;:!?…«»\"'’()\-–—]+$")
+NBSP = chr(160)  # espace insécable
+DROP_END = re.compile(r"[.,;:…]+$")
+
+
+def glue_punct(ws):
+    """Ponctuation isolée (« ? » transcrit comme un mot) collée au mot d'avant ; jamais un groupe qui commence par « ? »."""
+    out_ = []
+    for w in ws:
+        if out_ and PUNCT_ONLY.match(w["w"].strip()):
+            out_[-1] = {**out_[-1], "w": out_[-1]["w"] + w["w"].strip(), "end": w["end"]}
+        elif not PUNCT_ONLY.match(w["w"].strip()):
+            out_.append(dict(w))
+    return out_
+
+
+def clean_word(w, lang="fr"):
+    """Mot affiché : apostrophe ’, . , ; : … retirés en fin, ? et ! gardés (espace insécable devant en français)."""
+    t = w.replace("'", "’")
+    m = re.search(r"[\s.,;:…!?]+$", t)
+    if m:
+        keep = "".join(ch for ch in m.group(0) if ch in "!?")
+        t = t[:m.start()] + ((NBSP if lang == "fr" else "") + keep if keep and m.start() else keep)
+    return t or w
 
 
 def main():
@@ -175,7 +232,11 @@ def main():
         fail("aucun mot après recalage")
     dur = float(m["out_duration"])
 
-    groups = chunks(ws, c["captionMaxWords"], 0.35)
+    style = c.get("captionStyle", "pop")
+    maxw, maxc = group_size(job, style)
+    lang = config(job).get("language", "fr")
+    ws = glue_punct(ws)
+    groups = chunks(ws, maxw, 0.35, maxc)
     # un groupe affiché trop peu de temps pour être lu (> 30 caractères / s jusqu'au groupe suivant) rejoint son voisin,
     # tant que le tout reste court (débit rapide : « toutes les semaines » dit en 0,5 s)
     def rate(g, nxt_start):
@@ -185,7 +246,8 @@ def main():
     while gi < len(groups):
         ch = groups[gi]
         nxt = groups[gi + 1][0]["start"] if gi + 1 < len(groups) else ch[-1]["end"] + 0.6
-        if gi + 1 < len(groups) and rate(ch, nxt) > 30 and len(ch) + len(groups[gi + 1]) <= c["captionMaxWords"] + 3:
+        # fusion des groupes rapides : un mot de plus au plus, et sous le plafond de caractères (+15 %)
+        if gi + 1 < len(groups) and rate(ch, nxt) > 30 and len(ch) + len(groups[gi + 1]) <= maxw + 1                 and _chars(ch + groups[gi + 1]) <= maxc * 1.15:
             both = ch + groups[gi + 1]
             nxt2 = groups[gi + 2][0]["start"] if gi + 2 < len(groups) else both[-1]["end"] + 0.6
             if rate(both, nxt2) <= 30 or rate(both, nxt2) < 0.75 * rate(ch, nxt):  # lisible, ou nettement moins rapide
@@ -198,7 +260,7 @@ def main():
     caps = []
     for ch in groups:
         caps.append({"id": len(caps), "start": ch[0]["start"], "end": ch[-1]["end"],
-                     "words": [{"w": STRIP_END.sub("", x["w"]) or x["w"], "start": x["start"], "end": x["end"]}
+                     "words": [{"w": clean_word(x["w"], lang), "start": x["start"], "end": x["end"]}
                                for x in ch]})
 
     cands = []
@@ -219,7 +281,7 @@ def main():
     dst = job / "work" / f"{a.slug}_text.json"
     write_json(dst, {"slug": a.slug, "out_duration": dur, "mode": c["mode"], "captions": caps,
                      "overlays": cands})
-    out(ok=True, mode=c["mode"], captions=len(caps), overlay_candidats=len(cands), overlays_precoches=target,
+    out(ok=True, mode=c["mode"], captions=len(caps), mots_par_groupe=maxw, caracteres_max=maxc, overlay_candidats=len(cands), overlays_precoches=target,
         punchs_proposes=sum(o["punch"] for o in cands), mots_perdus_dans_les_coupes=len(words) - len(ws),
         out=str(dst), suite="vérifie keep/punch/reason (et l'orthographe), puis build_composition.py")
 

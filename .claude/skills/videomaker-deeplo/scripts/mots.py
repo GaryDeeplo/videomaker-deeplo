@@ -131,14 +131,17 @@ def head_box(job, rel):
     return res, (w, h)
 
 
-def nodes(job, entries, words, dur, W, H, T0, cut_path, acc, family, segments=None, icon=None, mix=None):
+def nodes(job, entries, words, dur, W, H, T0, cut_path, acc, family, segments=None, icon=None, mix=None, serif=False):
     """-> (html dans la caméra, html par-dessus, js, css, rapport)."""
     from cutout import head_top, person_matte
-    placed = []
+    from panel import find_word
+    placed, lost = [], []
     for e in entries:
-        hit = word_hit(words, e.get("word", ""), e.get("occurrence", 1)) if e.get("word") else None
+        hit = find_word(words, e.get("word", ""), e.get("occurrence", 1)) if e.get("word") else None
         if hit:
             placed.append((max(0.0, hit["start"] - 0.1), e))
+        else:  # signalé dans le rapport, jamais perdu en silence
+            lost.append({"mot": e.get("word"), "geant": e.get("big"), "pose": False, "raison": f"mot introuvable : {e.get('word')}"})
     placed.sort(key=lambda x: x[0])
     spans = []
     for k, (t, e) in enumerate(placed):
@@ -152,7 +155,7 @@ def nodes(job, entries, words, dur, W, H, T0, cut_path, acc, family, segments=No
         fr, (sw, sh) = head_box(job, rel)
         sc_ = max(W / sw, H / sh)
         samples += [(a + tt, tp, wd * sw * sc_ / W) for tt, tp, wd in fr]
-    cam, over, js, rep = [], [], [], []
+    cam, over, js, rep = [], [], [], list(lost)
     for a, d, rel in cuts:
         cam.append(f'        <video id="acut{len(cam)}" class="clip acut" data-layout-allow-occlusion src="{rel}" data-start="{round(a + T0, 3)}" data-duration="{d}" data-track-index="{5 + len(cam) % 2}" '
                    f'muted playsinline></video>')
@@ -167,13 +170,16 @@ def nodes(job, entries, words, dur, W, H, T0, cut_path, acc, family, segments=No
         hw = float(np.percentile([x[2] for x in win], 75)) if win else 0.5
         # derrière seulement si la tête est assez étroite pour laisser lire le mot (plan large) ; sinon devant, en haut
         front = hw > 0.3
-        if front:  # plan serré, tête collée au haut : le visage cacherait le mot -> devant, en haut
+        if e.get("sol"):  # posé au sol, en perspective, derrière la personne (« Spanje » des pubs immobilières)
+            front, top = False, round(H * 0.66)
+        elif front:  # plan serré, tête collée au haut : le visage cacherait le mot -> devant, en haut
             S = round(S * 0.85)
             top = round(H * 0.07)
         else:  # comme la référence : le mot posé juste au-dessus, le haut de la tête mord le bas des lettres
             top = max(round(H * 0.03), round(head * H - 0.6 * S))
         did = f"dw{k}"
-        cam.append(f'        <div class="clip dw{" front" if front else ""}" id="{did}" data-start="{round(t + T0, 3)}" data-duration="{round(t1 - t, 3)}" data-track-index="3" '
+        cls = (" front" if front else "") + (" sf" if serif or e.get("serif") else "") + (" sol" if e.get("sol") else "")
+        cam.append(f'        <div class="clip dw{cls}" id="{did}" data-start="{round(t + T0, 3)}" data-duration="{round(t1 - t, 3)}" data-track-index="3" '
                    f'style="top:{top}px"><div class="dwi" style="font-size:{S}px">'
                    + (f'<span class="dws b" data-layout-allow-overlap>{esc(e["before"])}</span>' if e.get("before") else "")
                    + f'<span class="dwb" data-layout-allow-occlusion data-layout-allow-overlap>{esc(big)}</span>'
@@ -190,7 +196,7 @@ def nodes(job, entries, words, dur, W, H, T0, cut_path, acc, family, segments=No
             over.append(f'      <div class="clip gcard" id="{gid}" data-start="{round(t + T0, 3)}" data-duration="{round(t1 - t, 3)}" data-track-index="{60 + k % 2}">'
                         f'<div class="gci"><span class="gico">{ic or "<i></i>"}</span><span class="gct">{esc(e["card"])}</span></div></div>')
             js.append(f'  tl.fromTo("#{gid} .gci", {{ opacity: 0, x: -40, filter: "blur(8px)" }}, {{ opacity: 1, x: 0, filter: "blur(0px)", duration: 0.35, '
-                      f'ease: "power3.out", immediateRender: false }}, {round(t + 0.05, 3)});')
+                      f'ease: "power3.out", immediateRender: false, clearProps: "filter" }}, {round(t + 0.05, 3)});')  # verre : flou nettoyé
             js.append(f'  tl.to("#{gid} .gci", {{ opacity: 0, duration: 0.15 }}, {round(t1 - 0.15, 3)});')
         cn = e.get("count")
         if cn and cn.get("to"):
@@ -228,6 +234,8 @@ def nodes(job, entries, words, dur, W, H, T0, cut_path, acc, family, segments=No
   .dwi {{ display: inline-block; position: relative; line-height: .84; font-family: '{family}', 'Inter', sans-serif; transform-origin: 50% 60%; }}
   .dwb {{ display: inline-block; font-weight: 600; letter-spacing: -.045em; padding: .12em .04em .2em; margin: -.12em -.04em -.2em; background: linear-gradient(180deg, {light} 0%, {acc} 100%);
          -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 .02em .06em rgba(0,0,0,.25)); }}
+  .dw.sf .dwb {{ font-family: 'Bodoni Moda', Georgia, serif; font-style: italic; font-weight: 700; letter-spacing: -.015em; }}
+  .dw.sol {{ transform: perspective({round(H * 0.5)}px) rotateX(58deg); transform-origin: 50% 100%; opacity: .9; }}
   .dws {{ position: absolute; font-size: .2em; font-weight: 500; color: #fff; letter-spacing: 0; white-space: nowrap; text-shadow: 0 2px 10px rgba(0,0,0,.5); }}
   .dws.b {{ left: 6%; bottom: 92%; }}
   .dws.a {{ right: 4%; top: 108%; }}

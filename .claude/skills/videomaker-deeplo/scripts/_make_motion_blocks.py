@@ -560,6 +560,159 @@ B["tarif"] = block(
         tl.fromTo(r + ".tf-cta", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, 0.6 * K + fs.length * per);
         tl.to(r + ".tf-card", { opacity: 0, y: -24, duration: 0.3, ease: "power2.in" }, D - 0.35);""")
 
+# --- blocs « verre » (pubs immobilières de luxe) : verre dépoli = backdrop-filter ; aucun parent animé en filter / opacité < 1
+#     au repos (sinon le verre ne voit plus la vidéo derrière)
+GLASS = ("background: rgba(255,255,255,.2); border: 0.25vmin solid rgba(255,255,255,.5); backdrop-filter: blur(22px) saturate(1.4); "
+         "-webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25), inset 0 0.2vmin 0 rgba(255,255,255,.6);")
+PIN = ('<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 '
+       '0-5 2.5 2.5 0 0 1 0 5z"/></svg>')
+
+B["recherche-verre"] = block(
+    "recherche-verre", "barre de recherche en verre dépoli qui se tape, bouton pressé, pastille lieu qui tombe dessous ; ex. « villa surin, marbella »", 3.2,
+    [{"id": "query", "type": "string", "label": "Texte tapé", "default": "villa surin, marbella"},
+     {"id": "button", "type": "string", "label": "Bouton", "default": "Rechercher"},
+     {"id": "place", "type": "string", "label": "Pastille lieu (vide = aucune)", "default": "Marbella"}],
+    f"""      <div class="mf-pos"><div class="rv-wrap">
+        <div class="rv-bar"><svg class="rv-mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <span class="rv-q"></span><i class="rv-caret"></i><span class="rv-btn" data-var-text="button">Rechercher</span></div>
+        <div class="rv-chip"><span class="rv-pin">{PIN}</span><span class="rv-place" data-var-text="place">Marbella</span></div></div></div>""",
+    f"""        #recherche-verre .rv-wrap {{ width: 84%; display: flex; flex-direction: column; align-items: center; gap: 2.4vmin; }}
+        #recherche-verre .rv-bar {{ position: relative; width: 100%; display: flex; align-items: center; gap: 2.2vmin; padding: 2.2vmin 2.2vmin 2.2vmin 3.4vmin;
+                                    border-radius: 99px; {GLASS} color: #fff; opacity: 0; }}
+        #recherche-verre .rv-mag {{ width: 5vmin; height: 5vmin; flex: none; opacity: .9; }}
+        #recherche-verre .rv-q {{ font-size: 4.4vmin; font-weight: 500; white-space: nowrap; text-shadow: 0 0.2vmin 1vmin rgba(0,0,0,.3); }}
+        #recherche-verre .rv-caret {{ width: 0.4vmin; height: 5vmin; background: #fff; margin-left: -1.6vmin; }}
+        #recherche-verre .rv-btn {{ margin-left: auto; padding: 1.8vmin 3.6vmin; border-radius: 99px; background: var(--accent); color: #fff;
+                                    font-size: 3.6vmin; font-weight: 700; box-shadow: 0 1vmin 3vmin rgba(0,0,0,.25); }}
+        #recherche-verre .rv-chip {{ display: inline-flex; align-items: center; gap: 1.2vmin; padding: 1.4vmin 3vmin 1.4vmin 2.2vmin; border-radius: 99px;
+                                     {GLASS} color: #fff; font-size: 3.6vmin; font-weight: 600; opacity: 0; }}
+        #recherche-verre .rv-pin {{ width: 3.8vmin; height: 3.8vmin; color: var(--accent); display: flex; }}""",
+    """        const q = String(v.query || ""), qs = document.querySelector(r + ".rv-q"), o = { n: 0 };
+        if (!String(v.place || "").trim()) document.querySelector(r + ".rv-chip").style.display = "none";
+        tl.fromTo(r + ".rv-bar", { opacity: 0, y: 40, scale: 0.92 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, 0);
+        tl.fromTo(o, { n: 0 }, { n: q.length, duration: Math.max(0.6, 1.25 * K), ease: "none", onUpdate: function () { qs.textContent = q.slice(0, Math.round(o.n)); } }, 0.35 * K);
+        tl.fromTo(r + ".rv-caret", { opacity: 1 }, { opacity: 0, duration: 0.25, repeat: Math.floor(D / 0.5), yoyo: true, ease: "steps(1)" }, 0);
+        tl.to(r + ".rv-btn", { scale: 0.9, duration: 0.09, yoyo: true, repeat: 1, ease: "power1.inOut" }, 1.75 * K);
+        tl.fromTo(r + ".rv-chip", { opacity: 0, y: -26, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(2.4)" }, 1.95 * K);
+        tl.to(r + ".rv-wrap", { y: -18, duration: Math.max(0.5, D - 2.5 * K), ease: "sine.inOut" }, 0.5);
+        tl.to(r + ".rv-bar, " + r + ".rv-chip", { opacity: 0, y: -30, duration: 0.3, ease: "power2.in" }, D - 0.35);""")
+
+B["lieu-photo"] = block(
+    "lieu-photo", "carte photo d'un lieu en verre, nom en haut à gauche, épingle qui tombe et pulse ; ex. Marbella vue du ciel", 3.5,
+    [{"id": "image", "type": "string", "label": "Photo du lieu (assets/…)", "default": PIX},
+     {"id": "name", "type": "string", "label": "Nom du lieu", "default": "Marbella"},
+     {"id": "pinx", "type": "number", "label": "Épingle x (%)", "default": 62, "min": 0, "max": 100},
+     {"id": "piny", "type": "number", "label": "Épingle y (%)", "default": 42, "min": 0, "max": 100}],
+    f"""      <div class="mf-pos"><div class="lp-card"><div class="lp-ph"><img class="lp-img" data-var-src="image" src="{PIX}" alt="" /></div>
+        <div class="lp-name" data-var-text="name">Marbella</div><div class="lp-pin">{PIN}<i class="lp-ring"></i></div></div></div>""",
+    f"""        #lieu-photo .mf-pos {{ perspective: 160vmin; }}
+        #lieu-photo .lp-card {{ position: relative; width: 78%; aspect-ratio: 16 / 10; padding: 1.2vmin; border-radius: 3.6vmin; {GLASS} opacity: 0; transform-origin: 50% 0; }}
+        #lieu-photo .lp-ph {{ width: 100%; height: 100%; border-radius: 2.6vmin; overflow: hidden; }}
+        #lieu-photo .lp-img {{ width: 100%; height: 100%; object-fit: cover; display: block; transform-origin: 50% 50%; }}
+        #lieu-photo .lp-name {{ position: absolute; left: 4vmin; top: 3.4vmin; color: #fff; font-size: 4vmin; font-weight: 700; text-shadow: 0 0.3vmin 1.4vmin rgba(0,0,0,.55); }}
+        #lieu-photo .lp-pin {{ position: absolute; width: 7vmin; height: 7vmin; margin: -7vmin 0 0 -3.5vmin; color: var(--accent);
+                               filter: drop-shadow(0 0.6vmin 1vmin rgba(0,0,0,.4)); opacity: 0; }}
+        #lieu-photo .lp-pin svg {{ width: 100%; height: 100%; position: relative; z-index: 1; }}
+        #lieu-photo .lp-ring {{ position: absolute; left: 50%; bottom: -0.6vmin; width: 6vmin; height: 2vmin; margin-left: -3vmin; border-radius: 50%;
+                                border: 0.4vmin solid var(--accent); opacity: 0; }}""",
+    """        const pin = document.querySelector(r + ".lp-pin");
+        pin.style.left = (Number(v.pinx) || 62) + "%"; pin.style.top = (Number(v.piny) || 42) + "%";
+        tl.fromTo(r + ".lp-card", { opacity: 0, y: -50, rotationX: 28, scale: 0.94 }, { opacity: 1, y: 0, rotationX: 0, scale: 1, duration: 0.6, ease: "power3.out" }, 0);
+        tl.fromTo(r + ".lp-img", { scale: 1.16 }, { scale: 1.0, duration: D, ease: "none" }, 0);
+        tl.fromTo(r + ".lp-pin", { opacity: 0, y: -90 }, { opacity: 1, y: 0, duration: 0.5, ease: "bounce.out" }, 0.55 * K);
+        tl.fromTo(r + ".lp-ring", { opacity: 0.9, scale: 0.4 }, { opacity: 0, scale: 2.2, duration: 0.8, repeat: 2, ease: "power2.out" }, 1.0 * K);
+        tl.to(r + ".lp-card", { y: -14, duration: Math.max(0.5, D - 1.2), ease: "sine.inOut" }, 0.6);
+        tl.to(r + ".lp-card", { opacity: 0, scale: 0.94, duration: 0.3, ease: "power2.in" }, D - 0.35);""")
+
+B["cartes-3d"] = block(
+    "cartes-3d", "deux cartes photo en verre inclinées en 3D de chaque côté de la personne, qui flottent ; pastille au-dessus de chacune", 3.6,
+    [{"id": "image1", "type": "string", "label": "Photo gauche (assets/…)", "default": PIX},
+     {"id": "image2", "type": "string", "label": "Photo droite (assets/…)", "default": PIX},
+     {"id": "label1", "type": "string", "label": "Pastille gauche (vide = aucune)", "default": ""},
+     {"id": "label2", "type": "string", "label": "Pastille droite (vide = aucune)", "default": ""}],
+    f"""      <div class="c3-stage"><div class="c3 c3l"><span class="c3-lab" data-var-text="label1"></span><div class="c3-f"><img data-var-src="image1" src="{PIX}" alt="" /></div></div>
+        <div class="c3 c3r"><span class="c3-lab" data-var-text="label2"></span><div class="c3-f"><img data-var-src="image2" src="{PIX}" alt="" /></div></div></div>""",
+    f"""        #cartes-3d .c3-stage {{ position: absolute; left: 0; right: 0; top: calc(var(--top, 30) * 1%); height: 30%; perspective: 120vmin; }}
+        #cartes-3d .c3 {{ position: absolute; top: 0; width: 34%; visibility: hidden; }}
+        #cartes-3d .c3l {{ left: 3%; transform-origin: 0 50%; }}
+        #cartes-3d .c3r {{ right: 3%; transform-origin: 100% 50%; }}
+        #cartes-3d .c3-f {{ aspect-ratio: 4 / 5; padding: 1vmin; border-radius: 3vmin; {GLASS} }}
+        #cartes-3d .c3-f img {{ width: 100%; height: 100%; object-fit: cover; border-radius: 2.2vmin; display: block; }}
+        #cartes-3d .c3-lab {{ display: inline-block; margin: 0 0 1.4vmin 1vmin; padding: 0.8vmin 2vmin; border-radius: 99px; {GLASS} color: #fff;
+                              font-size: 3vmin; font-weight: 700; white-space: nowrap; }}
+        #cartes-3d .c3-lab:empty {{ display: none; }}""",
+    """        tl.set(r + ".c3", { visibility: "visible" }, 0);
+        tl.fromTo(r + ".c3l", { x: -520, rotationY: 70 }, { x: 0, rotationY: 24, duration: 0.7, ease: "power3.out" }, 0);
+        tl.fromTo(r + ".c3r", { x: 520, rotationY: -70 }, { x: 0, rotationY: -24, duration: 0.7, ease: "power3.out" }, 0.12 * K);
+        tl.to(r + ".c3l", { y: -22, rotationY: 18, duration: Math.max(0.6, D - 1.1), ease: "sine.inOut" }, 0.7);
+        tl.to(r + ".c3r", { y: 18, rotationY: -18, duration: Math.max(0.6, D - 1.1), ease: "sine.inOut" }, 0.8);
+        tl.fromTo(r + ".c3-lab", { y: 12, scale: 0.6 }, { y: 0, scale: 1, duration: 0.3, stagger: 0.12, ease: "back.out(2)" }, 0.55 * K);
+        tl.to(r + ".c3l", { x: -520, rotationY: 60, duration: 0.38, ease: "power2.in" }, D - 0.4);
+        tl.to(r + ".c3r", { x: 520, rotationY: -60, duration: 0.38, ease: "power2.in" }, D - 0.4);""")
+
+B["chiffre-verre"] = block(
+    "chiffre-verre", "chiffre géant en verre dégradé qui compte, petit texte avant / après en deux tailles, cote fléchée en option ; ex. 6 bedrooms, 20 meter infinity pool", 3.4,
+    [{"id": "from", "type": "number", "label": "Départ", "default": 0},
+     {"id": "to", "type": "number", "label": "Valeur", "default": 6},
+     {"id": "decimals", "type": "number", "label": "Décimales", "default": 0, "min": 0, "max": 2},
+     {"id": "unit", "type": "string", "label": "Unité collée au chiffre (€, %, vide)", "default": ""},
+     {"id": "before", "type": "string", "label": "Petit texte avant", "default": "beautiful"},
+     {"id": "after", "type": "string", "label": "Petit texte après", "default": "bedrooms"},
+     {"id": "cote", "type": "string", "label": "Cote fléchée sous le chiffre (vide = aucune)", "default": ""}],
+    """      <div class="mf-pos"><div class="cv-box"><div class="cv-before" data-var-text="before">beautiful</div>
+        <div class="cv-num"><span class="cv-val">0</span><span class="cv-unit" data-var-text="unit"></span></div>
+        <div class="cv-after" data-var-text="after">bedrooms</div>
+        <div class="cv-cote"><i class="cv-line"></i><span data-var-text="cote"></span></div></div></div>""",
+    """        #chiffre-verre .cv-box { position: relative; display: flex; flex-direction: column; align-items: center; }
+        #chiffre-verre .cv-before { align-self: flex-start; margin-left: 8%; font-size: 4.6vmin; font-weight: 400; color: #fff; text-shadow: 0 0.3vmin 1.4vmin rgba(0,0,0,.45); opacity: 0; }
+        #chiffre-verre .cv-num { font-size: 30vmin; font-weight: 800; line-height: .9; letter-spacing: -0.04em; white-space: nowrap;
+                                 background: linear-gradient(165deg, rgba(255,255,255,.98) 8%, var(--accent) 52%, rgba(255,255,255,.55) 100%);
+                                 -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-stroke: 0.25vmin rgba(255,255,255,.6);
+                                 filter: drop-shadow(0 1.2vmin 2.4vmin rgba(0,0,0,.35)); opacity: 0; }
+        #chiffre-verre .cv-unit { font-size: .5em; margin-left: .06em; }
+        #chiffre-verre .cv-after { align-self: flex-end; margin: -1vmin 8% 0 0; font-size: 5.4vmin; font-weight: 400; color: #fff; text-shadow: 0 0.3vmin 1.4vmin rgba(0,0,0,.45); opacity: 0; }
+        #chiffre-verre .cv-cote { position: relative; width: 70vmin; margin-top: 2.4vmin; text-align: center; color: #fff; font-size: 3.4vmin; opacity: 0;
+                                  text-shadow: 0 0.3vmin 1.4vmin rgba(0,0,0,.45); }
+        #chiffre-verre .cv-line { display: block; height: 0.35vmin; margin-bottom: 1.4vmin; background: #fff; transform-origin: 50% 50%; position: relative; }
+        #chiffre-verre .cv-line::before, #chiffre-verre .cv-line::after { content: ""; position: absolute; top: -1.2vmin; width: 0; height: 0;
+                                 border-top: 1.35vmin solid transparent; border-bottom: 1.35vmin solid transparent; }
+        #chiffre-verre .cv-line::before { left: -0.4vmin; border-right: 2vmin solid #fff; }
+        #chiffre-verre .cv-line::after { right: -0.4vmin; border-left: 2vmin solid #fff; }""",
+    """        const el = document.querySelector(r + ".cv-val"), dec = Number(v.decimals) || 0, o = { n: Number(v.from) || 0 };
+        const fmt = function (x) { return x.toLocaleString("fr-FR", { minimumFractionDigits: dec, maximumFractionDigits: dec }); };
+        ["before", "after"].forEach(function (k) { if (!String(v[k] || "").trim()) document.querySelector(r + ".cv-" + k).style.display = "none"; });
+        if (!String(v.cote || "").trim()) document.querySelector(r + ".cv-cote").style.display = "none";
+        const box = document.querySelector(r + ".cv-num"), fin = fmt(Number(v.to) || 0) + String(v.unit || "");
+        box.style.fontSize = Math.min(30, 86 / Math.max(1, fin.length * 0.58)) + "vmin";  // le chiffre final tient sur la largeur
+        el.textContent = fmt(o.n);
+        tl.fromTo(r + ".cv-num", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power3.out" }, 0);
+        tl.fromTo(o, { n: Number(v.from) || 0 }, { n: Number(v.to) || 0, duration: Math.max(0.5, 1.1 * K), ease: "power2.out", onUpdate: function () { el.textContent = fmt(o.n); } }, 0.15);
+        tl.fromTo(r + ".cv-before", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 0.2 * K);
+        tl.fromTo(r + ".cv-after", { opacity: 0, x: 20 }, { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 0.45 * K);
+        tl.fromTo(r + ".cv-cote", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.7 * K);
+        tl.fromTo(r + ".cv-line", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power3.inOut" }, 0.7 * K);
+        tl.to(r + ".cv-box", { y: -16, duration: Math.max(0.5, D - 1), ease: "sine.inOut" }, 0.5);
+        tl.to(r + ".cv-box", { opacity: 0, scale: 0.92, duration: 0.3, ease: "power2.in" }, D - 0.35);""")
+
+B["fin-logo"] = block(
+    "fin-logo", "fin de vidéo : la vidéo se floute sous un voile, le logo apparaît au centre avec une ligne de texte (site, slogan)", 3.2,
+    [{"id": "logo", "type": "string", "label": "Logo (assets/…)", "default": PIX},
+     {"id": "tagline", "type": "string", "label": "Ligne sous le logo (vide = aucune)", "default": ""},
+     {"id": "veil", "type": "color", "label": "Voile sur la vidéo floutée", "default": "rgba(255,255,255,.32)"},
+     {"id": "ink", "type": "color", "label": "Couleur de la ligne", "default": "#1a1a1a"}],
+    f"""      <div class="fl-veil"></div><div class="mf-pos"><div class="fl-box"><img class="fl-logo" data-var-src="logo" src="{PIX}" alt="" />
+        <div class="fl-tag" data-var-text="tagline"></div></div></div>""",
+    """        #fin-logo .fl-veil { position: absolute; inset: 0; background: var(--veil, rgba(255,255,255,.32)); backdrop-filter: blur(26px) saturate(1.2);
+                             -webkit-backdrop-filter: blur(26px) saturate(1.2); opacity: 0; }
+        #fin-logo .fl-box { display: flex; flex-direction: column; align-items: center; gap: 3vmin; }
+        #fin-logo .fl-logo { width: 62vmin; max-height: 26vmin; object-fit: contain; opacity: 0; }
+        #fin-logo .fl-tag { font-size: 4vmin; font-weight: 600; letter-spacing: .04em; color: var(--ink, #1a1a1a); opacity: 0; }""",
+    """        if (!String(v.tagline || "").trim()) document.querySelector(r + ".fl-tag").style.display = "none";
+        tl.fromTo(r + ".fl-veil", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power2.out" }, 0);
+        tl.fromTo(r + ".fl-logo", { opacity: 0, scale: 0.88, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.7, ease: "power3.out" }, 0.3 * K);
+        tl.fromTo(r + ".fl-tag", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.8 * K);
+        tl.to(r + ".fl-logo", { scale: 1.04, duration: Math.max(0.5, D - 1.2), ease: "sine.inOut" }, 1.0 * K);""")
+
 for name, html in B.items():
     d = LIB / name
     d.mkdir(parents=True, exist_ok=True)

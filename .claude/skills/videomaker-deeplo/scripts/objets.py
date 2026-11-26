@@ -6,7 +6,7 @@ horloge. Même JSON que les autres temps forts (work/<slug>_panels.json), posés
       (fond de carte Natural Earth via world-atlas, ISC ; noms en français ou en anglais ; arcs depuis "from")
   {"type": "calendar", "word": "…", "month": 10, "year": 2026, "marks": [5, 12, 19, 26], "title": "chaque semaine.", "cards": ["Méthode · Septembre"]}
   {"type": "timeline", "word": "…", "title": "Ce montage entier", "tracks": 4, "label": "monté par Claude"}   (pistes qui se remplissent)
-  {"type": "invoice", "word": "…", "title": "Spot produit", "ref": "Devis n° 2026-118", "items": [{"label": "Tournage · 1 jour", "value": 1850}, …],
+  {"type": "invoice", "word": "…", "title": "Spot produit", "ref": "Devis n° 2026-118", "items": [{"label": "Tournage · 1 jour", "value": 1850}, …], "total_label": "TOTAL HT",
    "currency": "€", "stamp": "ACCEPTÉ"}   (total qui monte ; "total" pour l'imposer)
   {"type": "revenue", "word": "…", "title": "Ceux qui ont compris en premier", "value": 8431.65, "currency": "€", "points": [2, 3, 3, 5, 8],
    "payments": [{"label": "Paiement reçu", "sub": "Campagne UGC", "amount": "+1 200,00 €"}]}
@@ -175,7 +175,7 @@ def beat(job, typ, b, sid, s0, d, W, ph, u):
         fmt = lambda v: f"{v:,.0f}".replace(",", " ") + f" {cur}"
         rows = "".join(f'<div class="ivr r{j}"><span>{esc(it.get("label", ""))}</span><b>{esc(fmt(float(it.get("value", 0))))}</b></div>' for j, it in enumerate(items))
         inner = (f'<div class="card ivc"><div class="ivh"><small>{esc(b.get("ref", ""))}</small><b>{esc(b.get("title", "Devis"))}</b></div>{rows}'
-                 f'<div class="ivt"><span>TOTAL HT</span><b><span class="ivn">0</span> {esc(cur)}</b></div>'
+                 f'<div class="ivt"><span>{esc(b.get("total_label", "TOTAL HT"))}</span><b><span class="ivn">0</span> {esc(cur)}</b></div>'
                  + (f'<div class="ivs">{esc(b["stamp"])}</div>' if b.get("stamp") else "") + '</div>')
         bj.append(f'  tl.fromTo("#{sid} .card", {{ opacity: 0, y: 46, rotation: -3 }}, {{ opacity: 1, y: 0, rotation: -1.5, duration: 0.5, ease: "power3.out", '
                   f'immediateRender: false }}, {s0 + 0.05});')
