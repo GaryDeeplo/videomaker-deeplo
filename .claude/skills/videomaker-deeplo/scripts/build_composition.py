@@ -1113,7 +1113,8 @@ def main():
                 bx = [round(cx_ - sz / 2), round(cy_ - sz / 2), round(cx_ + sz / 2), round(cy_ + sz / 2)]
             else:
                 y_ = float(v_.get("top", 40)) / 100 * H
-                bx = [round(W * 0.1), round(y_), round(W * 0.9), round(y_ + 0.35 * min(W, H))]
+                hb = {"chiffre-verre": 0.3, "cartes-3d": 0.3, "lieu-photo": 0.3, "recherche-verre": 0.15, "suivre": 0.12}.get(mo_.get("block"))
+                bx = [round(W * 0.1), round(y_), round(W * 0.9), round(y_ + (hb * H if hb else 0.35 * min(W, H)))]
             calques.append({"type": "bloc", "nom": mo_.get("block"), "t0": t0_, "t1": round(t0_ + float(mo_.get("dur", 3)), 3), "box": bx, "estime": True})
     if lt.get("name"):  # bandeau nom (position estimée)
         y_ = float(lt.get("top", (80 if fill else 50) if H > W else 64)) / 100 * H
@@ -1134,7 +1135,7 @@ def main():
             pile = (stack_rep["t0"], stack_rep["t1"]) if stack_rep and stack_rep.get("pose") else None
             blocs = [b_ for b_ in cap_blocks if not (pile and b_["t0"] < pile[1] and b_["t1"] > pile[0])]  # pile : sous-titres déjà descendus
             occ = [{"t0": c_["t0"], "t1": c_["t1"], "y0": c_["box"][1], "y1": c_["box"][3]} for c_ in calques
-                   if c_["type"] in ("accroche", "carte", "texte")]
+                   if c_["type"] in ("accroche", "carte", "texte", "bloc")]  # les sous-titres contournent aussi les blocs posés
             pl = fc.placer_sous_titres(blocs, vis_f, geo, plat, ideal=round(H * cap_top / 100), occupes=occ, masques=masques)
             for p_ in pl:
                 cap_y[p_["id"]] = p_["y"]

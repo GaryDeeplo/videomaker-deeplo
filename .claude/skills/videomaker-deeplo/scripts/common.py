@@ -158,7 +158,7 @@ def ffmpeg_has(name):
 
 
 def hdr_to_sdr(info):
-    """Chaîne PQ / HLG / Dolby Vision -> SDR BT.709 (tonemap hable). Linéarisé à 100 nits par unité (blanc SDR = 1,0),
+    """Chaîne HDR -> SDR BT.709 : PQ / Dolby Vision tone-mappés (hable) ; HLG seulement converti (primaires, matrice). Linéarisé à 100 nits par unité (blanc SDR = 1,0),
     crête de la source : 1000 nits (HLG décodé par zimg pour un écran de 1000 nits). Passage en 8 bits tramé
     (error_diffusion), plage limitée (tv) balisée sur chaque image. D'après ffmpeg-skill (MIT),
     scripts/_common/color.py hdr_to_sdr_chain."""
@@ -168,6 +168,11 @@ def hdr_to_sdr(info):
         trc = "smpte2084"
     label = [] if (c.get("transfer") and c.get("primaries") and c.get("space")) else \
         [f"setparams=color_primaries={prim}:color_trc={trc}:colorspace={space}"]  # zscale exige des tags
+    if trc == "arib-std-b67":  # HLG (iPhone) : fait pour s'afficher tel quel en SDR -> on ne change que les couleurs.
+        # Un tone-mapping (hable) rendrait la peau orange.
+        return ",".join(label + [
+            f"zscale=tin=bt709:pin={prim}:min={space}:rin={c.get('range') or 'tv'}:t=bt709:p=bt709:m=bt709:r=tv:d=error_diffusion",
+            "format=yuv420p", "setparams=range=tv:color_primaries=bt709:color_trc=bt709:colorspace=bt709"])
     return ",".join(label + [
         f"zscale=tin={trc}:pin={prim}:min={space}:rin={c.get('range') or 'tv'}:t=linear:npl=100",
         "format=gbrpf32le", "zscale=p=bt709", "tonemap=tonemap=hable:desat=0:peak=10",

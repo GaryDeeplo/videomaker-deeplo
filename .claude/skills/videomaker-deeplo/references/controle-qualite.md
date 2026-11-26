@@ -38,3 +38,8 @@ l'AAC ; « À CORRIGER » seulement si tout a échoué.
 Seul levier : moins d'images. Aperçus à valider : `-f 15` ou `deliver.py … --apercu` (≈ -40 %) ; livraison finale
 toujours à 30 i/s. Ne lance pas plusieurs rendus en parallèle : ça ne va pas plus vite. Compter ~3 à 4 min de rendu
 par format pour 30 s de vidéo.
+
+## Brouillons et rendu final
+- Aperçus numérotés : `brouillon.py <job> "<ce qui change>" [--rapide]` -> `renders/v<N>-<ce-qui-change>.mp4`, une ligne
+  par version dans `work/journal.md` (retrouver à quelle version répond chaque retour). `--liste` pour les voir.
+- Livraison (`deliver.py --quality delivery`) : images vidéo extraites en PNG (pas de perte JPEG), plus lent mais plus net.

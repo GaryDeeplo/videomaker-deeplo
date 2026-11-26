@@ -142,7 +142,8 @@ def stack_nodes(job, slug, words, dur, W, H, T0, beats=None, logo_fn=None):
             lg = logo_fn(o["logo"]) if (logo_fn and o.get("logo")) else ""
             body = (f'<img src="{esc(img)}" alt="">' if img else
                     f'<div class="tsph">{lg}<b>{esc(o["nom"])}</b></div>')  # pas de capture : carte logo + nom
-            cards.append(f'<div class="tsc c{j}"><div class="tsl">{lg}<span>{esc(o["nom"])}</span></div>{body}</div>')
+            pill = f'<div class="tsl">{lg}<span>{esc(o["nom"])}</span></div>' if img else ""  # sans capture, la carte porte déjà le nom
+            cards.append(f'<div class="tsc c{j}">{pill}{body}</div>')
             rep.append({"outil": o["nom"], "pile": k + 1, "capture": bool(img)})
         top = round(H * 0.04 + (zone - H * 0.04 - (ch * len(pile) + gap * (len(pile) - 1))) / 2)
         nodes.append(f'      <div class="clip tsp" id="tsp{k}" data-start="{round(T0 + a, 3)}" data-duration="{round(b - a, 3)}" '

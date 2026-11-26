@@ -101,7 +101,7 @@ def main():
     if info.get("hdr"):  # après la mise à l'échelle : le tone mapping en flottant coûte cher en 4K
         if ffmpeg_has("zscale"):
             vpost.append(hdr_to_sdr(info))
-            notes.append(f"source {info.get('hdr_format')} ramenée en SDR BT.709 (tonemap hable)")
+            notes.append(f"source {info.get('hdr_format')} ramenée en SDR BT.709 (" + ("couleurs converties, sans tone-mapping" if info.get('hdr_format') == 'HLG' else 'tonemap hable') + ")")
         else:
             notes.append(f"ATTENTION : source {info.get('hdr_format')} mais ce ffmpeg n'a pas le filtre zscale : "
                          "couleurs délavées. Installe un ffmpeg complet (build « full » de gyan.dev) puis relance.")
@@ -135,6 +135,7 @@ def main():
     fc = ";".join(vparts) + ";" + "".join(f"[v{i}]" for i in range(n_)) + f"concat=n={n_}:v=1:a=0[vc]{vtail}"
 
     dst = job / "assets" / f"{a.slug}_cut.mp4"
+    dst.parent.mkdir(exist_ok=True)
     tmp = Path(tempfile.mkdtemp(prefix="vm-cut-"))
     try:
         if has_a:  # voix : chaîne de voice.py (coupe-bas, EQ, de-esser, compresseur) + loudnorm 2 passes linéaire, durée pile
@@ -163,6 +164,17 @@ def main():
     write_json(job / "work" / f"{a.slug}_map.json",
                {"slug": a.slug, "cut": str(dst), "segments": mapping, "out_duration": round(cur, 3),
                 **({"upscale": round(k, 2)} if up else {})})
+    controle = None
+    if (info.get("hdr") or info.get("vfr") or info.get("rotation") or up) and mapping:  # rush de téléphone ou agrandi : original | importé
+        sg = mapping[0]
+        dt = min(1.0, (sg["src_end"] - sg["src_start"]) / 2)
+        ctl = job / "work" / f"{a.slug}_controle.jpg"
+        import subprocess  # une image de contrôle ne doit jamais bloquer le dérush (pas de sh(), qui échoue en JSON)
+        r_ = subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(sg["src_start"] + dt), "-i", str(src), "-ss",
+                             str(sg["out_start"] + dt), "-i", str(dst), "-filter_complex",
+                             "[0:v]scale=-2:960,setsar=1[l];[1:v]scale=-2:960,setsar=1[r];[l][r]hstack", "-frames:v", "1", str(ctl)],
+                            capture_output=True)
+        controle = str(ctl) if r_.returncode == 0 and ctl.exists() else None
     enh = None
     if not a.no_enhance and config(job).get("video_enhance", True) is not False:
         try:  # passages filmés en marchant stabilisés, passages flous renforcés ; temps et son inchangés
@@ -170,7 +182,7 @@ def main():
             enh = enhance(job, a.slug)
         except Exception as e:  # noqa: BLE001 (la retouche ne doit jamais bloquer un dérush)
             enh = {"erreur": str(e)[:200]}
-    out(ok=True, segments=len(segs), avant=round(plan["duration"], 1), apres=round(cur, 1), retouche=enh, clignements=blinks,
+    out(ok=True, segments=len(segs), avant=round(plan["duration"], 1), apres=round(cur, 1), retouche=enh, clignements=blinks, controle=controle,
         gain_pct=round(100 * (1 - cur / plan["duration"])), jetes=len(plan["islands"]) - len(keep),
         fillers_retires=n_fill, cut=str(dst), source=notes or None)
 

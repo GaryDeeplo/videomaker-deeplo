@@ -55,3 +55,5 @@ Détections en cache dans `work/<vidéo>_visages.json` (partagé avec `reframe.p
 - Chaque monteur écrit work/<slug>_build.json {"script", "args": [...]} : les options validées, rejouées par deliver.py dans chaque format.
 - Polices : visual.fonts, visual.fontFile (police variable) et visual.titleFont {family, file, weight} (titres, accroche, grands chiffres), chargés par fonts.py pour tous les monteurs.
 - build_footage / build_scenes : --style par défaut = text.captionStyle.
+- Zones couvertes par les applis (face.py, prudentes) : haut ~14 %, bas ~32-34 % (légende, compte, son), colonne de boutons
+  à droite sur les 40 % du bas ; les sous-titres et blocs se placent hors de ces zones (plateforme : `text.platform`).

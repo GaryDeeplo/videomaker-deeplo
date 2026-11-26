@@ -20,13 +20,13 @@ from common import ROOT, job_dir, out, read_json, write_json
 
 MODEL = ROOT / ".claude" / "skills" / "videomaker-deeplo" / "vendor" / "yunet" / "face_detection_yunet_2023mar.onnx"
 
-# Interface des applis à 1080x1920 (px couverts) : d'après ghost-editor (MIT), lib/safezone.mjs.
-# right = colonne des boutons (j'aime, commentaire…), qui ne compte que pour la moitié basse.
+# Interface des applis à 1080x1920 (px couverts), prudente : légende, compte et son en bas quand la légende est dépliée
+# (haut ~14 %, bas jusqu'à ~35 %). right = colonne des boutons (j'aime, commentaire…), sur les 40 % du bas.
 PLATEFORMES = {
-    "reels": {"top": 220, "bottom": 420, "right": 130, "nom": "Instagram Reels"},
-    "tiktok": {"top": 160, "bottom": 480, "right": 150, "nom": "TikTok"},
-    "shorts": {"top": 140, "bottom": 380, "right": 140, "nom": "YouTube Shorts"},
-    "tous": {"top": 220, "bottom": 480, "right": 150, "nom": "Reels + TikTok + Shorts"},
+    "reels": {"top": 260, "bottom": 620, "right": 230, "nom": "Instagram Reels"},
+    "tiktok": {"top": 200, "bottom": 640, "right": 230, "nom": "TikTok"},
+    "shorts": {"top": 180, "bottom": 520, "right": 200, "nom": "YouTube Shorts"},
+    "tous": {"top": 270, "bottom": 660, "right": 230, "nom": "Reels + TikTok + Shorts"},
 }
 ALIAS = {"instagram": "reels", "all": "tous", "youtube": "shorts"}
 SEUIL, SEUIL_FORT = 0.12, 0.25  # part du visage couverte : info, puis « à revoir »

@@ -562,7 +562,7 @@ B["tarif"] = block(
 
 # --- blocs « verre » (pubs immobilières de luxe) : verre dépoli = backdrop-filter ; aucun parent animé en filter / opacité < 1
 #     au repos (sinon le verre ne voit plus la vidéo derrière)
-GLASS = ("background: rgba(255,255,255,.2); border: 0.25vmin solid rgba(255,255,255,.5); backdrop-filter: blur(22px) saturate(1.4); "
+GLASS = ("background: rgba(20,22,26,.30); border: 0.25vmin solid rgba(255,255,255,.4); backdrop-filter: blur(22px) saturate(1.4); "
          "-webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 2vmin 6vmin rgba(0,0,0,.25), inset 0 0.2vmin 0 rgba(255,255,255,.6);")
 PIN = ('<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5a2.5 2.5 0 1 1 '
        '0-5 2.5 2.5 0 0 1 0 5z"/></svg>')

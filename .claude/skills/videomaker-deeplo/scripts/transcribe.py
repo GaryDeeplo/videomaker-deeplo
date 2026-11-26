@@ -39,6 +39,18 @@ VERBATIM = {"fr": "Euh, alors, hum, je, je pense que, ben, euh, du coup voilà, 
             "en": "Um, so, uh, I, I think that, like, you know, uh."}
 
 
+def vocabulary(job, c):
+    """Noms propres à bien écrire : config (transcribe.vocabulary) + noms.txt (un par ligne) de la marque, du job et
+    de son inbox — « Secundo », pas « Secondo » ; « Pinoso », pas « Pinozo »."""
+    from common import ROOT, read_json
+    words = list(c["transcribe"].get("vocabulary", []))
+    brand = read_json(job / "job.json").get("brand", "") if (job / "job.json").exists() else ""
+    for f in ([ROOT / "brands" / brand / "noms.txt"] if brand else []) + [job / "noms.txt", job / "inbox" / "noms.txt"]:
+        if f.exists():
+            words += [x.strip() for x in f.read_text(encoding="utf-8").splitlines() if x.strip() and not x.startswith("#")]
+    return list(dict.fromkeys(words))
+
+
 def prompt_for(lang, vocab):
     """Amorçage : hésitations (mot pour mot) + noms propres de la marque (orthographe : « Claude », pas « Cloud »)."""
     return (VERBATIM.get(lang, "") + (" " + ", ".join(vocab) + "." if vocab else "")).strip() or None
@@ -220,7 +232,7 @@ def main():
     with tempfile.TemporaryDirectory() as tmp:
         wav = Path(tmp) / "a.wav"
         extract(src, wav, a.t0, a.t1)
-        pr = prompt_for(lang, c["transcribe"].get("vocabulary", []))
+        pr = prompt_for(lang, vocabulary(job, c))
         islands = None
         if engine == "groq":
             words = groq(wav, lang, pr)

@@ -759,7 +759,7 @@ def css_glass(W, ph, fam, vis):
     return css_light(W, ph, fam, vis, cards=True) + f"""
   #panel.glass {{ color: #fff; --ui-ink: #ffffff; --ui-line: rgba(255,255,255,.24); --ui-soft: rgba(255,255,255,.10); --ui-mute: rgba(255,255,255,.72);
                  --ui-solid: rgba(255,255,255,.16); --acc: {acc_t}; --on-acc: {on_t}; }}
-  {surf} {{ background: rgba(255,255,255,.12); -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+  {surf} {{ background: rgba(20,22,26,.32); -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
             border: 1px solid rgba(255,255,255,.38); box-shadow: 0 {round(18*u)}px {round(50*u)}px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.35);
             color: #fff; text-shadow: 0 1px {round(10*u)}px rgba(0,0,0,.18); }}
   #panel.glass .beat .bi {{ opacity: 1; }}
@@ -772,6 +772,7 @@ def css_glass(W, ph, fam, vis):
   #panel.glass .box, #panel.glass .stp .n {{ border-color: rgba(255,255,255,.6); }}
   #panel.glass .stp.on {{ background: {acc_t}33; border-color: {acc_t}; }}
   #panel.glass .res {{ background: rgba(255,255,255,.08); }}
+  #panel.glass .field, #panel.glass .field .q, #panel.glass .res {{ color: #fff; }}
   #panel.glass .field {{ border-color: {acc_t}; }}
   #panel.glass .stat.sg .big {{ background: linear-gradient(180deg, #ffffff 0%, {acc_t} 100%); -webkit-background-clip: text; background-clip: text;
                                -webkit-backdrop-filter: none; backdrop-filter: none; border: 0; box-shadow: none; }}
@@ -811,6 +812,16 @@ def card_motion(sid, k, s0, t1, d, last, W, glass, side=None):
     if not last:
         js.append(f'  tl.to("{sel}", {out_}, {round(max(s0 + 0.6, t1 - 0.28), 3)});')
     return js
+
+
+def soften(lines):
+    """visual.motionStyle « doux » (charte) : entrées 1,5 fois plus longues, amorties (expo.out), sans rebond."""
+    res = []
+    for l_ in lines:
+        l_ = re.sub(r'ease: "(?:back|elastic)\.out\([^)]*\)"', 'ease: "expo.out"', l_)
+        l_ = l_.replace('ease: "power3.out"', 'ease: "expo.out"').replace('ease: "power2.out"', 'ease: "expo.out"')
+        res.append(re.sub(r"duration: (0\.\d+)(?=[,\s}])", lambda m: f"duration: {round(min(1.2, float(m.group(1)) * 1.5), 3)}", l_))
+    return res
 
 
 def lottie_layers(job, lo, k, s0, t1, T0, W, ph, ox, oy):
@@ -1049,7 +1060,8 @@ def nodes(job, beats, words, dur, T0, W, ph, vis, theme="dark", origin=(0, 0)):
         if not glass:  # verre : jamais d'opacité sur un parent du verre
             js.append(f'  tl.fromTo("#{sid} .bi", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.25, ease: "power1.out", immediateRender: false }}, {e0});')
         if cardlike:  # entrées variées à tour de rôle, dérive au repos, sortie dans le sens opposé
-            js += card_motion(sid, nb, e0, t1, d, k + 1 >= len(placed), W, glass, side)
+            cm = card_motion(sid, nb, e0, t1, d, k + 1 >= len(placed), W, glass, side)
+            js += soften(cm) if vis.get("motionStyle") == "doux" else cm
             nb += 1
         if b.get("tag"):
             js.append(f'  tl.fromTo("#{sid} .tag", {{ opacity: 0, x: 20 }}, {{ opacity: 1, x: 0, duration: 0.4, ease: "power2.out", immediateRender: false }}, {s0 + 0.05});')

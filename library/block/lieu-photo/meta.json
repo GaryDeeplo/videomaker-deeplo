@@ -1,0 +1,21 @@
+{
+ "name": "lieu-photo",
+ "type": "block",
+ "title": "Carte du lieu avec épingle",
+ "description": "Photo du lieu en verre, nom en haut, épingle qui tombe et pulse",
+ "when_to_use": "Situer le bien ou le commerce : distance, quartier, vue",
+ "tags": [
+  "verre",
+  "lieu",
+  "carte",
+  "immobilier"
+ ],
+ "files": [
+  "lieu-photo.html"
+ ],
+ "usage": "{\"block\": \"lieu-photo\", \"word\": \"mer\", \"dur\": 3.2, \"vars\": {\"image\": \"assets/img/lieu.jpg\", \"name\": \"≈ 1 h de la côte\", \"pinx\": 50, \"piny\": 70, \"top\": 10}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-26",
+ "uses": 0
+}

@@ -1,0 +1,22 @@
+{
+ "name": "cartes-3d",
+ "type": "block",
+ "title": "Cartes photo 3D en verre",
+ "description": "Deux cartes photo en verre inclinées en 3D de chaque côté de la personne, pastille au-dessus",
+ "when_to_use": "Montrer deux vues réelles du bien ou du lieu pendant qu'on en parle",
+ "tags": [
+  "verre",
+  "photo",
+  "3d",
+  "immobilier",
+  "luxe"
+ ],
+ "files": [
+  "cartes-3d.html"
+ ],
+ "usage": "{\"block\": \"cartes-3d\", \"word\": \"tranquille\", \"dur\": 3.4, \"vars\": {\"image1\": \"assets/img/a.jpg\", \"image2\": \"assets/img/b.jpg\", \"label1\": \"Au calme\", \"label2\": \"Pas un bruit\", \"top\": 14}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-26",
+ "uses": 0
+}

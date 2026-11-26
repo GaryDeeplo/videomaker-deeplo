@@ -1,0 +1,20 @@
+{
+ "name": "editorial-serif",
+ "type": "caption",
+ "title": "Sous-titres éditoriaux (sans + serif)",
+ "description": "Petits mots en sans fine, mot fort en serif Didone italique ivoire, empilés ; encre sombre sur fond clair",
+ "when_to_use": "Immobilier, hôtellerie, luxe, ton haut de gamme",
+ "tags": [
+  "sous-titres",
+  "editorial",
+  "serif",
+  "luxe",
+  "immobilier"
+ ],
+ "files": [],
+ "usage": "\"text\": {\"captionStyle\": \"editorial\", \"captionMaxWords\": 3}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-26",
+ "uses": 0
+}

@@ -1,0 +1,22 @@
+{
+ "name": "fin-logo",
+ "type": "block",
+ "title": "Fin : logo sur vidéo floutée",
+ "description": "La vidéo se floute sous un voile, le logo apparaît au centre avec une ligne (site, slogan)",
+ "when_to_use": "Dernières secondes d'une vidéo de marque, à la place d'une outro sur fond plein",
+ "tags": [
+  "fin",
+  "logo",
+  "marque",
+  "flou",
+  "luxe"
+ ],
+ "files": [
+  "fin-logo.html"
+ ],
+ "usage": "{\"block\": \"fin-logo\", \"word\": \"produit\", \"dur\": 2.8, \"vars\": {\"logo\": \"assets/img/logo.svg\", \"tagline\": \"site.com\"}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-26",
+ "uses": 0
+}

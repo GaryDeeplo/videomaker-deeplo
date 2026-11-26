@@ -168,7 +168,8 @@ def main():
         run_py(builder, str(job), a.slug, "--size", f, *bargs, *lg)
         raw = job / "renders" / f"{a.slug}_{tag}.mp4"
         fps = ["-f", str(a.fps)] if a.fps else []
-        r = subprocess.run(NPX + ["--yes", "hyperframes@0.9.71", "render", "-q", a.quality, "-w", "8", *fps, "-o", str(raw)],
+        vff = ["--video-frame-format", "png"] if a.quality == "delivery" else []  # images vidéo sans perte JPEG au rendu final
+        r = subprocess.run(NPX + ["--yes", "hyperframes@0.9.71", "render", "-q", a.quality, "-w", "8", *fps, *vff, "-o", str(raw)],
                            cwd=job, capture_output=True, text=True, encoding="utf-8", errors="replace")
         if r.returncode != 0 or not raw.exists():
             fail(f"rendu {f} échoué", out=(r.stdout + r.stderr)[-800:])

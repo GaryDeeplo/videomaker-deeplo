@@ -1,0 +1,19 @@
+{
+ "name": "cartes-verre-tuto",
+ "type": "scene",
+ "title": "Cartes en verre sur vidéo floutée",
+ "description": "Temps forts en cartes de verre au milieu, vidéo floutée derrière, visage net entre deux cartes, entrées variées",
+ "when_to_use": "Tuto, explication d'un outil : look « tuto cartes »",
+ "tags": [
+  "cartes",
+  "verre",
+  "tuto",
+  "tiktok"
+ ],
+ "files": [],
+ "usage": "\"visual\": {\"layout\": \"cards\", \"panelTheme\": \"glass\", \"cardsBlur\": true}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-26",
+ "uses": 0
+}

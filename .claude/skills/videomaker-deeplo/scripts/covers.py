@@ -64,12 +64,25 @@ def best_frames(src, n=3, gap=2.0):
                       "cx": (x + w / 2) / dw, "cy": (y + h / 2) / dh})
     cap.release()
     cands.sort(key=lambda c: -c["score"])
+    eyes = None
+    try:  # jamais une couverture aux yeux fermés ou mi-clos (MediaPipe, comme blink.py ; facultatif)
+        import blink
+        eyes = blink.Eyes(src) if blink.available() else None
+    except Exception:  # noqa: BLE001
+        eyes = None
     pick = []
     for c in cands:
-        if all(abs(c["t"] - p["t"]) >= gap for p in pick):
-            pick.append(c)
+        if not all(abs(c["t"] - p["t"]) >= gap for p in pick):
+            continue
+        if eyes is not None:
+            sc = [x[1] for x in eyes.window(c["t"], c["t"] + 0.12) if x[1] is not None]
+            if sc and max(sc) >= 0.3:
+                continue
+        pick.append(c)
         if len(pick) == n:
             break
+    if eyes is not None:
+        eyes.det.close()
     return pick, (sw, sh)
 
 
@@ -115,6 +128,7 @@ def page(W, H, items, vis, font_css):
             txt = f'<div class="shade-side"></div><div class="t-side">{title_html(title)}</div>'
         blocks.append(f'<div class="clip v v-{v}" id="v{i}" data-start="{i}" data-duration="1" data-track-index="{i}">{bg}{txt}</div>')
     side_w = round(W * (0.5 if wide else 0.84))
+    gpad = max(0, round((H - W * 4 / 3) / 2)) if H > W else 0  # grille du profil : seuls les 1080x1440 du centre se voient
     return f"""<!doctype html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width={W}, height={H}">
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
@@ -129,17 +143,17 @@ html, body {{ margin: 0; width: {W}px; height: {H}px; overflow: hidden; backgrou
 .fit-center {{ left: 50%; transform: translateX(-50%); }}
 .fit-right {{ right: 0; }}
 .k {{ color: {accent}; }}
-.t-band {{ position: absolute; left: {round(60*u)}px; right: {round(60*u)}px; bottom: {round(H*0.14)}px; display: flex;
+.t-band {{ position: absolute; left: {round(60*u)}px; right: {round(60*u)}px; bottom: {max(round(H*0.14), gpad + round(60*u))}px; display: flex;
           flex-direction: column; align-items: flex-start; gap: {round(14*u)}px; transform: rotate(-2deg); }}
 .t-band span {{ background: {accent}; color: {on_acc}; font-weight: 900; font-size: {round((96 if not wide else 84)*u)}px;
                line-height: 1.05; padding: .08em .3em .12em; border-radius: .12em; box-shadow: 0 .12em .4em rgba(0,0,0,.35); }}
-.t-impact {{ position: absolute; left: {round(50*u)}px; right: {round(50*u)}px; top: {round(H*0.07)}px; text-align: center;
+.t-impact {{ position: absolute; left: {round(50*u)}px; right: {round(50*u)}px; top: {max(round(H*0.07), gpad + round(50*u))}px; text-align: center;
             color: #fff; font-weight: 900; font-size: {round((130 if not wide else 110)*u)}px; line-height: .98; text-wrap: balance;
             -webkit-text-stroke: .08em #000; paint-order: stroke fill; text-shadow: 0 .06em 0 #000, 0 .2em .5em rgba(0,0,0,.5); }}
 .v-impact::before {{ content: ""; position: absolute; inset: 0 0 55% 0; background: linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,0)); }}
 .shade-side {{ position: absolute; inset: 0; background: {"linear-gradient(90deg, rgba(0,0,0,.85) 0%, rgba(0,0,0,.55) 45%, rgba(0,0,0,0) 70%)" if wide
                else "linear-gradient(180deg, rgba(0,0,0,.8) 0%, rgba(0,0,0,.35) 40%, rgba(0,0,0,0) 60%)"}; }}
-.t-side {{ position: absolute; left: {round(70*u)}px; width: {side_w}px; {"top: 50%; transform: translateY(-50%);" if wide else f"top: {round(H*0.08)}px;"}
+.t-side {{ position: absolute; left: {round(70*u)}px; width: {side_w}px; {"top: 50%; transform: translateY(-50%);" if wide else f"top: {max(round(H*0.08), gpad + round(50*u))}px;"}
           color: #fff; font-weight: 800; font-size: {round((112 if not wide else 96)*u)}px; line-height: 1.02; text-wrap: balance; }}
 </style></head><body>
 <div id="root" data-composition-id="covers" data-start="0" data-width="{W}" data-height="{H}" data-duration="{len(items)}">

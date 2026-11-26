@@ -1,0 +1,19 @@
+{
+ "name": "geant-un-mot",
+ "type": "caption",
+ "title": "Sous-titres géants, un mot à la fois",
+ "description": "Un mot énorme à la fois, mots déjà dits en petit au-dessus ; mot en escalier de syllabes (text.syllabes)",
+ "when_to_use": "Tutos tech, TikTok face caméra, ton dynamique",
+ "tags": [
+  "sous-titres",
+  "geant",
+  "tiktok",
+  "tuto"
+ ],
+ "files": [],
+ "usage": "\"text\": {\"captionStyle\": \"geant\", \"captionTopPct\": 68, \"syllabes\": [\"automatisé\"]}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-26",
+ "uses": 0
+}

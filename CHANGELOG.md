@@ -3,6 +3,14 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.26.2
+- Accueil : trois nouvelles questions avant l'habillage — « Quel look ? » (tuto cartes, luxe éditorial, écran partagé, classique), « Quelle ouverture ? » (sujet dessiné, nom derrière la personne, titre animé, sans) et « Quelles polices ? » (planche d'aperçu de paires de polices Google libres, ou la charte).
+- Nouvelle marque : entretien de style et charte en chiffres (couleurs hex, paire de polices copiée avec sa licence, style de sous-titres, rythme punchy ou doux, interdits gardés comme goûts du client).
+- Rushs de téléphone : HDR HLG d'iPhone converti sans tone-mapping (peau naturelle), image de contrôle original / importé, liste de noms propres (`noms.txt`) pour une transcription juste.
+- Livraison : zones des applis plus prudentes, couvertures lisibles dans la grille du profil et jamais les yeux fermés, rendu final plus net, brouillons numérotés avec un journal des versions.
+- Verre teinté lisible sur un ciel clair ; les sous-titres contournent les blocs posés ; pile d'outils propre en 16:9 ; traductions découpées comme la version d'origine.
+- Bibliothèque : blocs en verre, sous-titres éditorial et géant, cartes en verre, avec aperçus.
+
 ## 2026.11.26
 - Style TikTok « tuto » : sous-titres `geant` (un mot énorme à la fois, mots déjà dits en petit), mot en escalier de syllabes (« IN- / CRO- / YABLE »), cartes au milieu sur vidéo floutée (qui reste nette entre deux cartes), vraie capture d'écran en carte, carte « Suivre » en fin.
 - Pack immobilier / luxe : sous-titres `editorial` (petits mots en sans fine, mot fort en serif italique), mots géants dans le décor (serif, ou posés au sol), blocs en verre (recherche qui se tape, carte du lieu avec épingle, cartes photo en 3D, chiffre géant qui compte avec cote fléchée, fin sur le logo), barre de progression.

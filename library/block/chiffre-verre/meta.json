@@ -1,0 +1,22 @@
+{
+ "name": "chiffre-verre",
+ "type": "block",
+ "title": "Chiffre en verre qui compte",
+ "description": "Chiffre géant en verre dégradé qui compte, petit texte avant / après, cote fléchée en option",
+ "when_to_use": "Prix, surface, nombre de pièces, distance : un chiffre DIT dans la vidéo (immobilier, luxe, résultats)",
+ "tags": [
+  "verre",
+  "chiffre",
+  "immobilier",
+  "luxe",
+  "compteur"
+ ],
+ "files": [
+  "chiffre-verre.html"
+ ],
+ "usage": "{\"block\": \"chiffre-verre\", \"word\": \"400\", \"dur\": 3.2, \"vars\": {\"to\": 400000, \"unit\": \" €\", \"before\": \"au total\", \"cote\": \"3 ha · villa · piscine\", \"top\": 30}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-26",
+ "uses": 0
+}

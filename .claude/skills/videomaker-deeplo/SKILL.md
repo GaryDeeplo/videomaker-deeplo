@@ -48,6 +48,15 @@ fichier quand le sujet arrive, pas avant.
      d'un texte · découper une longue vidéo en shorts · reprendre « <projet récent> » s'il y en a un ; plusieurs clips,
      traduire, lot, couverture, planning, guide de tournage passent par « Autre ») · **Pour quelle marque ?** (les 2
      `marques_recentes` · « nouvelle marque » · « sans marque » ; les autres marques de `brands/` via « Autre »).
+   - **Nouvelle marque -> entretien de style** (une série, juste après) : **Ce que vous faites, pour qui ?** (« Autre »
+     pour l'écrire ; ou « je décris en une phrase plus tard ») · **Couleurs ?** (tirées du logo / du site · je les donne en
+     hex · choisis pour moi) · **Rythme des animations ?** (punchy : rebonds courts · doux : entrées longues amorties) ·
+     **Jamais ?** (choix multiple : pas d'emoji · pas de musique forte · pas de rouge · rien de spécial ; « Autre » pour le
+     reste) ; les montages qu'il aime (créateurs, marques) via « Autre ». Puis, à la série 3, la question des polices.
+     Écris la charte EN CHIFFRES (hex, paire de polices, style de sous-titres, vitesse) :
+     `scripts/charte.py creer <marque> nom=… accent=#… fond=#… encre=#… polices=<paire> sous_titres=<style>
+     vitesse=punchy|doux musique=… ton="…" logo=… interdits="…|…" references="…"` (les interdits deviennent des goûts
+     gardés). Évite le look « par défaut » (mot actif coloré + Inter + rebond) sauf si c'est ce qu'il veut.
    - **Série 2 — fichiers et brief** : **Les fichiers ?** (les fichiers récents de Téléchargements en options ; sinon
      un chemin dans « Autre ») · **Où sera-t-elle publiée ?** (Reels / TikTok 9:16 · tous les formats · YouTube 16:9 ·
      LinkedIn) · **Objectif ?** (vendre une offre · faire connaître · informer / conseiller ; recruter, fidéliser via
@@ -62,8 +71,20 @@ fichier quand le sujet arrive, pas avant.
      `cta`, `langues`, `tone` et `contact` de la charte), sinon « choisis pour moi » (déduits du contenu et de
      l'objectif). Promo, date, prix à citer ou sujet à éviter : seulement si l'utilisateur les donne ; le récap
      d'une ligne l'invite à le dire.
-   - **Série 3 — habillage** (toujours, une fois la transcription relue et le dérush décidé, ou le storyboard écrit) :
-     une question à **choix multiple** (`multiSelect: true`, 3 ou 4 options, la recommandée en premier). Chaque option
+   - **Série 3 — look, ouverture, polices, habillage** (toujours, une fois la transcription relue et le dérush décidé,
+     ou le storyboard écrit ; 4 questions ensemble, la recommandée en premier dans chacune) :
+     **Quel look ?** (choix simple, avec un aperçu texte de la mise en page dans `preview`) : tuto cartes · luxe
+     éditorial · écran partagé · classique — reco d'après le contenu et le brief (tuto, tech, liste d'étapes -> tuto
+     cartes ; immobilier, hôtellerie, ton haut de gamme -> luxe éditorial ; conseil d'expert, preuves -> écran
+     partagé ; témoignage, ton sobre -> classique). Réglages exacts de chaque look : references/looks.md.
+     **Quelle ouverture ?** (choix simple) : sujet dessiné (plan, façade, plat… `hook` + `art`) · nom ou mot-clé géant
+     derrière la personne (premier mot dynamique, ou `--derriere`) · titre animé (`hook`, style selon le ton) · sans
+     (on entre direct sur la personne). Absente si la marque a un réglage `accroche`.
+     **Quelles polices ?** (choix simple) : lance d'abord `scripts/polices.py planche <job> --titre "<accroche>"` et
+     ouvre `work/polices.png` pour l'utilisateur ; options = « garder la charte » (en premier si la marque a ses
+     polices) + 3 paires de `polices.py list` adaptées au look (luxe -> editorial / premium ; tuto -> moderne / net ;
+     chaleureux -> chaleureux / creatif ; promo -> punch / ludique). Puis `scripts/polices.py apply <job> <paire>`.
+     **Quoi ajouter ?** : une question à **choix multiple** (`multiSelect: true`, 3 ou 4 options). Chaque option
      dit ce qu'on verra et sur quels mots, à partir de ce qui est DIT ou montré — jamais une info en plus :
      lieux et distances -> carte (`map`, pays qui s'allume) + chrono (`clock`) ; prix, fourchettes, chiffres ->
      compteurs (`stat`, bruitage de caisse sur les €), palettes (`flap`), calcul en étapes (`steps`), devis
@@ -72,17 +93,18 @@ fichier quand le sujet arrive, pas avant.
      escalier (`text.syllabes`) ; outil, appli, site -> vraie capture d'écran (`image` + `fit: contain`) ; ambiance ->
      images libres en carte (toujours présentées comme illustration) ; sujet visuel -> accroche dessinée ; fin ->
      carte `suivre` (vrai compte).
-     Elle absorbe **l'accroche** (option « accroche animée : <titre proposé> » ou « … avec le sujet dessiné » ;
-     recommandée pour une annonce ou un journal de chantier, pas pour un témoignage ou un ton sobre ; absente si la
-     marque a un réglage `accroche`) et, quand le rendu part sur les mots dynamiques (qui coupent les sous-titres),
+     Quand le look part sur les mots dynamiques (qui coupent les sous-titres), elle propose aussi
      **« sous-titres complets en plus »** (recommandée si la vidéo sera surtout vue sans le son : LinkedIn, public
      pro). Si `pack.py choose` hésite vraiment entre deux packs, ajoute à cette série une question simple « Quel
      rendu ? » avec les deux packs. Puis applique les choix, snapshot, aperçu. Pas de nouvelle série 3 pour une
      deuxième version (Reels courte, traduction) : reprends les mêmes choix.
-     Détails : references/accroches.md, references/mots-dynamiques.md, references/objets.md.
+     Rien n'est tiré au hasard : look, ouverture, polices et ajouts viennent de ces réponses, du brief et du contenu
+     dit ; seules la rotation des sons, la piste dans une ambiance et l'ordre des entrées de cartes varient (rejoués à
+     l'identique pour une même vidéo).
+     Détails : references/looks.md, references/accroches.md, references/mots-dynamiques.md, references/objets.md.
 4. **Le brief** (écrit après la série 2 ou la demande complète, complété après la série 3 : la commande fusionne) :
    `scripts/onboard.py brief <job> objectif=… public=… duree=… ton=… cta="…" mentions="…" eviter="…"
-   langues=fr,nl accroche=titre|dessin|non habillage="…"` (`work/brief.json` ; clé inconnue -> avertissement ; seules
+   langues=fr,nl accroche=titre|dessin|non habillage="…" look=… ouverture=… polices=…` (`work/brief.json` ; clé inconnue -> avertissement ; seules
    `langues` et `reseaux` sont des listes). **Relis-le à chaque décision** :
    | Brief | Effet sur le montage |
    |---|---|
@@ -177,9 +199,11 @@ dans `marques` / `proche` ou crée-la depuis `brands/_exemple/`), recherche dans
 ```bash
 python .claude/skills/videomaker-deeplo/scripts/new_job.py "<client>" "<sujet>" --brand <dossier> --rush <fichier>   # jobs/<date>-<client>-<sujet>/ ; regarde "charte"
 python .claude/skills/videomaker-deeplo/scripts/transcribe.py <job> <rush>                  # local ; --islands si le client se reprend ; --engine groq si accord
+#   noms propres (marque, lieux, produits) : un par ligne dans <job>/noms.txt ou brands/<marque>/noms.txt, AVANT de transcrire
 python .claude/skills/videomaker-deeplo/scripts/cut_plan.py <job> <slug>                   # îlots de parole, bords dans les silences
 #   TU décides : keep / reason dans work/<slug>_plan.json (references/derush.md)
 python .claude/skills/videomaker-deeplo/scripts/build_cut.py <job> <slug>                   # assets/<slug>_cut.mp4 + map.json (voix à -16 LUFS)
+#   rush de téléphone (HDR, rotation, cadence variable) : REGARDE work/<slug>_controle.jpg (original | importé) au 1er rush
 python .claude/skills/videomaker-deeplo/scripts/build_text.py <job> <slug>                  # captions + overlays candidats + punchs proposés
 #   TU vérifies : orthographe des captions, keep / punch / reason des overlays (references/sous-titres.md)
 python .claude/skills/videomaker-deeplo/scripts/add_music.py <job> <slug> --mood upbeat     # references/son-musique.md
@@ -188,7 +212,7 @@ python .claude/skills/videomaker-deeplo/scripts/build_composition.py <job> <slug
 ( cd <job> && npx --yes hyperframes@0.9.71 check )                                     # 0 erreur exigée
 ( cd <job> && npx --yes hyperframes@0.9.71 snapshot --at T1,T2,T3 )                    # REGARDE la planche avant de montrer
 ( cd <job> && npx --yes hyperframes@0.9.71 preview )                                   # Studio pour l'utilisateur
-( cd <job> && npx --yes hyperframes@0.9.71 render -q draft -w 8 -f 15 -o renders/<slug>_draft.mp4 )   # aperçu (15 i/s : -40 %)
+python .claude/skills/videomaker-deeplo/scripts/brouillon.py <job> "<ce qui change>" --rapide   # aperçu renders/v<N>-….mp4 + work/journal.md
 python .claude/skills/videomaker-deeplo/scripts/qa.py <job> <slug>                          # « à revoir » = corriger avant de montrer
 python .claude/skills/videomaker-deeplo/scripts/review.py <job> --qa                        # page de validation client (envoyée par l'utilisateur)
 python .claude/skills/videomaker-deeplo/scripts/review.py <job> --valide                    # accord du client, puis seulement le rendu final
@@ -239,10 +263,10 @@ Détails : references/shorts.md.
 2. **Couverture avec titre** (facultatif, conseillé pour YouTube et les Reels épinglés) :
    `scripts/covers.py <job> <slug> --title "<titre 1>" --title "<titre 2>"` — titres de 6 mots max tirés de la
    promesse DITE dans la vidéo (jamais une promesse inventée). L'outil prend les 3 meilleurs plans du visage (net,
-   grand, bien éclairé ; vidéo sans rush : photos des scènes) et compose 3 maquettes dans la charte : a « bandeau »,
+   grand, bien éclairé, yeux ouverts ; vidéo sans rush : photos des scènes) et compose 3 maquettes dans la charte : a « bandeau »,
    b « impact », c « côté », en 9:16, 1:1 et 16:9. Montre `renders/covers/planche.jpg`, puis
    `scripts/covers.py pick <job> <slug> a|b|c` : `deliver.py` livre alors cette couverture pour chaque format (sinon,
-   image de la vidéo sans sous-titres).
+   image de la vidéo sans sous-titres). Le titre reste dans les 1080×1440 du centre (ce que montre la grille du profil).
 3. Avant de lancer : `--size 1:1` et `--size 16:9` sur le builder + `snapshot` pour vérifier la mise en page
    (explainer, punch et infographie ont une vraie mise en page 16:9 : contenu à gauche, texte à droite ; le 1:1 reste
    tiré du 9:16).

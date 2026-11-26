@@ -44,9 +44,11 @@ PROFIL_KEYS = {
     "ton": "dynamique | chaleureux | haut de gamme | sobre", "public": "particuliers | professionnels | candidats | clients",
     "objectif": "vendre | faire connaître | recruter | informer | fidéliser", "cta": "appel à l'action habituel",
     "duree": "15 | 30 | 60 | libre", "langues": "fr,nl,en", "voix": "gemini-<ton> | fish | enregistrement | aucune",
+    "look": "tuto-cartes | luxe | ecran-partage | classique", "ouverture": "dessin | derriere | titre | sans",
+    "polices": "charte | editorial | chaleureux | premium | moderne | creatif | punch | ludique | net",
 }
 BRIEF_KEYS = {"objectif", "public", "duree", "ton", "cta", "mentions", "eviter", "langues", "accroche", "accroche_style",
-              "habillage", "sous_titres", "format", "reseaux"}
+              "habillage", "sous_titres", "format", "reseaux", "look", "ouverture", "polices"}
 
 
 def job_state(j):

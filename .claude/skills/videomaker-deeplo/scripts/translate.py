@@ -13,7 +13,7 @@ au prorata de leur longueur (la langue d'arrivée n'a pas les mêmes mots aux m�
 import argparse
 import re
 
-from build_text import remap
+from build_text import chunks, clean_word, group_size, remap
 from common import config, fail, job_dir, out, read_json, write_json
 
 STRONG = re.compile(r"[.!?…]$")
@@ -64,7 +64,8 @@ def apply(job, slug, lang):
     missing = [s["id"] for s in tr["sentences"] if not s.get(lang, "").strip()]
     if missing:
         fail(f"traductions manquantes ({lang}) pour les phrases {missing[:12]}")
-    maxw = config(job)["text"]["captionMaxWords"]
+    c = config(job)
+    maxw, maxc = group_size(job, c["text"].get("captionStyle", "pop"), c)  # mêmes groupes que la version d'origine
     caps = []
     for s in tr["sentences"]:
         toks = s[lang].split()
@@ -74,9 +75,9 @@ def apply(job, slug, lang):
         for t, wgt in zip(toks, weights):
             st = s["start"] + dur * acc / tot
             acc += wgt
-            timed.append({"w": STRIP_END.sub("", t) or t, "start": round(st, 3), "end": round(s["start"] + dur * acc / tot, 3)})
-        for i in range(0, len(timed), maxw):
-            g = timed[i:i + maxw]
+            timed.append({"w": t, "start": round(st, 3), "end": round(s["start"] + dur * acc / tot, 3)})
+        for g in chunks(timed, maxw, 0.35, maxc):  # coupes aux virgules et aux idées (ponctuation lue ici), plafond du style
+            g = [{**x, "w": clean_word(x["w"], lang)} for x in g]  # puis mots affichés : ? et ! gardés, . , ; : retirés
             caps.append({"id": len(caps), "start": g[0]["start"], "end": g[-1]["end"], "words": g})
     base = read_json(work / f"{slug}_text.json") if (work / f"{slug}_text.json").exists() else {"overlays": []}
     overlays = [{**o, "keep": False} for o in base.get("overlays", [])]  # textes verbatim : pas en traduction ; punchs gardés

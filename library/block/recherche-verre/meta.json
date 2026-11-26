@@ -1,0 +1,21 @@
+{
+ "name": "recherche-verre",
+ "type": "block",
+ "title": "Recherche en verre",
+ "description": "Barre de recherche en verre qui se tape, bouton pressé, pastille lieu qui tombe",
+ "when_to_use": "Nom d'un lieu, d'un bien ou d'un produit dit dans la vidéo",
+ "tags": [
+  "verre",
+  "recherche",
+  "lieu",
+  "immobilier"
+ ],
+ "files": [
+  "recherche-verre.html"
+ ],
+ "usage": "{\"block\": \"recherche-verre\", \"word\": \"minutes\", \"dur\": 3.0, \"vars\": {\"query\": \"Pinoso\", \"place\": \"à 5 min\", \"top\": 14}}",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-26",
+ "uses": 0
+}
