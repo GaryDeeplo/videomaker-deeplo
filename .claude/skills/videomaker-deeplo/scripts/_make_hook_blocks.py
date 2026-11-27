@@ -220,7 +220,7 @@ H["aquarelle"] = hook("aquarelle", "aquarelle : taches de couleur qui diffusent 
         .hk-t { color: var(--ink); font-weight: 800; }
         .hk-s { font-style: italic; }""",
     """        tl.fromTo(r + ".wc", { scale: 0.2, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.4, stagger: 0.18, ease: "power2.out" }, 0);
-        tl.fromTo(r + ".hk-t", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.9, ease: "power2.inOut" }, 0.45);""")
+        tl.fromTo(r + ".hk-t", { clipPath: "inset(-30% 100% -40% -5%)" }, { clipPath: "inset(-30% -5% -40% -5%)", duration: 0.9, ease: "power2.inOut" }, 0.45);""")
 H["pixel"] = hook("pixel", "pixel art : étoiles qui clignotent, lettres qui apparaissent par à-coups avec ombre en blocs",
     {"accent": "#ffcd1f", "bg": "#1b1b3a", "ink": "#ffffff"},
     """        <i class="px s1"></i><i class="px s2"></i><i class="px s3"></i><i class="px s4"></i><i class="px s5"></i><i class="ground"></i>""",

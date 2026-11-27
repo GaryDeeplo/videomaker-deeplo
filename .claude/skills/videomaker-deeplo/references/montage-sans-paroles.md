@@ -35,6 +35,9 @@ python .claude/skills/videomaker-deeplo/scripts/build_footage.py <job> <slug> [-
   (`references/motions-blocs.md`).
 - **Série** : `series` (« Journal de chantier · Semaine 4 sur 12 ») en haut, barre de progression ; un job par épisode.
 - **Voix off** : les plans changent sur les débuts de phrases (ou sur `word`), sous-titres au style choisi. Sinon musique.
+  Sur la voix off, comme sur un rush : blocs en verre posés sur un mot (`work/<slug>_motions.json`, ex. `chiffre-verre`,
+  `recherche-verre`, `fin-logo`), cartes au milieu du cadre (`work/<slug>_panels.json` : `map`, `stat`…, `face` = plan
+  seul), barre de progression (`visual.progressBar`). Une carte de fin (`fin-logo`, `fin-…`) coupe les sous-titres dessous.
 - Un clip où quelqu'un parle (`parole` dans le scan, voix détectée) : `transcribe.py` pour en faire une prise de parole
   ou un repère (« jour 12, on casse le mur »). Le son des clips n'est pas gardé (machines, vent).
 - Accroche : `"hook": {…}` dans `work/<slug>_footage.json` (ou `--accroche`), voir `references/accroches.md`.

@@ -28,7 +28,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from build_composition import STYLES, bubble_ink, caption_css, caption_js, caption_spans
+from build_composition import STYLES, bubble_ink, caption_css, caption_js, caption_spans, join_numbers
 import numpy as np
 
 from footage import camera_jitter, motion_profile, subject_x
@@ -317,10 +317,34 @@ def main():
             en = round(min(dur, max(g["end"] + 0.25, stc + 0.4), nxt), 3)
             if en - stc <= 0.1:
                 continue
-            spans, _, _ = caption_spans(g["words"], a.style, False, stc, -99)
+            ws_ = join_numbers(g["words"])  # « 335 000 » jamais coupé
+            spans, _, _ = caption_spans(ws_, a.style, False, stc, -99)
             caps.append(f'    <div class="clip cap" id="cap-{g["id"]}" data-start="{stc}" data-duration="{round(en - stc, 3)}" data-track-index="30">'
                         f'<div class="in">{spans}</div></div>')
-            capjs.append(f'  cap("cap-{g["id"]}", {stc}, {en}, {json.dumps([[round(max(stc, w["start"]), 3), round(w["end"], 3)] for w in g["words"]])});')
+            capjs.append(f'  cap("cap-{g["id"]}", {stc}, {en}, {json.dumps([[round(max(stc, w["start"]), 3), round(w["end"], 3)] for w in ws_])});')
+
+    # blocs de motion (work/<slug>_motions.json) et temps forts en cartes (work/<slug>_panels.json : chiffres, carte, chrono…),
+    # posés sur des mots de la voix off, comme sur un rush
+    motion_rep, panel_rep, panel_css = [], [], ""
+    mj_ = job / "work" / f"{a.slug}_motions.json"
+    if mj_.exists() and words:
+        from common import motion_nodes
+        mn, motion_rep = motion_nodes(job, read_json(mj_), words, W, H, base_vals={"accent": acc, "font": fam, "top": 22})
+        over += mn
+        fin_ = [r_["a"] for r_ in motion_rep if r_.get("pose") and str(r_.get("block", "")).startswith("fin")]
+        if fin_:  # la carte de fin couvre le cadre : plus de sous-titres dessous
+            kept = [(c_, j_) for c_, j_ in zip(caps, capjs) if float(c_.split('data-start="')[1].split('"')[0]) < min(fin_) - 0.1]
+            caps, capjs = [c_ for c_, _ in kept], [j_ for _, j_ in kept]
+    pj_ = job / "work" / f"{a.slug}_panels.json"
+    if pj_.exists() and words:
+        import panel as pn_
+        PH, off = round(H * 0.44), round(H * 0.15)  # cartes au milieu du cadre
+        ph_html, pjs_, panel_rep, layers_ = pn_.nodes(job, read_json(pj_), words, dur, 0.0, W, PH, vis, theme="cards", origin=(0, off))
+        over += [ph_html] + layers_
+        js += pjs_
+        for r_ in sorted((r_ for r_ in panel_rep if r_.get("a") is not None), key=lambda r_: r_["a"]):  # « face » = rien par-dessus
+            js.append(f'  tl.set("#panel", {{ autoAlpha: {0 if r_["type"] == "face" else 1} }}, {r_["a"]});')
+        panel_css = pn_.css_light(W, PH, fam, vis, cards=True) + f" #panel.paper.light.cards {{ top: {off}px; z-index: 30; }}"
 
     audio = []
     if voice:
@@ -340,7 +364,8 @@ def main():
         hname = f"accroche-{hk['style']}"
         block_file(job, hname)
         hdur = float(hk.get("dur", 3.0))
-        hv = {"text": hk.get("text") or plan.get("title", ""), "sub": hk.get("sub", ""), "accent": hk.get("accent") or acc, "font": fam}
+        hv = {"text": hk.get("text") or plan.get("title", ""), "sub": hk.get("sub", ""), "accent": hk.get("accent") or acc,
+              "font": (vis.get("titleFont") or {}).get("family") or fam}  # titre de la paire choisie (polices.py)
         hv.update({k: hk[k] for k in ("bg", "ink") if hk.get(k)})
         if hk.get("art") and (job / hk["art"]).exists():  # dessin du sujet (SVG) : references/accroches-dessin.md
             hv["art"] = (job / hk["art"]).read_text(encoding="utf-8")
@@ -376,6 +401,10 @@ def main():
     import panel as pn
     from fonts import brand_faces
     faces = [brand_faces(job, vis), pn.fonts(job)]  # fonts + fontFile + titleFont
+    if a.style == "editorial" or (c.get("mots") or {}).get("police") == "serif":
+        from common import serif_fonts
+        faces.append(serif_fonts(job))
+    pbar = vis.get("progressBar")
     cap_size = round((84 if a.style not in ("minimal", "mono") else 56) * u)
     G = lambda x: round(x * u)
     on_acc = "#111" if pn._lum(acc) > 150 else "#fff"
@@ -433,6 +462,10 @@ def main():
              text-shadow: 0 {G(4)}px {G(16)}px rgba(0,0,0,.7); }}
   .cap .w {{ display: inline-block; margin: 0 0.07em; {"opacity: 0;" if a.style in ("pop", "duo", "seam", "mono") else ""} }}
 {caption_css(a.style, acc)}
+{panel_css}
+  #pbar {{ position: absolute; left: 6%; right: 6%; bottom: {round(H * 0.035)}px; height: {max(4, round(H * 0.0032))}px; border-radius: 99px;
+          background: rgba(255,255,255,.42); overflow: hidden; z-index: 400; }}
+  #pbar i {{ display: block; height: 100%; background: {acc}; transform-origin: 0 50%; transform: scaleX(0); }}
 </style>
 </head>
 <body>
@@ -445,12 +478,14 @@ def main():
 {chr(10).join(audio)}
 {outro}
 {hook_html}
+{'    <div id="pbar"><i></i></div>' if pbar else ""}
   </div>
 <script>
   window.__timelines = window.__timelines || {{}};
   const tl = gsap.timeline({{ paused: true }});
   const ACCENT = {json.dumps(acc)}, INK = "#ffffff", BOXINK = {json.dumps(on_acc)};
 {content_js}
+{"  tl.fromTo('#pbar i', { scaleX: 0 }, { scaleX: 1, duration: " + str(total) + ", ease: 'none' }, 0);" if pbar else ""}
   window.__timelines["footage"] = tl;
 </script>
 </body>
@@ -463,6 +498,7 @@ def main():
     if not getattr(a, "no_sfx", False):  # bruitages sur ce qui apparaît (sound_design.py ; "sfx": {"design": false} pour s'en passer)
         sound_design.auto(job)
     out(ok=True, format=f"{W}x{H}", duree=total, plans=rep, voix=bool(voice), sous_titres=len(caps), bulles=n_bub,
+        motions=motion_rep or None, panneau=panel_rep or None,
         coupes_sur_la_musique=f"{snapped}/{max(0, len(starts) - 1)}" if beats else "pas de musique analysée",
         suite="npx hyperframes check, puis snapshot pendant quelques plans")
 

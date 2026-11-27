@@ -887,7 +887,8 @@ def main():
         block_file(job, hname)
         hdur = float(hk.get("dur", 3.0))
         text = hk.get("text") or (read_json(hook)["text"] if hook.exists() else "")
-        hv = {"text": text, "sub": hk.get("sub", ""), "accent": hk.get("accent") or accent, "font": family}
+        hv = {"text": text, "sub": hk.get("sub", ""), "accent": hk.get("accent") or accent,
+              "font": (vis.get("titleFont") or {}).get("family") or family}  # titre de la paire choisie (polices.py)
         hv.update({k: hk[k] for k in ("bg", "ink") if hk.get(k)})
         if hk.get("art") and (job / hk["art"]).exists():  # dessin du sujet (SVG) : references/accroches-dessin.md
             hv["art"] = (job / hk["art"]).read_text(encoding="utf-8")

@@ -3,6 +3,11 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.27
+- Montage d'images avec voix off : blocs en verre et cartes posés sur les mots (chiffre, recherche, carte du monde…), barre de progression, sous-titres éditorial ; une carte de fin en verre (texte ou logo sur la vidéo floutée) coupe les sous-titres dessous.
+- Accroche animée : le titre prend la police de titre choisie (paire de polices) et les jambages (g, p) ne sont plus rognés pendant l'apparition.
+- Voix Fish : ton réglable (balise d'émotion, voix naturelle par défaut), modèle gratuit quand le crédit API est épuisé, choix d'une prise à l'écoute.
+
 ## 2026.11.26.2
 - Accueil : trois nouvelles questions avant l'habillage — « Quel look ? » (tuto cartes, luxe éditorial, écran partagé, classique), « Quelle ouverture ? » (sujet dessiné, nom derrière la personne, titre animé, sans) et « Quelles polices ? » (planche d'aperçu de paires de polices Google libres, ou la charte).
 - Nouvelle marque : entretien de style et charte en chiffres (couleurs hex, paire de polices copiée avec sa licence, style de sous-titres, rythme punchy ou doux, interdits gardés comme goûts du client).

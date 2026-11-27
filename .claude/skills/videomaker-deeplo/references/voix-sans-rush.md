@@ -19,6 +19,10 @@ Prononciation par marque dans `video.voice.pronunciation` (`{"Lyons-la-Forêt": 
 forme phonétique, sous-titres et post gardent l'orthographe. Orthographe à la transcription :
 `video.transcribe.vocabulary` (`["Martin", "Lyons-la-Forêt"]`). Doute sur un nom de lieu, de personne ou de produit :
 demande à l'utilisateur comment il se prononce AVANT de générer la voix, et ajoute-le au lexique de la marque.
+Ton de la voix Fish : `video.voice.fishEmotion` (`"excited"`, `"calm"`…) ajoute une balise d'émotion non prononcée ;
+par défaut rien (voix naturelle, à préférer : une balise appuyée sonne vite surjouée). Crédit API Fish épuisé :
+`"fishModel": "s2.1-pro-free"` (gratuit). Une prise qui sonne faux : régénère 2-3 variantes du texte et fais choisir à
+l'écoute, puis garde la prise choisie dans `work/tts_cache/` (le cache est indexé par le texte prononcé).
 
 ## Voix enregistrée (`--file`, audio ou vidéo)
 Lance d'abord `python .claude/skills/videomaker-deeplo/scripts/voice.py <job> <slug> --file x` SANS storyboard ou avec des scènes sans `voice` -> l'outil

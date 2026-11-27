@@ -69,7 +69,7 @@
           STROKES.forEach(function (e) { try { const L = e.getTotalLength(); e.style.strokeDasharray = L; e.dataset.l = L; } catch (x) {} });
         }
         tl.fromTo(r + ".wc", { scale: 0.2, opacity: 0 }, { scale: 1, opacity: 1, duration: 1.4, stagger: 0.18, ease: "power2.out" }, 0);
-        tl.fromTo(r + ".hk-t", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.9, ease: "power2.inOut" }, 0.45);
+        tl.fromTo(r + ".hk-t", { clipPath: "inset(-30% 100% -40% -5%)" }, { clipPath: "inset(-30% -5% -40% -5%)", duration: 0.9, ease: "power2.inOut" }, 0.45);
         if (PIECES.length) {
           tl.fromTo(ART, { opacity: 0, scale: 0.92, filter: "blur(2vmin)" }, { opacity: 1, scale: 1, filter: "blur(0vmin)", duration: 1.1, ease: "power2.out" }, 0.3);
         }

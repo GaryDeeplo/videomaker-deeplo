@@ -330,6 +330,8 @@ def main():
             lines.append(None)
             continue
         spoken = pronounce(text, vc.get("pronunciation"))
+        if engine == "fish" and vc.get("fishEmotion"):  # « enjoué » : balise d'émotion Fish, non prononcée
+            spoken = f'({vc["fishEmotion"]}) {spoken}'
         h = hashlib.sha1(json.dumps([engine, voice, speed, spoken] + ([style] if engine == "gemini" else []),
                                     ensure_ascii=False).encode()).hexdigest()[:12]
         wav = cache / f"{h}.wav"
