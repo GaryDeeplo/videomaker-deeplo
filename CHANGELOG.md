@@ -3,6 +3,12 @@
 Chaque section « ## <version> » liste ce qui a changé. L'accueil du skill prévient quand une version plus récente est
 publiée ; « mets à jour le skill » lance `python .claude/skills/videomaker-deeplo/scripts/update.py install`.
 
+## 2026.11.28
+- Catalogue en rafale (« N trucs que… ») : tu énumères face caméra et chaque mot dit allume son élément dans un sommaire numéroté et lance sa démo dans un téléphone (aperçu de la bibliothèque ou ton clip) ; personne décalée pour faire la place, sortie de l'habillage en flou, pas de sous-titres pendant.
+- Quatre effets sur la personne, posés sur des mots dits : vertigo (le décor recule, la personne garde sa taille), frame break (l'image rétrécit dans un cadre de Reel, la tête en sort), doodle boil (contour dessiné qui tremble + petits dessins) et zoom-through (zoom à travers l'image sur une coupe) ; nom de l'effet affichable en pastille.
+- Le contrôle qualité tient compte du décalage de la personne pendant le catalogue ; la synthèse des références reconnaît ces nouveaux dispositifs.
+- Bibliothèque : catalogue et effets, avec aperçus.
+
 ## 2026.11.27
 - Montage d'images avec voix off : blocs en verre et cartes posés sur les mots (chiffre, recherche, carte du monde…), barre de progression, sous-titres éditorial ; une carte de fin en verre (texte ou logo sur la vidéo floutée) coupe les sous-titres dessous.
 - Accroche animée : le titre prend la police de titre choisie (paire de polices) et les jambages (g, p) ne sont plus rognés pendant l'apparition.

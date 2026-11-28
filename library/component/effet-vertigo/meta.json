@@ -1,0 +1,20 @@
+{
+ "name": "effet-vertigo",
+ "type": "component",
+ "title": "Effet vertigo (dolly zoom)",
+ "description": "Coup sec avant, puis le décor recule pendant que la personne détourée garde sa taille.",
+ "when_to_use": "Moment de révélation ou de vertige (« et là… »), une fois par vidéo.",
+ "tags": [
+  "effet",
+  "vertigo",
+  "dolly",
+  "zoom",
+  "detourage"
+ ],
+ "files": [],
+ "usage": "work/<slug>_effets.json : [{\"effet\": \"vertigo\", \"mot\": \"<mot dit>\", \"force\": 1.28}] (references/catalogue-effets.md)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-28",
+ "uses": 0
+}

@@ -1,0 +1,20 @@
+{
+ "name": "effet-cadre",
+ "type": "component",
+ "title": "Effet frame break",
+ "description": "L'image rétrécit dans un cadre de Reel sur fond flouté ; la tête et les épaules de la personne détourée en sortent.",
+ "when_to_use": "Parler d'Instagram / des Reels, ou sortir du cadre au sens propre (idée qui déborde).",
+ "tags": [
+  "effet",
+  "cadre",
+  "frame-break",
+  "reel",
+  "detourage"
+ ],
+ "files": [],
+ "usage": "work/<slug>_effets.json : [{\"effet\": \"cadre\", \"mot\": \"<mot dit>\", \"compte\": \"moncompte\"}] (references/catalogue-effets.md)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-28",
+ "uses": 0
+}

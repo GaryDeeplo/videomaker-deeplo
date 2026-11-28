@@ -34,3 +34,6 @@ haut de la tête : la tête passe devant les lettres. Une fois par vidéo, sur l
 Mots choisis par les mesures (`python .claude/skills/videomaker-deeplo/scripts/zooms.py <job> <slug>` les liste) : volume de la voix comparé aux 4 s autour,
 mot étiré, chiffre ou mot fort ; jamais sur un petit mot ni à moins de 3,5 s du précédent. Coup sec et glissé en
 alternance, retour à la fin de la phrase. À proposer d'office pour un ton dynamique.
+
+Autres effets sur la personne détourée (vertigo, frame break, doodle boil, zoom-through) et catalogue en rafale :
+`references/catalogue-effets.md`.

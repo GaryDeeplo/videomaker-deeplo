@@ -742,6 +742,18 @@ def main():
     use_emoji = a.emoji or txt.get("captionEmoji", False)
     syl_words = {str(x).lower() for x in txt.get("syllabes", [])}  # style « geant » : mots en escalier de syllabes
 
+    cap_words = [w for g in t.get("captions", []) for w in g["words"]]
+    if not cap_words:
+        from build_text import remap
+        cap_words = remap(read_json(job / "work" / f"{a.slug}_words.json")["words"], m["segments"])
+    # catalogue « N trucs que X sait faire » (effets.py) : pas de sous-titres ni d'accroche pendant qu'il est à l'écran
+    cat_f, fx_f = job / "work" / f"{a.slug}_catalogue.json", job / "work" / f"{a.slug}_effets.json"
+    fx_ok = layout == "full" and not (track or fill)
+    cat_win = None
+    if cat_f.exists() and fx_ok:
+        import effets as fx
+        cat_win = fx.catalogue_window(read_json(cat_f), cap_words, dur)
+
     nodes, tw = [], []
     cap_blocks, calques = [], []  # groupes de sous-titres à placer ; calques posés (work/<slug>_calques.json)
     overlays = sorted((o for o in t["overlays"] if o.get("keep") and o["start"] < dur), key=lambda o: o["start"])
@@ -754,7 +766,7 @@ def main():
             st = round(max(0.1, g["words"][0]["start"] - 0.05), 3)
             nxt = caps[i + 1]["words"][0]["start"] - 0.05 if i + 1 < len(caps) else dur
             en = round(min(dur, max(g["end"] + 0.25, st + 0.4), nxt if split else max(nxt, g["end"])), 3)  # écran partagé : une ligne, jamais deux groupes à la fois
-            if en - st <= 0.1:
+            if en - st <= 0.1 or (cat_win and st < cat_win[1] and en > cat_win[0]):
                 continue
             gid = f"cap-{g['id']}"
             words = join_numbers(g["words"])
@@ -781,6 +793,8 @@ def main():
     hook = job / "work" / f"{a.slug}_hook{sfx_lang}.json"
     if a.lang and not hook.exists():
         hook = job / "work" / f"{a.slug}_hook.json"
+    if cat_win:  # le titre du catalogue tient lieu d'accroche
+        hook = job / "work" / f"{a.slug}_hook_absent.json"
     hook_end = 0.15 + min(3.2, dur - 0.3) + 0.2 if hook.exists() else 0
     if mode in ("overlays", "both"):
         rot = ["nL", "nR"]
@@ -921,10 +935,6 @@ def main():
     total = round(T0 + dur + outro_d, 3)
     mj_ = job / "work" / f"{a.slug}_motions.json"
     motion_rep = []
-    cap_words = [w for g in t.get("captions", []) for w in g["words"]]
-    if not cap_words:
-        from build_text import remap
-        cap_words = remap(read_json(job / "work" / f"{a.slug}_words.json")["words"], m["segments"])
     # titre géant derrière la personne : vidéo détourée (cutout.py) posée par-dessus le titre, dans la même caméra
     behind_html, behind_rep, btop = "", None, 0
     bh = dict(c.get("behind") or {})
@@ -990,6 +1000,32 @@ def main():
         nodes += bn
         tw += bjs
         sfx_nodes += bsfx
+    # catalogue et effets sur le rush (effets.py) : vertigo, cadre (frame break), contour (doodle boil), traverse (zoom-through)
+    fx_css, fx_svg, cat_rep, fx_rep = "", "", None, None
+    if (cat_f.exists() or fx_f.exists()) and not fx_ok:
+        cat_rep = {"pose": False, "raison": "catalogue et effets : plein écran recadré seulement (pas d'écran partagé, de fond flouté ni de suivi du visage)"}
+    if fx_ok and fx_f.exists():
+        import effets as fx
+        fh_, fjs, fcss, fx_svg, fwh, fx_rep = fx.effets(job, read_json(fx_f), cap_words, m["segments"], dur, W, H, T0, cut,
+                                                        (src["width"], src["height"]), vis["focusX"], accent, avoid=cat_win)
+        behind_html += chr(10) + fh_
+        tw += fjs
+        fx_css += fcss
+        if fwh and not a.no_sfx and sfxc["enabled"]:
+            wsrc, wpeak, wdur = sfx_asset(job, sfxc["whoosh"])
+            for i, t_ in enumerate(fwh):
+                st = round(T0 + max(0.0, t_ - wpeak), 3)
+                if wsrc:
+                    sfx_nodes.append(f'      <audio id="sfx-fx{i}" class="clip" src="{wsrc}" data-start="{st}" '
+                                     f'data-duration="{min(wdur, T0 + dur - st)}" data-track-index="13" data-volume="{sfxc["whooshVolume"]}"></audio>')
+    if cat_win:
+        import effets as fx
+        from fonts import title_stack as tstack
+        cn_, cjs, ccss, ccal, cat_rep = fx.catalogue(job, read_json(cat_f), cap_words, dur, W, H, T0, accent, tstack(vis), family)
+        nodes += cn_
+        tw += cjs
+        fx_css += ccss
+        calques += ccal
     # piles de cartes d'outils (work/<slug>_outils.json) : captures de sites étiquetées sur la vidéo floutée
     ts_css, stack_rep = "", None
     if (job / "work" / f"{a.slug}_outils.json").exists():
@@ -1094,6 +1130,8 @@ def main():
             geo.update(VW=VW, track={"start": track["start"], "moves": track["moves"]})
         if split:
             geo.update(zone=[0, PH, W, H - PH], posY=32, cam=[], zooms=[])
+        if cat_rep and cat_rep.get("decal"):  # catalogue : personne décalée à gauche (#fxv), pour situer le visage
+            geo["fxv"] = [cat_rep.pop("decal")]
     for b_ in broll_rep:  # plans de coupe : plein écran (le visage est remplacé, voulu) ou carte en haut
         if b_.get("pose"):
             full = b_.get("mode", "full") != "carte"
@@ -1192,6 +1230,7 @@ def main():
   .zw {{ position: absolute; inset: 0; overflow: hidden; }}
   #cam {{ position: absolute; inset: 0; transform-origin: {vis["focusX"]}% 42%; will-change: transform; }}
   #zm {{ position: absolute; inset: 0; transform-origin: {vis["focusX"]}% 38%; }}
+  #fxv {{ position: absolute; inset: 0; }}  /* calque de la vidéo pour les effets (effets.py) : un clip vidéo ignore les transform */
   #a-roll {{ position: absolute; left: 0; top: 0; width: {W}px; height: {H}px; object-fit: {"contain" if fill else "cover"};
              object-position: {vis["focusX"]}% 50%; display: block; }}
   #a-cut {{ position: absolute; left: 0; top: 0; width: {W}px; height: {H}px; object-fit: cover; object-position: {vis["focusX"]}% 50%; }}
@@ -1216,6 +1255,7 @@ def main():
 {caption_css(style, cap_acc)}
 {ts_css}
 {mots_css}
+{fx_css}
   .broll {{ position: absolute; inset: 0; z-index: 30; overflow: hidden; }}
   .broll .bw {{ position: absolute; inset: 0; overflow: hidden; opacity: 0; }}
   .broll .bri {{ width: 100%; height: 100%; object-fit: cover; display: block; }}
@@ -1239,11 +1279,13 @@ def main():
 <body>
   <div id="root" data-composition-id="reel" data-start="0" data-width="{W}" data-height="{H}" data-duration="{total}">
     <div id="bg"></div>
+{fx_svg}
     <div class="zw">
-      <div id="zm"><div id="cam">
+      <div id="zm"><div id="cam"><div id="fxv">
         {f'<video id="a-fill" class="clip" src="assets/{esc(cut)}" data-start="{T0}" data-duration="{dur}" data-track-index="1" muted playsinline></video>' if fill else ""}
         <video id="a-roll" class="clip" src="assets/{esc(cut)}" data-start="{T0}" data-duration="{dur}"
                data-track-index="0" playsinline data-has-audio="true" data-volume="1"{' style="width: ' + str(VW) + 'px; max-width: none; object-fit: fill;"' if track else ''}></video>
+        </div>
 {behind_html}
       </div></div>
     </div>
@@ -1305,7 +1347,7 @@ def main():
         panneau=panel_rep or None,
         captions=sum(1 for n in nodes if 'class="clip cap' in n), overlays=sum(1 for n in nodes if "note" in n),
         drifts=drifts, punchs=len(cam) - drifts,
-        sous_titres_fond_clair=clairs or None, fond_sous_titres=[round(l_) for l_ in lums if l_ is not None][:60] or None, accent_sous_titres=cap_acc if cap_acc != accent else None, sous_titres_visage=face_rep, titre_derriere=behind_rep, mots=mots_rep, couleur_mots=macc if mots_rep is not None else None, outils=stack_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
+        sous_titres_fond_clair=clairs or None, fond_sous_titres=[round(l_) for l_ in lums if l_ is not None][:60] or None, accent_sous_titres=cap_acc if cap_acc != accent else None, sous_titres_visage=face_rep, titre_derriere=behind_rep, catalogue=cat_rep, effets=fx_rep, mots=mots_rep, couleur_mots=macc if mots_rep is not None else None, outils=stack_rep, zooms=[f"{z['t']} s {z['mot']} ({z['kind']})" for z in zooms], sfx_whoosh=n_whoosh, sfx_tick=n_tick,
         suite="npx hyperframes check, puis snapshot / preview")
 
 

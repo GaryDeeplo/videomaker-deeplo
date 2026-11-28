@@ -1,0 +1,21 @@
+{
+ "name": "catalogue-rafale",
+ "type": "component",
+ "title": "Catalogue en rafale",
+ "description": "Titre « N trucs que… », sommaire numéroté dont l'élément dit passe en accent, téléphone qui joue la démo de chaque élément (compteur 03/5), personne décalée, sortie en flou.",
+ "when_to_use": "Face caméra où l'on énumère vite une liste (outils, effets, astuces) : ~1 élément par seconde, puis appel à l'action.",
+ "tags": [
+  "catalogue",
+  "liste",
+  "sommaire",
+  "telephone",
+  "vitrine",
+  "rafale"
+ ],
+ "files": [],
+ "usage": "work/<slug>_catalogue.json : {\"titre\": \"5 effets…\", \"items\": [{\"nom\": \"vertigo\", \"mot\": \"<mot dit>\", \"demo\": \"library:<nom>|inbox/clip.mp4\"}], \"fin\": \"<mot dit>\"} (references/catalogue-effets.md)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-28",
+ "uses": 0
+}

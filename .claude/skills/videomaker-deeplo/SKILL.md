@@ -148,6 +148,7 @@ fichier quand le sujet arrive, pas avant.
 | Rush face caméra, interview courte | rush -> reel | `transcribe.py` | references/derush.md |
 | Rush où l'on parle, rendu « expert » | écran partagé | `--layout split` + `panels.json` | references/ecran-partage.md |
 | Rush plein écran, mot géant derrière la personne | mots dynamiques | `build_composition.py --mots` | references/mots-dynamiques.md |
+| Rush où l'on énumère (« N trucs que… »), effets vertigo / cadre / contour / traverse | catalogue / effets | `work/<slug>_catalogue.json`, `work/<slug>_effets.json` | references/catalogue-effets.md |
 | Bien immobilier, ton luxe | immobilier / luxe | sous-titres `editorial` + blocs en verre | references/immobilier-luxe.md |
 | Clips sans paroles (chantier, ambiance, plats, événement, produit, voyage) | montage | `footage.py scan` | references/montage-sans-paroles.md |
 | Plusieurs petits clips (téléphone) | plusieurs rushs puis rush -> reel | `multi.py list` | references/derush.md |

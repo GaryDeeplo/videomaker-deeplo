@@ -138,7 +138,8 @@ class Projection:
     """Point de la vidéo source -> pixel de la composition, comme build_composition.py la pose : object-fit cover /
     contain (object-position focusX% posY%), ou suivi du visage (vidéo pleine largeur qui glisse en x), dans une zone
     (écran entier, ou bas de l'écran partagé), sous la caméra #cam (drifts, punchs) et #zm (zooms).
-    geo : {W, H, src: [w, h], fit, focusX, posY, zone: [x, y, w, h], VW, track: {start, moves}, cam: [...], zooms: [[t, fin, échelle]]}"""
+    geo : {W, H, src: [w, h], fit, focusX, posY, zone: [x, y, w, h], VW, track: {start, moves}, cam: [...], zooms: [[t, fin, échelle]],
+           fxv: [[t, fin, échelle, dx]] (calque #fxv d'effets.py : personne décalée pendant le catalogue)}"""
 
     def __init__(self, geo):
         self.g = geo
@@ -186,6 +187,9 @@ class Projection:
     def point(self, x, y, t):
         c, z = self.scales(t)
         X, Y = self._dx(t) + x * self.s, self.dy + y * self.s
+        for a, b, sc, dx in self.g.get("fxv") or []:  # #fxv (dans #cam) : échelle autour du centre + glissement
+            if a <= t < b:
+                X, Y = self.W / 2 + sc * (X - self.W / 2) + dx, self.H / 2 + sc * (Y - self.H / 2)
         X, Y = self.cam_o[0] + c * (X - self.cam_o[0]), self.cam_o[1] + c * (Y - self.cam_o[1])
         return self.zm_o[0] + z * (X - self.zm_o[0]), self.zm_o[1] + z * (Y - self.zm_o[1])
 

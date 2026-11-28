@@ -1,0 +1,20 @@
+{
+ "name": "effet-contour",
+ "type": "component",
+ "title": "Effet doodle boil",
+ "description": "Contour blanc qui tremble autour de la personne détourée + petits dessins (cœur, étincelle, flèche, gribouillis) qui se tracent.",
+ "when_to_use": "Ton léger, créatif, fun ; mettre en avant la personne ou une idée « dessinée ».",
+ "tags": [
+  "effet",
+  "contour",
+  "doodle",
+  "dessin",
+  "detourage"
+ ],
+ "files": [],
+ "usage": "work/<slug>_effets.json : [{\"effet\": \"contour\", \"mot\": \"<mot dit>\", \"dur\": 2.4}] (references/catalogue-effets.md)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-28",
+ "uses": 0
+}

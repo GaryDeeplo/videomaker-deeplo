@@ -1,0 +1,19 @@
+{
+ "name": "effet-traverse",
+ "type": "component",
+ "title": "Effet zoom-through",
+ "description": "Zoom flou à travers l'image puis retour net, posé sur la coupe du dérush la plus proche du mot.",
+ "when_to_use": "Changement de partie ou coupe de dérush à dynamiser.",
+ "tags": [
+  "effet",
+  "transition",
+  "zoom",
+  "coupe"
+ ],
+ "files": [],
+ "usage": "work/<slug>_effets.json : [{\"effet\": \"traverse\", \"mot\": \"<mot dit>\"}] (references/catalogue-effets.md)",
+ "source_job": null,
+ "preview": null,
+ "created": "2026-11-28",
+ "uses": 0
+}

@@ -241,6 +241,11 @@ def apply(job_name, slug, nom):
 
 # dispositifs repérés dans les références -> ce que le skill sait déjà faire (mots-clés -> capacité)
 CAPACITES = [
+    (("sommaire", "téléphone vitrine", "énumération", "cadrage décalé", "sortie de l'habillage"), "catalogue en rafale (work/<slug>_catalogue.json)"),
+    (("vertigo", "dolly"), "effet vertigo (work/<slug>_effets.json)"),
+    (("frame break", "sort du cadre"), "effet cadre / frame break (work/<slug>_effets.json)"),
+    (("contour dessiné", "doodle"), "effet contour / doodle boil (work/<slug>_effets.json)"),
+    (("zoom à travers", "zoom-through"), "effet traverse / zoom-through (work/<slug>_effets.json)"),
     (("toutes petites silhouettes",), "petites silhouettes (build_collage gens)"),
     (("vitrine de 3", "portfolio"), "vitrine portfolio (showcase.py portfolio)"),
     (("collage", "didone", "objets photo détourés"), "collage éditorial (build_collage.py)"),
